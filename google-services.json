@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "984484023806",
+    "project_id": "rutaalmacen-c3673",
+    "storage_bucket": "rutaalmacen-c3673.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:984484023806:android:a1c6650669350e48b384af",
+        "android_client_info": {
+          "package_name": "com.example.rutaalmacen"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "984484023806-nqdir8a5avbbl0d7870oicv2rck94tmp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.rutaalmacen",
+            "certificate_hash": "1617fa7d65ae8aea63e143a88b34de4f7224eaa7"
+          }
+        },
+        {
+          "client_id": "984484023806-kfjrgmtqko1c31m5fc1n2svnhof7qouo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDljT2hy7DsyDQpW1zvLRU0uVq9Wj9oOv4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "984484023806-kfjrgmtqko1c31m5fc1n2svnhof7qouo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
