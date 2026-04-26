@@ -2,7 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
+        android:name=".RutaAlmacenApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -12,13 +16,34 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RutaAlmacen">
         <activity
+            android:name=".CategoriaAlmacenActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HorarioAlmacenActivity"
+            android:exported="false" />
+        <activity
+            android:name=".NombreAlmacenActivity"
+            android:exported="false" />
+        <activity
             android:name=".CompradorActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AlmacenesCercanosActivity"
+            android:exported="false" />
+        <activity
+            android:name=".StockAlmacenActivity"
             android:exported="false" />
         <activity
             android:name=".VendedorActivity"
             android:exported="false" />
         <activity
             android:name=".AdminActivity"
+            android:exported="false" />
+        <activity
+            android:name=".StockVendedorAdminActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PalabrasBloqueadasActivity"
             android:exported="false" />
         <activity
             android:name=".LoginActivity"
@@ -29,9 +54,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".MainActivity"
-            android:exported="false" />
+
     </application>
 
 </manifest>

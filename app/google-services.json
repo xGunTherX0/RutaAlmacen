@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "984484023806-dt8s95odkfcvgrhp3hjak8at3kafld3c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.rutaalmacen",
+            "certificate_hash": "d33e7a1777855ffc2e31718f8a38365033560812"
+          }
+        },
+        {
           "client_id": "984484023806-nqdir8a5avbbl0d7870oicv2rck94tmp.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

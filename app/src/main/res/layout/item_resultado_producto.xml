@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/texto_nombre_producto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleMedium"
+            android:textStyle="bold"
+            android:text="Nombre del producto" />
+
+        <TextView
+            android:id="@+id/texto_precio_producto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+            android:text="Precio: $0" />
+
+        <TextView
+            android:id="@+id/texto_descripcion_producto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+            android:text="Descripción: -" />
+
+        <TextView
+            android:id="@+id/texto_almacen_producto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+            android:text="Almacén: Sin nombre" />
+
+        <TextView
+            android:id="@+id/texto_horario_almacen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+            android:text="Horario: 09:00 - 13:00 / 16:00 - 22:00" />
+
+        <TextView
+            android:id="@+id/texto_estado_horario"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+            android:text="Atención: Abierto" />
+
+        <TextView
+            android:id="@+id/texto_distancia_producto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+            android:text="Distancia: --" />
+
+        <TextView
+            android:id="@+id/texto_estado_producto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+            android:text="Estado: Disponible" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/boton_ver_stock"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="17sp"
+                android:text="Ver stock" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/boton_llegar_almacen"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:textSize="17sp"
+                android:text="Llegar" />
+        </LinearLayout>
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
