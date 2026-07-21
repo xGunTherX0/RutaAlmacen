@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/contenedor_alertas_reportadas"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/fondo_app"
+    android:padding="@dimen/margen_pantalla"
+    tools:context=".AlertasReportadasActivity">
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/boton_volver_reportadas"
+        android:layout_width="@dimen/ancho_icono_grande"
+        android:layout_height="@dimen/ancho_icono_grande"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Volver"
+        android:src="@android:drawable/ic_menu_revert"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/texto_titulo_reportadas"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/espacio_sm"
+        android:text="Alertas Reportadas"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge"
+        app:layout_constraintBottom_toBottomOf="@id/boton_volver_reportadas"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/boton_volver_reportadas"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/texto_sin_reportes"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_lg"
+        android:text="No hay alertas reportadas."
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/boton_volver_reportadas" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_alertas_reportadas"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/espacio_lg"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/espacio_lg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/texto_sin_reportes"
+        tools:listitem="@layout/item_alerta_reportada" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

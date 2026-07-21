@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/contenedor_promover_admin"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/fondo_app"
+    android:padding="@dimen/margen_pantalla"
+    tools:context=".admin.PromoverAdminActivity">
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/boton_volver_promover"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Volver"
+        android:src="@android:drawable/ic_menu_revert"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/texto_titulo_promover"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/espacio_sm"
+        android:text="Promover a Administrador"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge"
+        app:layout_constraintBottom_toBottomOf="@id/boton_volver_promover"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/boton_volver_promover"
+        app:layout_constraintTop_toTopOf="@id/boton_volver_promover" />
+
+    <TextView
+        android:id="@+id/texto_detalle_promover"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_xs"
+        android:text="Selecciona un usuario para otorgarle permisos de administrador (solo visualización)"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/texto_titulo_promover" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/contenedor_busqueda_promover"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/separador_card"
+        android:hint="Buscar por nombre o correo"
+        app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/texto_detalle_promover">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/campo_busqueda_promover"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/texto_sin_usuarios_promover"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/separador_card"
+        android:gravity="center"
+        android:text="No hay usuarios disponibles para promover."
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contenedor_busqueda_promover" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_usuarios_promover"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/separador_card"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/espacio_lg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/texto_sin_usuarios_promover"
+        tools:listitem="@layout/item_usuario_promover_admin" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

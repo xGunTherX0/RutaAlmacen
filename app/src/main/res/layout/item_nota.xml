@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/tarjeta_nota"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/espacio_xs"
+    android:layout_marginVertical="@dimen/espacio_xs"
+    app:cardBackgroundColor="@color/fondo_card"
+    app:cardCornerRadius="@dimen/radio_card"
+    app:cardElevation="@dimen/elevacion_card"
+    app:cardUseCompatPadding="true"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_card">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/texto_titulo_nota"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="@dimen/espacio_sm"
+                android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium"
+                android:textSize="@dimen/texto_titulo_sm"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:ellipsize="end"
+                tools:text="Recordatorio" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/boton_eliminar_nota"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:contentDescription="Eliminar nota"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:iconSize="18dp"
+                app:icon="@android:drawable/ic_menu_delete"
+                app:iconTint="@color/estado_cerrado" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/texto_contenido_nota"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+            tools:text="Llamar al proveedor para confirmar entrega del lunes." />
+
+        <TextView
+            android:id="@+id/texto_fecha_nota"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:textColor="@color/texto_terciario"
+            android:textSize="@dimen/texto_cuerpo_sm"
+            tools:text="Hoy, 14:32" />
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -1,22 +1,19 @@
 package com.example.rutaalmacen
 
 import android.os.Bundle
-import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-abstract class PantallaRolActivity : AppCompatActivity() {
-
-    abstract val tituloPantalla: String
+class UbicacionActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_pantalla_rol)
+        setContentView(R.layout.activity_ubicacion)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.contenedor_pantalla_rol)) { vista, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.contenedor_ubicacion_activity)) { vista, insets ->
             val barrasDelSistema = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             vista.setPadding(
                 barrasDelSistema.left,
@@ -27,6 +24,10 @@ abstract class PantallaRolActivity : AppCompatActivity() {
             insets
         }
 
-        findViewById<TextView>(R.id.texto_pantalla_rol).text = tituloPantalla
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.contenedor_ubicacion_activity, UbicacionFragment())
+                .commit()
+        }
     }
 }

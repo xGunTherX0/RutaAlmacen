@@ -2,44 +2,40 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/fondo_app"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="@dimen/margen_pantalla">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Almacén"
-            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge"
-            android:textStyle="bold" />
+            android:text="🏪 Almacén"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="@dimen/espacio_xs"
             android:text="Configura los datos principales de tu almacén."
             android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/espacio_xl"
             android:text="Configuración del almacén"
-            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
-            android:textStyle="bold" />
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="1dp"
-            app:strokeColor="?attr/colorOutlineVariant"
-            app:strokeWidth="1dp">
+            android:layout_marginTop="@dimen/espacio_md">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -50,82 +46,269 @@
                     android:id="@+id/opcion_nombre_almacen"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="16dp">
+                    android:padding="@dimen/espacio_lg">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Nombre del almacén"
-                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+                        android:textColor="@color/texto_principal" />
 
                     <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="@dimen/ancho_icono"
+                        android:layout_height="@dimen/ancho_icono"
                         android:contentDescription="@null"
-                        android:src="@android:drawable/ic_media_next" />
+                        android:src="@android:drawable/ic_media_next"
+                        app:tint="@color/texto_terciario" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="?attr/colorOutlineVariant" />
+                    android:layout_marginHorizontal="@dimen/espacio_lg"
+                    android:background="@color/divisor" />
 
                 <LinearLayout
                     android:id="@+id/opcion_horario_almacen"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="16dp">
+                    android:padding="@dimen/espacio_lg">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Horario de atención"
-                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+                        android:textColor="@color/texto_principal" />
 
                     <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="@dimen/ancho_icono"
+                        android:layout_height="@dimen/ancho_icono"
                         android:contentDescription="@null"
-                        android:src="@android:drawable/ic_media_next" />
+                        android:src="@android:drawable/ic_media_next"
+                        app:tint="@color/texto_terciario" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="?attr/colorOutlineVariant" />
+                    android:layout_marginHorizontal="@dimen/espacio_lg"
+                    android:background="@color/divisor" />
+
+                <LinearLayout
+                    android:id="@+id/opcion_ubicacion_almacen"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/espacio_lg">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Ubicación del almacén"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+                        android:textColor="@color/texto_principal" />
+
+                    <ImageView
+                        android:layout_width="@dimen/ancho_icono"
+                        android:layout_height="@dimen/ancho_icono"
+                        android:contentDescription="@null"
+                        android:src="@android:drawable/ic_media_next"
+                        app:tint="@color/texto_terciario" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="@dimen/espacio_lg"
+                    android:background="@color/divisor" />
 
                 <LinearLayout
                     android:id="@+id/opcion_categoria_almacen"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="16dp">
+                    android:padding="@dimen/espacio_lg">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Categoría del almacén"
-                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+                        android:textColor="@color/texto_principal" />
 
                     <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="@dimen/ancho_icono"
+                        android:layout_height="@dimen/ancho_icono"
                         android:contentDescription="@null"
-                        android:src="@android:drawable/ic_media_next" />
+                        android:src="@android:drawable/ic_media_next"
+                        app:tint="@color/texto_terciario" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="@dimen/espacio_lg"
+                    android:background="@color/divisor" />
+
+                <LinearLayout
+                    android:id="@+id/opcion_estado_almacen"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/espacio_lg">
+
+                    <TextView
+                        android:id="@+id/texto_estado_almacen"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Estado del almacén"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+                        android:textColor="@color/texto_principal" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switch_estado_almacen"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="false"
+                        android:focusable="false" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="@dimen/espacio_lg"
+                    android:background="@color/divisor" />
+
+                <LinearLayout
+                    android:id="@+id/opcion_metodos_pago"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/espacio_lg">
+
+                    <TextView
+                        android:id="@+id/texto_metodos_pago"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Métodos de pago"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+                        android:textColor="@color/texto_principal" />
+
+                    <ImageView
+                        android:layout_width="@dimen/ancho_icono"
+                        android:layout_height="@dimen/ancho_icono"
+                        android:contentDescription="@null"
+                        android:src="@android:drawable/ic_media_next"
+                        app:tint="@color/texto_terciario" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="@dimen/espacio_lg"
+                    android:background="@color/divisor" />
+
+                <LinearLayout
+                    android:id="@+id/opcion_caja_vecina"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/espacio_lg">
+
+                    <TextView
+                        android:id="@+id/texto_caja_vecina"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Caja Vecina"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+                        android:textColor="@color/texto_principal" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switch_caja_vecina"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="false"
+                        android:focusable="false" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="@dimen/espacio_lg"
+                    android:background="@color/divisor" />
+
+                <LinearLayout
+                    android:id="@+id/opcion_block_notas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/espacio_lg">
+
+                    <ImageView
+                        android:layout_width="@dimen/ancho_icono"
+                        android:layout_height="@dimen/ancho_icono"
+                        android:layout_marginEnd="@dimen/espacio_md"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_notes"
+                        app:tint="@color/colorPrimary" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Ver Block de Notas"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+                        android:textColor="@color/texto_principal" />
+
+                    <ImageView
+                        android:layout_width="@dimen/ancho_icono"
+                        android:layout_height="@dimen/ancho_icono"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/texto_terciario" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

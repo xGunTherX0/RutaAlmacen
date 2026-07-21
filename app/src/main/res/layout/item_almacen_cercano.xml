@@ -3,17 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="16dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="1dp"
-    app:strokeColor="?attr/colorOutlineVariant"
-    app:strokeWidth="1dp">
+    android:layout_marginHorizontal="@dimen/espacio_xs"
+    android:layout_marginVertical="@dimen/espacio_xs"
+    app:cardBackgroundColor="@color/fondo_card"
+    app:cardCornerRadius="@dimen/radio_card"
+    app:cardElevation="@dimen/elevacion_card"
+    app:cardUseCompatPadding="true"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/padding_card">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -27,7 +29,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleMedium"
-                android:textStyle="bold"
                 android:text="Almacén" />
 
             <TextView
@@ -35,6 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+                android:textColor="@color/estado_abierto"
                 android:textStyle="bold"
                 android:text="Abierto" />
         </LinearLayout>
@@ -43,7 +45,7 @@
             android:id="@+id/texto_distancia_almacen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/espacio_sm"
             android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
             android:text="Distancia: 0 m" />
 
@@ -51,7 +53,7 @@
             android:id="@+id/texto_categoria_almacen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="@dimen/espacio_xs"
             android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
             android:text="Categoría: Almacén" />
 
@@ -59,38 +61,48 @@
             android:id="@+id/texto_horario_almacen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="@dimen/espacio_xs"
             android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
             android:text="Horario: 09:00 - 13:00 / 15:00 - 19:00" />
+
+        <TextView
+            android:id="@+id/texto_pagos_almacen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+            android:text="Pagos: " />
+
+        <TextView
+            android:id="@+id/texto_caja_vecina_almacen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xxs"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+            android:textStyle="bold"
+            android:text="Caja Vecina: " />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal"
-            android:gravity="end">
+            android:layout_marginTop="@dimen/espacio_md"
+            android:gravity="end"
+            android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/boton_ver_stock_almacen"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:minWidth="0dp"
-                android:paddingHorizontal="8dp"
-                android:textSize="16sp"
                 android:text="Ver stock" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/boton_llegar_almacen"
-                style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="@dimen/espacio_sm"
                 android:layout_weight="1"
-                android:minWidth="0dp"
-                android:paddingHorizontal="8dp"
-                android:textSize="16sp"
                 android:text="Llegar" />
         </LinearLayout>
     </LinearLayout>

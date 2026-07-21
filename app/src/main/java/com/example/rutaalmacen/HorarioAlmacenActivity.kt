@@ -16,22 +16,32 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Locale
 
+/**
+ * Actividad que permite al vendedor configurar el horario de atención de su almacén,
+ * dividiéndolo en turno mañana y turno tarde. Valida que los horarios sean coherentes
+ * y sincroniza los cambios con Firestore y el inventario público.
+ */
 class HorarioAlmacenActivity : AppCompatActivity() {
 
     private val autenticacion: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     private val baseDatos: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
-    private val coleccionInventarioPublico = "InventarioPublico"
 
     private lateinit var textoHorario: android.widget.TextView
     private lateinit var botonMananaInicio: MaterialButton
     private lateinit var botonMananaFin: MaterialButton
     private lateinit var botonTardeInicio: MaterialButton
     private lateinit var botonTardeFin: MaterialButton
-    private var horarioMananaInicio = HORARIO_MANANA_INICIO_TEXTO
-    private var horarioMananaFin = HORARIO_MANANA_FIN_TEXTO
-    private var horarioTardeInicio = HORARIO_TARDE_INICIO_TEXTO
-    private var horarioTardeFin = HORARIO_TARDE_FIN_TEXTO
+    private var horarioMananaInicio = HorarioUtil.HORARIO_MANANA_INICIO_TEXTO
+    private var horarioMananaFin = HorarioUtil.HORARIO_MANANA_FIN_TEXTO
+    private var horarioTardeInicio = HorarioUtil.HORARIO_TARDE_INICIO_TEXTO
+    private var horarioTardeFin = HorarioUtil.HORARIO_TARDE_FIN_TEXTO
 
+    /**
+     * Ciclo de vida: inicializa la interfaz, configura los selectores de hora
+     * para cada turno y carga el horario actual desde Firestore.
+     *
+     * @param savedInstanceState Estado guardado de la instancia anterior, o null si es nueva.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -90,6 +100,11 @@ class HorarioAlmacenActivity : AppCompatActivity() {
         lifecycleScope.launch { cargarHorario() }
     }
 
+    /**
+     * Valida y guarda el horario de atención en Firestore. Verifica que los turnos
+     * no se solapen y que el fin de cada turno sea posterior a su inicio.
+     * Propaga los cambios al inventario público.
+     */
     private fun guardarHorario() {
         val minutosMananaInicio = convertirHoraAMinutos(horarioMananaInicio)
         val minutosMananaFin = convertirHoraAMinutos(horarioMananaFin)
@@ -130,7 +145,7 @@ class HorarioAlmacenActivity : AppCompatActivity() {
                     "horarioTardeInicio" to horarioTardeInicio,
                     "horarioTardeFin" to horarioTardeFin,
                 )
-                baseDatos.collection("Usuarios")
+                baseDatos.collection(Constantes.COLECCION_USUARIOS)
                     .document(usuario.uid)
                     .set(datos, SetOptions.merge())
                     .await()
@@ -149,18 +164,22 @@ class HorarioAlmacenActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Carga el horario de atención actual del vendedor desde Firestore
+     * y actualiza los botones y el resumen en la interfaz.
+     */
     private suspend fun cargarHorario() {
         val usuario = autenticacion.currentUser ?: return
         try {
-            val documento = baseDatos.collection("Usuarios")
+            val documento = baseDatos.collection(Constantes.COLECCION_USUARIOS)
                 .document(usuario.uid)
                 .get()
                 .await()
 
-            horarioMananaInicio = documento.getString("horarioMananaInicio") ?: HORARIO_MANANA_INICIO_TEXTO
-            horarioMananaFin = documento.getString("horarioMananaFin") ?: HORARIO_MANANA_FIN_TEXTO
-            horarioTardeInicio = documento.getString("horarioTardeInicio") ?: HORARIO_TARDE_INICIO_TEXTO
-            horarioTardeFin = documento.getString("horarioTardeFin") ?: HORARIO_TARDE_FIN_TEXTO
+            horarioMananaInicio = documento.getString("horarioMananaInicio") ?: HorarioUtil.HORARIO_MANANA_INICIO_TEXTO
+            horarioMananaFin = documento.getString("horarioMananaFin") ?: HorarioUtil.HORARIO_MANANA_FIN_TEXTO
+            horarioTardeInicio = documento.getString("horarioTardeInicio") ?: HorarioUtil.HORARIO_TARDE_INICIO_TEXTO
+            horarioTardeFin = documento.getString("horarioTardeFin") ?: HorarioUtil.HORARIO_TARDE_FIN_TEXTO
             botonMananaInicio.text = horarioMananaInicio
             botonMananaFin.text = horarioMananaFin
             botonTardeInicio.text = horarioTardeInicio
@@ -171,14 +190,30 @@ class HorarioAlmacenActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Actualiza el texto de resumen del horario de atención en la interfaz.
+     */
     private fun actualizarResumenHorario() {
         textoHorario.text = "Horario de atención: ${construirHorarioAtencion()}"
     }
 
+    /**
+     * Construye la cadena de texto del horario de atención en formato
+     * «HH:MM - HH:MM / HH:MM - HH:MM» (mañana / tarde).
+     *
+     * @return Cadena con el horario de atención formateado.
+     */
     private fun construirHorarioAtencion(): String {
         return "$horarioMananaInicio - $horarioMananaFin / $horarioTardeInicio - $horarioTardeFin"
     }
 
+    /**
+     * Muestra un selector de hora (TimePickerDialog) preconfigurado con la hora actual.
+     * Al confirmar, invoca el callback con la hora seleccionada en formato «HH:MM».
+     *
+     * @param horaActual Hora actual en formato «HH:MM» para preseleccionar en el diálogo.
+     * @param onHoraSeleccionada Callback que recibe la hora seleccionada en formato «HH:MM».
+     */
     private fun mostrarSelectorHora(
         horaActual: String,
         onHoraSeleccionada: (String) -> Unit,
@@ -203,6 +238,12 @@ class HorarioAlmacenActivity : AppCompatActivity() {
         ).show()
     }
 
+    /**
+     * Convierte una hora en formato «HH:MM» a su equivalente en minutos desde medianoche.
+     *
+     * @param hora Cadena con la hora en formato «HH:MM».
+     * @return Total de minutos desde medianoche, o null si el formato es inválido.
+     */
     private fun convertirHoraAMinutos(hora: String): Int? {
         val partes = hora.split(":")
         if (partes.size != 2) {
@@ -216,8 +257,15 @@ class HorarioAlmacenActivity : AppCompatActivity() {
         return horas * 60 + minutos
     }
 
+    /**
+     * Propaga los datos de horario a todos los documentos del inventario público
+     * del vendedor, utilizando una escritura por lotes de Firestore.
+     *
+     * @param uid Identificador único del vendedor.
+     * @param datos Mapa de datos a actualizar en cada documento.
+     */
     private suspend fun actualizarInventarioPublico(uid: String, datos: Map<String, Any>) {
-        val resultado = baseDatos.collection(coleccionInventarioPublico)
+        val resultado = baseDatos.collection(Constantes.COLECCION_INVENTARIO_PUBLICO)
             .whereEqualTo("vendedorId", uid)
             .get()
             .await()
@@ -231,14 +279,19 @@ class HorarioAlmacenActivity : AppCompatActivity() {
         lote.commit().await()
     }
 
+    /**
+     * Muestra un mensaje breve en pantalla mediante un Toast.
+     *
+     * @param mensaje Texto a mostrar al usuario.
+     */
     private fun mostrarMensaje(mensaje: String) {
         Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show()
     }
 
+    /**
+     * Objeto compañero para constantes de la actividad. Actualmente vacío,
+     * reservado para futuras extensiones.
+     */
     companion object {
-        private const val HORARIO_MANANA_INICIO_TEXTO = "09:00"
-        private const val HORARIO_MANANA_FIN_TEXTO = "13:00"
-        private const val HORARIO_TARDE_INICIO_TEXTO = "16:00"
-        private const val HORARIO_TARDE_FIN_TEXTO = "22:00"
     }
 }

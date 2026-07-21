@@ -5,139 +5,161 @@
     android:id="@+id/contenedor_stock_almacen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
+    android:background="@color/fondo_app"
+    android:padding="@dimen/margen_pantalla"
     tools:context=".StockAlmacenActivity">
 
-    <TextView
-        android:id="@+id/texto_titulo_stock"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/contenedor_header_stock"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Stock del almacén"
-        android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleLarge"
-        android:textStyle="bold"
+        app:cardBackgroundColor="@color/fondo_card"
+        app:cardCornerRadius="@dimen/radio_card"
+        app:cardElevation="@dimen/elevacion_card"
+        app:cardUseCompatPadding="true"
+        app:strokeWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/texto_nombre_almacen"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:gravity="center"
-        android:text="Almacén"
-        android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/texto_titulo_stock" />
-
-    <TextView
-        android:id="@+id/texto_horario_almacen"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:gravity="center"
-        android:text="Horario: 09:00 - 13:00 / 16:00 - 22:00"
-        android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/texto_nombre_almacen" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/boton_llegar_almacen_stock"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:textSize="17sp"
-        android:text="Llegar al almacén"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/texto_horario_almacen" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/contenedor_busqueda_stock"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="Buscar producto del almacén"
-        app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/boton_llegar_almacen_stock">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/campo_busqueda_stock"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="17sp"
-            android:imeOptions="actionSearch"
-            android:inputType="textCapWords" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="@dimen/padding_card">
+
+            <TextView
+                android:id="@+id/texto_titulo_stock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Stock del almacén"
+                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleLarge" />
+
+            <TextView
+                android:id="@+id/texto_nombre_almacen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_sm"
+                android:gravity="center"
+                android:text="Almacén"
+                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium" />
+
+            <TextView
+                android:id="@+id/texto_horario_almacen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_xs"
+                android:gravity="center"
+                android:text="Horario: 09:00 - 13:00 / 16:00 - 22:00"
+                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/boton_llegar_almacen_stock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_md"
+                android:text="Llegar al almacén" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/contenedor_filtros_stock"
+        android:id="@+id/contenedor_info_pagos_stock"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="1dp"
-        app:strokeColor="?attr/colorOutlineVariant"
-        app:strokeWidth="1dp"
+        android:layout_marginTop="@dimen/espacio_md"
+        app:cardBackgroundColor="@color/fondo_card"
+        app:cardCornerRadius="@dimen/radio_card"
+        app:cardElevation="@dimen/elevacion_card"
+        app:cardUseCompatPadding="true"
+        app:strokeWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/contenedor_busqueda_stock">
+        app:layout_constraintTop_toBottomOf="@id/contenedor_header_stock">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="@dimen/padding_card">
 
             <TextView
+                android:id="@+id/texto_pagos_almacen_stock"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Filtros"
-                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleMedium"
+                android:text="💳 Pagos: "
+                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium" />
+
+            <TextView
+                android:id="@+id/texto_caja_vecina_stock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_xs"
+                android:text="🏪 Caja Vecina: "
+                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
                 android:textStyle="bold" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/contenedor_categoria_stock"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:hint="Categoría"
-                app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-                app:endIconMode="dropdown_menu">
-
-                <AutoCompleteTextView
-                    android:id="@+id/campo_categoria_stock"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="17sp"
-                    android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/contenedor_busqueda_stock"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_lg"
+        android:hint="Buscar producto del almacén"
+        app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contenedor_info_pagos_stock">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/campo_busqueda_stock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionSearch"
+            android:inputType="textCapWords" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/contenedor_categoria_stock"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_md"
+        android:hint="Categoría"
+        app:endIconMode="dropdown_menu"
+        app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contenedor_busqueda_stock">
+
+        <AutoCompleteTextView
+            android:id="@+id/campo_categoria_stock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
         android:id="@+id/texto_resultados_stock"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/espacio_lg"
         android:text="Resultados"
         android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleMedium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/contenedor_filtros_stock" />
+        app:layout_constraintTop_toBottomOf="@id/contenedor_categoria_stock" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_stock"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/espacio_sm"
         android:clipToPadding="false"
-        android:paddingBottom="16dp"
+        android:paddingBottom="@dimen/espacio_lg"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

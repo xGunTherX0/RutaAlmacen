@@ -1,46 +1,178 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.RutaAlmacen" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    <style name="Base.Theme.RutaAlmacen" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorOnPrimary">@color/colorOnPrimary</item>
+        <item name="colorPrimaryContainer">@color/colorPrimaryLight</item>
+        <item name="colorOnPrimaryContainer">@color/texto_en_pastel</item>
+
+        <item name="colorSecondary">@color/colorSecondary</item>
+        <item name="colorOnSecondary">@color/colorOnSecondary</item>
+        <item name="colorSecondaryContainer">@color/colorSecondaryLight</item>
+
+        <item name="colorTertiary">@color/colorTertiary</item>
+        <item name="colorTertiaryContainer">@color/colorTertiaryLight</item>
+
+        <item name="colorError">@color/colorAccent</item>
+        <item name="colorErrorContainer">@color/colorAccentLight</item>
+
+        <item name="android:colorBackground">@color/fondo_app</item>
+        <item name="colorSurface">@color/fondo_card</item>
+        <item name="colorOnSurface">@color/texto_principal</item>
+        <item name="colorOnSurfaceVariant">@color/texto_secundario</item>
+        <item name="colorOutline">@color/borde_sutil</item>
+        <item name="colorOutlineVariant">@color/divisor</item>
+
+        <item name="android:statusBarColor">@color/colorPrimary</item>
+        <item name="android:navigationBarColor">@color/fondo_app</item>
+        <item name="android:windowLightNavigationBar">true</item>
+
+        <item name="materialCardViewStyle">@style/Widget.RutaAlmacen.CardView</item>
+        <item name="materialButtonStyle">@style/Widget.RutaAlmacen.Button</item>
+        <item name="textInputStyle">@style/Widget.RutaAlmacen.TextInputLayout</item>
     </style>
 
     <style name="Theme.RutaAlmacen" parent="Base.Theme.RutaAlmacen" />
 
-    <style name="TextAppearance.RutaAlmacen.Vendedor.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
-        <item name="android:textSize">26sp</item>
+    <style name="Widget.RutaAlmacen.CardView" parent="Widget.Material3.CardView.Filled">
+        <item name="cardCornerRadius">@dimen/radio_card</item>
+        <item name="cardElevation">@dimen/elevacion_card</item>
+        <item name="cardBackgroundColor">@color/fondo_card</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="cardUseCompatPadding">true</item>
     </style>
 
-    <style name="TextAppearance.RutaAlmacen.Vendedor.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
-        <item name="android:textSize">19sp</item>
+    <style name="Widget.RutaAlmacen.Button" parent="Widget.Material3.Button">
+        <item name="cornerRadius">@dimen/radio_boton</item>
+        <item name="android:minHeight">@dimen/alto_boton</item>
+        <item name="android:textSize">@dimen/texto_titulo_sm</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="iconPadding">10dp</item>
     </style>
 
-    <style name="TextAppearance.RutaAlmacen.Vendedor.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
-        <item name="android:textSize">17sp</item>
+    <style name="Widget.RutaAlmacen.Button.Tonal" parent="Widget.Material3.Button.TonalButton">
+        <item name="cornerRadius">@dimen/radio_boton</item>
+        <item name="android:minHeight">@dimen/alto_boton</item>
+        <item name="android:textSize">@dimen/texto_titulo_sm</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="iconPadding">10dp</item>
     </style>
 
+    <style name="Widget.RutaAlmacen.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">@dimen/radio_boton</item>
+        <item name="android:minHeight">@dimen/alto_boton</item>
+        <item name="android:textSize">@dimen/texto_titulo_sm</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="iconPadding">10dp</item>
+    </style>
+
+    <style name="Widget.RutaAlmacen.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.RutaAlmacen.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/radio_input</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radio_input</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radio_input</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radio_input</item>
+        <item name="boxStrokeWidth">1.5dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxStrokeColor">@color/colorPrimary</item>
+        <item name="hintTextColor">@color/colorPrimary</item>
+    </style>
+
+    <style name="Widget.RutaAlmacen.TextInputLayout.Dropdown" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="boxCornerRadiusTopStart">@dimen/radio_input</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radio_input</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radio_input</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radio_input</item>
+        <item name="boxStrokeColor">@color/colorPrimary</item>
+        <item name="hintTextColor">@color/colorPrimary</item>
+    </style>
+
+    <style name="TextAppearance.RutaAlmacen.Vendedor.TitleLarge" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">@dimen/texto_titulo_xl</item>
+        <item name="android:textColor">@color/texto_principal</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+    <style name="TextAppearance.RutaAlmacen.Vendedor.TitleMedium" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/texto_principal</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="TextAppearance.RutaAlmacen.Vendedor.BodyMedium" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">@dimen/texto_cuerpo_lg</item>
+        <item name="android:textColor">@color/texto_secundario</item>
+    </style>
+    <style name="TextAppearance.RutaAlmacen.Vendedor.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/texto_principal</item>
+    </style>
+    <style name="TextAppearance.RutaAlmacen.Vendedor.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">@dimen/texto_cuerpo_md</item>
+        <item name="android:textColor">@color/texto_terciario</item>
+    </style>
+    <style name="TextAppearance.RutaAlmacen.Vendedor.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textSize">@dimen/texto_titulo_lg</item>
+        <item name="android:textColor">@color/texto_principal</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="TextAppearance.RutaAlmacen.Vendedor.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">28sp</item>
+        <item name="android:textColor">@color/texto_principal</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
     <style name="TextAppearance.RutaAlmacen.Vendedor.Nav" parent="TextAppearance.Material3.LabelMedium">
-        <item name="android:textSize">13sp</item>
+        <item name="android:textSize">@dimen/texto_cuerpo_sm</item>
+        <item name="android:textColor">@color/texto_secundario</item>
     </style>
 
-    <style name="TextAppearance.RutaAlmacen.Comprador.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
-        <item name="android:textSize">26sp</item>
+    <style name="TextAppearance.RutaAlmacen.Comprador.TitleLarge" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">@dimen/texto_titulo_xl</item>
+        <item name="android:textColor">@color/texto_principal</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.01</item>
     </style>
-
-    <style name="TextAppearance.RutaAlmacen.Comprador.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
-        <item name="android:textSize">19sp</item>
+    <style name="TextAppearance.RutaAlmacen.Comprador.TitleMedium" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/texto_principal</item>
+        <item name="android:textStyle">bold</item>
     </style>
-
-    <style name="TextAppearance.RutaAlmacen.Comprador.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
-        <item name="android:textSize">17sp</item>
+    <style name="TextAppearance.RutaAlmacen.Comprador.BodyMedium" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">@dimen/texto_cuerpo_lg</item>
+        <item name="android:textColor">@color/texto_secundario</item>
     </style>
-
     <style name="TextAppearance.RutaAlmacen.Comprador.Nav" parent="TextAppearance.Material3.LabelMedium">
-        <item name="android:textSize">13sp</item>
+        <item name="android:textSize">@dimen/texto_cuerpo_sm</item>
+        <item name="android:textColor">@color/texto_secundario</item>
     </style>
 
     <style name="ShapeAppearanceOverlay_RutaAlmacen_Circle">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="TextAppearance.RutaAlmacen.Estado.Abierto" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">@dimen/texto_cuerpo_md</item>
+        <item name="android:textColor">@color/estado_abierto</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="TextAppearance.RutaAlmacen.Estado.Cerrado" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">@dimen/texto_cuerpo_md</item>
+        <item name="android:textColor">@color/estado_cerrado</item>
+        <item name="android:textStyle">bold</item>
     </style>
 </resources>

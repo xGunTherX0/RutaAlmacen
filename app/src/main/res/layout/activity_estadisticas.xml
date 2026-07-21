@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0D0D0D">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/margen_pantalla">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Estadísticas de Planes"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="@dimen/espacio_md" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Distribución de usuarios por plan"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+            android:textColor="#B0B0B0"
+            android:layout_marginBottom="@dimen/espacio_lg" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Usuarios por Plan"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="@dimen/espacio_sm" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="@dimen/espacio_lg">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#1A1A1A"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                android:layout_marginBottom="@dimen/espacio_xs">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/espacio_md">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Básico (Gratis)"
+                        android:textColor="@android:color/white"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+
+                    <TextView
+                        android:id="@+id/texto_usuarios_gratis"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="#4CAF50"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#1A1A1A"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                android:layout_marginBottom="@dimen/espacio_xs">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/espacio_md">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Vendedor"
+                        android:textColor="@android:color/white"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+
+                    <TextView
+                        android:id="@+id/texto_usuarios_vendedor"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="#4CAF50"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#1A1A1A"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                android:layout_marginBottom="@dimen/espacio_xs">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/espacio_md">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Comercio"
+                        android:textColor="@android:color/white"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+
+                    <TextView
+                        android:id="@+id/texto_usuarios_comercio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="#4CAF50"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#1A1A1A"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/espacio_md">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Empresarial"
+                        android:textColor="@android:color/white"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+
+                    <TextView
+                        android:id="@+id/texto_usuarios_empresarial"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="#4CAF50"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Balance Financiero"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="@dimen/espacio_sm" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="#1A1A1A"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
+            android:layout_marginBottom="@dimen/espacio_sm">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/espacio_md">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=" Ventas Reales (Pagaron)"
+                    android:textColor="#4CAF50"
+                    android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium"
+                    android:layout_marginBottom="@dimen/espacio_sm" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="@dimen/espacio_xs">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Usuarios:"
+                        android:textColor="#B0B0B0"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+
+                    <TextView
+                        android:id="@+id/texto_usuarios_pagaron"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="#4CAF50"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Ingresos Totales:"
+                        android:textColor="#B0B0B0"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+
+                    <TextView
+                        android:id="@+id/texto_ingresos_totales"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="$0"
+                        android:textColor="#4CAF50"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="#1A1A1A"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
+            android:layout_marginBottom="@dimen/espacio_lg">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/espacio_md">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🎁 Regalías / Privilegios (Gratis)"
+                    android:textColor="#2196F3"
+                    android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium"
+                    android:layout_marginBottom="@dimen/espacio_sm" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="@dimen/espacio_xs">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Usuarios:"
+                        android:textColor="#B0B0B0"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+
+                    <TextView
+                        android:id="@+id/texto_usuarios_regalados"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="#2196F3"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Valor Regalado:"
+                        android:textColor="#B0B0B0"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+
+                    <TextView
+                        android:id="@+id/texto_valor_regalado"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="$0"
+                        android:textColor="#2196F3"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/boton_actualizar_estadisticas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Actualizar Estadísticas"
+            android:layout_marginBottom="@dimen/espacio_lg" />
+
+    </LinearLayout>
+</ScrollView>

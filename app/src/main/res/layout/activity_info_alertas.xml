@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/contenedor_info_alertas_pantalla"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/fondo_app"
+    android:padding="@dimen/margen_pantalla">
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/boton_volver_info"
+        android:layout_width="@dimen/ancho_icono_grande"
+        android:layout_height="@dimen/ancho_icono_grande"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Volver"
+        android:src="@android:drawable/ic_menu_revert"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/texto_titulo_info"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/espacio_sm"
+        android:text="Sistema de Alertas IA"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge"
+        app:layout_constraintBottom_toBottomOf="@id/boton_volver_info"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/boton_volver_info"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/espacio_lg"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/boton_volver_info">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/fondo_card"
+                app:cardCornerRadius="@dimen/radio_card"
+                app:cardElevation="@dimen/elevacion_card"
+                app:cardUseCompatPadding="true"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_card">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/espacio_sm"
+                        android:text="¿Qué hace este sistema?"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Cuando buscas un producto en la app, nuestro motor de inteligencia artificial analiza tu búsqueda y genera alertas automáticas para los vendedores cercanos. Así, los vendedores saben qué productos se están buscando en su zona y pueden considerar agregarlos a su stock."
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/fondo_card"
+                app:cardCornerRadius="@dimen/radio_card"
+                app:cardElevation="@dimen/elevacion_card"
+                app:cardUseCompatPadding="true"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_card">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/espacio_sm"
+                        android:text="¿Cómo beneficia a los vendedores?"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Los vendedores reciben alertas con el nombre del producto más buscado, la cantidad de búsquedas y el radio aproximado desde donde se realizaron. Esto les permite tomar decisiones informadas sobre qué productos tener disponibles."
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/fondo_card"
+                app:cardCornerRadius="@dimen/radio_card"
+                app:cardElevation="@dimen/elevacion_card"
+                app:cardUseCompatPadding="true"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_card">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/espacio_sm"
+                        android:text="Condiciones de uso"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="• Busca solo productos reales que genuinamente necesitas.\n\n• Está prohibido ingresar palabras ofensivas, inapropiadas o sin sentido como búsqueda.\n\n• Las búsquedas son revisadas automáticamente. Las que contengan contenido inapropiado serán bloqueadas y reportadas.\n\n• Los vendedores pueden reportar alertas que consideren maliciosas o inapropiadas.\n\n• Si realizas búsquedas maliciosas de forma reiterada, tu cuenta puede ser bloqueada por el administrador y no podrás usar la aplicación.\n\n• El sistema está diseñado para mejorar la experiencia de todos los usuarios. Úsalo con responsabilidad."
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -15,12 +15,21 @@ import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+/**
+ * Actividad que permite al vendedor editar el nombre comercial de su almacén.
+ * El nombre se guarda en Firestore y se propaga al inventario público.
+ */
 class NombreAlmacenActivity : AppCompatActivity() {
 
     private val autenticacion: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     private val baseDatos: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
-    private val coleccionInventarioPublico = "InventarioPublico"
 
+    /**
+     * Ciclo de vida: inicializa la interfaz, configura el botón de guardar
+     * y carga el nombre actual del almacén desde Firestore.
+     *
+     * @param savedInstanceState Estado guardado de la instancia anterior, o null si es nueva.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -47,6 +56,12 @@ class NombreAlmacenActivity : AppCompatActivity() {
         lifecycleScope.launch { cargarNombreAlmacen(campoNombre) }
     }
 
+    /**
+     * Valida y guarda el nombre del almacén en Firestore. Propaga los cambios
+     * al inventario público. Muestra mensajes de error si la validación falla.
+     *
+     * @param nombre Nombre ingresado por el usuario en el campo de texto.
+     */
     private fun guardarNombre(nombre: String) {
         val nombreAlmacen = nombre.trim()
         if (nombreAlmacen.isBlank()) {
@@ -63,7 +78,7 @@ class NombreAlmacenActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val datos = mapOf("nombreAlmacen" to nombreAlmacen)
-                baseDatos.collection("Usuarios")
+                baseDatos.collection(Constantes.COLECCION_USUARIOS)
                     .document(usuario.uid)
                     .set(datos, SetOptions.merge())
                     .await()
@@ -81,10 +96,15 @@ class NombreAlmacenActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Carga el nombre actual del almacén desde Firestore y lo muestra en el campo de texto.
+     *
+     * @param campoNombre Campo de texto donde se mostrará el nombre cargado.
+     */
     private suspend fun cargarNombreAlmacen(campoNombre: TextInputEditText) {
         val usuario = autenticacion.currentUser ?: return
         try {
-            val documento = baseDatos.collection("Usuarios")
+            val documento = baseDatos.collection(Constantes.COLECCION_USUARIOS)
                 .document(usuario.uid)
                 .get()
                 .await()
@@ -97,8 +117,15 @@ class NombreAlmacenActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Propaga los datos del nombre a todos los documentos del inventario público
+     * del vendedor, utilizando una escritura por lotes de Firestore.
+     *
+     * @param uid Identificador único del vendedor.
+     * @param datos Mapa de datos a actualizar en cada documento.
+     */
     private suspend fun actualizarInventarioPublico(uid: String, datos: Map<String, Any>) {
-        val resultado = baseDatos.collection(coleccionInventarioPublico)
+        val resultado = baseDatos.collection(Constantes.COLECCION_INVENTARIO_PUBLICO)
             .whereEqualTo("vendedorId", uid)
             .get()
             .await()
@@ -112,6 +139,11 @@ class NombreAlmacenActivity : AppCompatActivity() {
         lote.commit().await()
     }
 
+    /**
+     * Muestra un mensaje breve en pantalla mediante un Toast.
+     *
+     * @param mensaje Texto a mostrar al usuario.
+     */
     private fun mostrarMensaje(mensaje: String) {
         Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show()
     }

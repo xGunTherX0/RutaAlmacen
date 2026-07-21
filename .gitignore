@@ -22,3 +22,19 @@ local.properties
 *.keystore
 *.aab
 *.apk
+
+# Scripts de configuración de entorno
+*.bat
+*.ps1
+!gradlew.bat
+
+# Documentación de setup
+*_FIX.md
+*_INSTRUCTIONS.md
+RUN_IN_ANDROID_STUDIO.md
+
+# Archivos de configuración sample
+gradle.properties.sample
+
+# google-services.json en raíz (solo app/)
+/google-services.json

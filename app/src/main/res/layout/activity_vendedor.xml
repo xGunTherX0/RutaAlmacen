@@ -5,14 +5,15 @@
     android:id="@+id/contenedor_vendedor"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/fondo_app"
     tools:context=".VendedorActivity">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/contenedor_fragmentos"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/nav_vendedor"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -20,13 +21,16 @@
         android:id="@+id/nav_vendedor"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:background="@color/fondo_card"
         app:itemIconSize="28dp"
+        app:itemIconTint="@color/colorPrimary"
         app:itemTextAppearanceActive="@style/TextAppearance.RutaAlmacen.Vendedor.Nav"
         app:itemTextAppearanceInactive="@style/TextAppearance.RutaAlmacen.Vendedor.Nav"
+        app:itemTextColor="@color/colorPrimary"
+        app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:labelVisibilityMode="labeled"
         app:menu="@menu/menu_vendedor" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

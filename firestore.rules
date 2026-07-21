@@ -1,0 +1,116 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function esAdministrador() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/Usuarios/$(request.auth.uid)).data.rol == 'administrador';
+    }
+
+    function esVendedor() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/Usuarios/$(request.auth.uid)).data.rol == 'vendedor';
+    }
+
+    function esComprador() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/Usuarios/$(request.auth.uid)).data.rol == 'comprador';
+    }
+
+    function estaAutenticado() {
+      return request.auth != null;
+    }
+
+    function noEstaBloqueado() {
+      return request.auth != null
+        && (!('bloqueado' in get(/databases/$(database)/documents/Usuarios/$(request.auth.uid)).data)
+            || get(/databases/$(database)/documents/Usuarios/$(request.auth.uid)).data.bloqueado == false);
+    }
+
+    match /Usuarios/{userId} {
+      allow read: if estaAutenticado() && noEstaBloqueado();
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.rol in ['vendedor', 'comprador']
+        && !('plan' in request.resource.data)
+        && !('planVencimiento' in request.resource.data)
+        && !('ultimoPurchaseToken' in request.resource.data)
+        && !('compraVerificada' in request.resource.data)
+        && !('fechaActualizacionPlan' in request.resource.data)
+        && !('rol' in request.resource.data && request.resource.data.rol == 'administrador');
+      allow update: if esAdministrador()
+        || (
+          request.auth.uid == userId
+          && noEstaBloqueado()
+          && !('plan' in request.resource.data.diff(resource.data).affectedKeys())
+          && !('planVencimiento' in request.resource.data.diff(resource.data).affectedKeys())
+          && !('ultimoPurchaseToken' in request.resource.data.diff(resource.data).affectedKeys())
+          && !('compraVerificada' in request.resource.data.diff(resource.data).affectedKeys())
+          && !('fechaActualizacionPlan' in request.resource.data.diff(resource.data).affectedKeys())
+          && !('motivoCambioPlan' in request.resource.data.diff(resource.data).affectedKeys())
+          && !('rol' in request.resource.data.diff(resource.data).affectedKeys())
+          && !('bloqueado' in request.resource.data.diff(resource.data).affectedKeys())
+        );
+      allow delete: if esAdministrador();
+
+      match /Inventario/{productId} {
+        allow read: if request.auth.uid == userId || esAdministrador();
+        allow create, update: if request.auth.uid == userId && noEstaBloqueado();
+        allow delete: if request.auth.uid == userId || esAdministrador();
+      }
+
+      match /Notas/{notaId} {
+        allow read: if request.auth.uid == userId || esAdministrador();
+        allow create, update: if request.auth.uid == userId && noEstaBloqueado();
+        allow delete: if request.auth.uid == userId || esAdministrador();
+      }
+    }
+
+    match /InventarioPublico/{docId} {
+      allow read: if estaAutenticado() && noEstaBloqueado();
+      allow create, update: if esVendedor()
+        && request.resource.data.vendedorId == request.auth.uid;
+      allow delete: if esVendedor()
+        && resource.data.vendedorId == request.auth.uid
+        || esAdministrador();
+    }
+
+    match /Notificaciones_IA/{notifId} {
+      allow read: if estaAutenticado()
+        && (resource.data.vendedorId == request.auth.uid || esAdministrador());
+      allow create: if esComprador() || esAdministrador();
+      allow update: if esVendedor() && resource.data.vendedorId == request.auth.uid
+        || esAdministrador();
+      allow delete: if esVendedor() && resource.data.vendedorId == request.auth.uid
+        || esAdministrador();
+    }
+
+    match /Busquedas_Historicas/{busqId} {
+      allow read: if esAdministrador();
+      allow create: if esComprador() && noEstaBloqueado();
+      allow update, delete: if esAdministrador();
+    }
+
+    match /Palabras_Bloqueadas/{palabraId} {
+      allow read: if estaAutenticado();
+      allow create, update, delete: if esAdministrador();
+    }
+
+    match /Alertas_Reportadas/{reporteId} {
+      allow read: if esAdministrador();
+      allow create: if esVendedor() && noEstaBloqueado();
+      allow update, delete: if esAdministrador();
+    }
+
+    match /ComprasSuscripcion/{tokenId} {
+      allow read: if esAdministrador();
+      allow write: if false;
+    }
+
+    match /Configuracion/{docId} {
+      allow read: if estaAutenticado();
+      allow write: if esAdministrador();
+    }
+  }
+}

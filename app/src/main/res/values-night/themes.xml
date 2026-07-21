@@ -1,7 +1,32 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.RutaAlmacen" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <style name="Base.Theme.RutaAlmacen" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorOnPrimary">@color/colorOnPrimary</item>
+        <item name="colorPrimaryContainer">@color/colorPrimaryLight</item>
+        <item name="colorOnPrimaryContainer">@color/texto_en_pastel</item>
+
+        <item name="colorSecondary">@color/colorSecondary</item>
+        <item name="colorOnSecondary">@color/colorOnSecondary</item>
+        <item name="colorSecondaryContainer">@color/colorSecondaryLight</item>
+
+        <item name="colorTertiary">@color/colorTertiary</item>
+        <item name="colorTertiaryContainer">@color/colorTertiaryLight</item>
+
+        <item name="colorError">@color/colorAccent</item>
+        <item name="colorErrorContainer">@color/colorAccentLight</item>
+
+        <item name="android:colorBackground">@color/fondo_app</item>
+        <item name="colorSurface">@color/fondo_card</item>
+        <item name="colorOnSurface">@color/texto_principal</item>
+        <item name="colorOnSurfaceVariant">@color/texto_secundario</item>
+        <item name="colorOutline">@color/borde_sutil</item>
+        <item name="colorOutlineVariant">@color/divisor</item>
+
+        <item name="android:statusBarColor">@color/colorPrimary</item>
+        <item name="android:navigationBarColor">@color/fondo_app</item>
+        <item name="android:windowLightNavigationBar">true</item>
+
+        <item name="materialCardViewStyle">@style/Widget.RutaAlmacen.CardView</item>
+        <item name="materialButtonStyle">@style/Widget.RutaAlmacen.Button</item>
     </style>
 </resources>

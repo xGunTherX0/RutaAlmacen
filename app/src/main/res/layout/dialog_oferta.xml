@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/fondo_app">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_card">
+
+        <TextView
+            android:id="@+id/texto_titulo_oferta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Programar oferta"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
+
+        <TextView
+            android:id="@+id/texto_precio_actual"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+            tools:text="Precio actual: $3000 / unidad" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/separador_card"
+            android:text="Tipo de descuento"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/grupo_tipo_descuento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/opcion_precio_final"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Por precio final"
+                android:textColor="@color/texto_principal" />
+
+            <RadioButton
+                android:id="@+id/opcion_porcentaje"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Por porcentaje (%)"
+                android:textColor="@color/texto_principal" />
+        </RadioGroup>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/contenedor_valor_oferta"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_sm"
+            android:hint="Precio final con descuento"
+            app:prefixText="$">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/campo_valor_oferta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/texto_descuento_calculado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:textColor="@color/oferta_precio"
+            android:textSize="@dimen/texto_cuerpo_md"
+            android:textStyle="bold"
+            android:visibility="gone"
+            tools:text="Equivale a 20% de descuento"
+            tools:visibility="visible" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/separador_card"
+            android:text="Duración de la oferta"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:orientation="horizontal">
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Cantidad">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/campo_cantidad_tiempo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Spinner
+                android:id="@+id/spinner_unidad_tiempo"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/alto_input"
+                android:layout_weight="1"
+                android:layout_marginStart="@dimen/espacio_sm"
+                android:layout_gravity="center_vertical" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/texto_vencimiento_estimado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_sm"
+            android:textColor="@color/texto_secundario"
+            android:textSize="@dimen/texto_cuerpo_md"
+            tools:text="Vence el 20 jun 2026, 18:30" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/boton_cancelar_oferta"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/separador_card"
+            android:text="Cancelar oferta activa"
+            android:textColor="@color/estado_cerrado"
+            android:visibility="gone"
+            tools:visibility="visible" />
+    </LinearLayout>
+</ScrollView>

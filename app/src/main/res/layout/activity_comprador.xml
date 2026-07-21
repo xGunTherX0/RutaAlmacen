@@ -5,7 +5,10 @@
     android:id="@+id/contenedor_comprador"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
+    android:background="@color/fondo_app"
+    android:paddingHorizontal="@dimen/margen_pantalla"
+    android:paddingTop="@dimen/espacio_sm"
+    android:paddingBottom="@dimen/espacio_xs"
     tools:context=".CompradorActivity">
 
     <TextView
@@ -15,148 +18,108 @@
         android:gravity="center"
         android:text="Buscar productos"
         android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleLarge"
-        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/contenedor_busqueda"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/contenedor_busqueda_card"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="Nombre del producto"
-        app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+        android:layout_marginTop="@dimen/espacio_sm"
+        app:cardBackgroundColor="@color/fondo_card"
+        app:cardCornerRadius="@dimen/radio_card"
+        app:cardElevation="@dimen/elevacion_card"
+        app:cardUseCompatPadding="false"
+        app:strokeWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/texto_titulo_comprador">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/campo_busqueda_producto"
+        <LinearLayout
+            android:id="@+id/fila_busqueda"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="17sp"
-            android:imeOptions="actionSearch"
-            android:inputType="textCapWords" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/espacio_sm"
+            android:paddingVertical="@dimen/espacio_xs">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/contenedor_busqueda"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Nombre del producto"
+                app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/campo_busqueda_producto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionSearch"
+                    android:inputType="textCapWords" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/boton_info_alertas"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="@dimen/alto_boton_pequeno"
+                android:layout_height="@dimen/alto_boton_pequeno"
+                android:layout_marginStart="@dimen/espacio_sm"
+                android:minWidth="0dp"
+                android:text="?"
+                app:cornerRadius="@dimen/radio_boton" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/boton_buscar_producto"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_sm"
+        android:text="Buscar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contenedor_busqueda_card" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/contenedor_filtros"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="1dp"
-        app:strokeColor="?attr/colorOutlineVariant"
-        app:strokeWidth="1dp"
+        android:layout_marginTop="@dimen/espacio_sm"
+        app:cardBackgroundColor="@color/fondo_card"
+        app:cardCornerRadius="@dimen/radio_card"
+        app:cardElevation="@dimen/elevacion_card"
+        app:cardUseCompatPadding="false"
+        app:strokeWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/contenedor_busqueda">
+        app:layout_constraintTop_toBottomOf="@id/boton_buscar_producto">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:paddingHorizontal="@dimen/espacio_sm"
+            android:paddingVertical="@dimen/espacio_xs">
 
-            <LinearLayout
-                android:id="@+id/encabezado_filtros"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/contenedor_categoria"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:clickable="true"
-                android:focusable="true">
+                android:hint="Categoría"
+                app:endIconMode="dropdown_menu"
+                app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium">
 
-                <TextView
-                    android:id="@+id/texto_filtros"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Filtros"
-                    android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleMedium"
-                    android:textStyle="bold" />
-
-                <ImageView
-                    android:id="@+id/icono_filtros"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@null"
-                    android:src="@android:drawable/arrow_down_float" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/contenido_filtros"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="vertical">
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/contenedor_categoria"
+                <AutoCompleteTextView
+                    android:id="@+id/campo_categoria"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Categoría"
-                    app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-                    app:endIconMode="dropdown_menu">
-
-                    <AutoCompleteTextView
-                        android:id="@+id/campo_categoria"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:inputType="none" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <LinearLayout
-                    android:id="@+id/encabezado_distancia"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Rango de distancia"
-                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-                        android:textStyle="bold" />
-
-                    <ImageView
-                        android:id="@+id/icono_distancia"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:contentDescription="@null"
-                        android:src="@android:drawable/arrow_down_float" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/contenido_distancia"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/texto_distancia_filtro"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Distancia: hasta 100 km"
-                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium" />
-
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/grupo_distancia"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        app:selectionRequired="true"
-                        app:singleSelection="true" />
-                </LinearLayout>
-            </LinearLayout>
+                    android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -164,7 +127,7 @@
         android:id="@+id/texto_resultados"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/espacio_sm"
         android:text="Resultados"
         android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleMedium"
         app:layout_constraintEnd_toEndOf="parent"
@@ -175,9 +138,9 @@
         android:id="@+id/recycler_resultados"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/espacio_xs"
         android:clipToPadding="false"
-        android:paddingBottom="16dp"
+        android:paddingBottom="@dimen/espacio_lg"
         app:layout_constraintBottom_toTopOf="@id/nav_comprador"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -188,9 +151,12 @@
         android:id="@+id/nav_comprador"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:itemIconSize="26dp"
+        android:background="@color/fondo_card"
+        app:itemIconSize="@dimen/ancho_icono_grande"
+        app:itemIconTint="@color/colorPrimary"
         app:itemTextAppearanceActive="@style/TextAppearance.RutaAlmacen.Comprador.Nav"
         app:itemTextAppearanceInactive="@style/TextAppearance.RutaAlmacen.Comprador.Nav"
+        app:itemTextColor="@color/colorPrimary"
         app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -214,28 +180,29 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="6dp"
-            app:strokeColor="?attr/colorOutlineVariant"
-            app:strokeWidth="1dp">
+            app:cardBackgroundColor="@color/fondo_card"
+            app:cardCornerRadius="@dimen/radio_card"
+            app:cardElevation="@dimen/elevacion_card"
+            app:cardUseCompatPadding="true"
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:orientation="vertical"
-                android:padding="16dp"
-                android:gravity="center">
+                android:padding="@dimen/padding_card">
 
                 <com.google.android.material.progressindicator.CircularProgressIndicator
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    app:indicatorSize="36dp"
-                    app:trackThickness="4dp" />
+                    android:layout_width="@dimen/espacio_3xl"
+                    android:layout_height="@dimen/espacio_3xl"
+                    app:indicatorSize="@dimen/espacio_3xl"
+                    app:trackThickness="@dimen/espacio_xs" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/espacio_sm"
                     android:text="Cargando..."
                     android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium" />
             </LinearLayout>

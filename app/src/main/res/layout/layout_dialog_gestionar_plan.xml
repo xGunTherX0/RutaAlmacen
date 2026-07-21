@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/padding_card">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Gestionar Plan"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge"
+        android:gravity="center"
+        android:layout_marginBottom="@dimen/espacio_md" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/fondo_card"
+        app:cardCornerRadius="@dimen/radio_card"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/espacio_md">
+
+            <TextView
+                android:id="@+id/texto_nombre_usuario_plan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium"
+                android:text="Nombre" />
+
+            <TextView
+                android:id="@+id/texto_correo_usuario_plan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_xs"
+                android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+                android:textColor="@color/texto_secundario"
+                android:text="correo@ejemplo.com" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_md"
+        android:text="Nuevo Plan"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+        android:textStyle="bold" />
+
+    <Spinner
+        android:id="@+id/spinner_plan_usuario"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_xs"
+        android:spinnerMode="dropdown" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_md"
+        android:text="Duración"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+        android:textStyle="bold" />
+
+    <RadioGroup
+        android:id="@+id/radio_grupo_duracion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_xs"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/radio_un_mes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1 Mes"
+            android:checked="true" />
+
+        <RadioButton
+            android:id="@+id/radio_seis_meses"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="6 Meses" />
+
+        <RadioButton
+            android:id="@+id/radio_un_anio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1 Año" />
+
+        <RadioButton
+            android:id="@+id/radio_indefinido"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Indefinido" />
+    </RadioGroup>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_md"
+        android:hint="Razón del cambio / Justificación *"
+        app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/campo_razon_cambio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine|textCapSentences"
+            android:minLines="3"
+            android:maxLines="5"
+            android:gravity="top" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/boton_confirmar_plan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_md"
+        android:text="Confirmar Plan"
+        app:icon="@drawable/ic_grant_privilege"
+        app:iconGravity="textStart" />
+
+</LinearLayout>

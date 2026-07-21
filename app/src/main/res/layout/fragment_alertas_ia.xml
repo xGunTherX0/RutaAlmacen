@@ -5,7 +5,8 @@
     android:id="@+id/contenedor_alertas_ia"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
+    android:background="@color/fondo_app"
+    android:padding="@dimen/margen_pantalla"
     tools:context=".AlertasIAFragment">
 
     <TextView
@@ -14,41 +15,177 @@
         android:layout_height="wrap_content"
         android:text="Alertas de IA"
         android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/contenedor_limite_alertas"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/contenedor_limite_alertas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="@id/texto_titulo_alertas"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/texto_titulo_alertas">
+
+        <TextView
+            android:id="@+id/texto_limite_alertas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 / 15 hoy"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodySmall"
+            android:textColor="@color/texto_secundario" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/texto_detalle_alertas"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="@dimen/espacio_xs"
         android:text="Productos con alta demanda cerca de tu ubicación."
         android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/texto_titulo_alertas" />
 
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/contenedor_filtros_alertas"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_lg"
+        app:cardBackgroundColor="@color/fondo_card"
+        app:cardCornerRadius="@dimen/radio_card"
+        app:cardElevation="@dimen/elevacion_card"
+        app:cardUseCompatPadding="true"
+        app:strokeWidth="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/texto_detalle_alertas">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/padding_card">
+
+            <LinearLayout
+                android:id="@+id/cabecera_filtros_alertas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingVertical="@dimen/espacio_xs">
+
+                <TextView
+                    android:id="@+id/texto_resumen_filtros_alertas"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Filtros y rango"
+                    android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+                    android:textStyle="bold"
+                    tools:text="Filtros · 4,7 km" />
+
+                <ImageView
+                    android:id="@+id/icono_toggle_filtros_alertas"
+                    android:layout_width="@dimen/ancho_icono"
+                    android:layout_height="@dimen/ancho_icono"
+                    android:contentDescription="Mostrar u ocultar filtros"
+                    android:rotation="0"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/texto_secundario" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/contenido_filtros_alertas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:id="@+id/contenedor_acciones_alertas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espacio_sm"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/boton_solo_nuevas_alertas"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Solo nuevas (24h)" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/boton_borrar_alertas"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/espacio_md"
+                        android:layout_weight="1"
+                        android:text="Limpiar alertas" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/texto_rango_alertas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espacio_md"
+                    android:text="Rango de alertas"
+                    android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/slider_rango_alertas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espacio_sm"
+                    android:contentDescription="Rango de alertas en kilómetros"
+                    android:stepSize="0.0"
+                    android:value="0.5"
+                    android:valueFrom="0.0"
+                    android:valueTo="1.0"
+                    app:thumbRadius="10dp"
+                    app:tickVisible="false"
+                    app:trackHeight="6dp" />
+
+                <TextView
+                    android:id="@+id/texto_valor_rango"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:text="10 km"
+                    android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
     <TextView
         android:id="@+id/texto_sin_alertas"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/espacio_lg"
+        android:gravity="center"
         android:text="No hay alertas nuevas por ahora."
         android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/texto_detalle_alertas" />
+        app:layout_constraintTop_toBottomOf="@id/contenedor_filtros_alertas" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_alertas"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/espacio_md"
         android:clipToPadding="false"
-        android:paddingBottom="16dp"
+        android:paddingBottom="@dimen/espacio_lg"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

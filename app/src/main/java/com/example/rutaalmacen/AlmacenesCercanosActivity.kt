@@ -1,18 +1,12 @@
 package com.example.rutaalmacen
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
-import android.os.Looper
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import android.view.View
@@ -25,36 +19,36 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
+import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Source
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
-import java.util.Calendar
 import java.util.Locale
-import kotlin.coroutines.resume
 
+/**
+ * Actividad que muestra la lista de almacenes cercanos al comprador, ordenados por
+ * estado de apertura y distancia. Permite filtrar por categoría, ver el stock disponible
+ * y abrir la navegación hacia el almacén seleccionado.
+ *
+ * Utiliza la ubicación del dispositivo para calcular distancias y cachea los resultados
+ * para optimizar el rendimiento de las consultas a Firestore.
+ */
 class AlmacenesCercanosActivity : AppCompatActivity() {
 
     private val autenticacion: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     private val baseDatos: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
-    private lateinit var proveedorUbicacion: FusedLocationProviderClient
+    private val proveedorUbicacion by lazy {
+        LocationServices.getFusedLocationProviderClient(this)
+    }
     private val almacenesBase: MutableList<AlmacenCercano> = mutableListOf()
     private val almacenes: MutableList<AlmacenCercano> = mutableListOf()
     private lateinit var adaptador: AdaptadorAlmacenes
-    private lateinit var textoDistanciaFiltro: TextView
-    private var distanciaMaximaSeleccionada = DISTANCIA_MAXIMA_METROS
     private var categoriaSeleccionada = "Todas"
     private lateinit var contenedorCarga: View
     private var ubicacionCache: Location? = null
@@ -63,17 +57,6 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
     private var avisoSinUbicacionMostrado = false
     private var cargaPendiente = false
     private var tareaCarga: Job? = null
-
-    private val opcionesDistancia = listOf(
-        OpcionDistancia("0,5 km", 500f),
-        OpcionDistancia("1 km", 1000f),
-        OpcionDistancia("2 km", 2000f),
-        OpcionDistancia("5 km", 5000f),
-        OpcionDistancia("10 km", 10000f),
-        OpcionDistancia("20 km", 20000f),
-        OpcionDistancia("50 km", 50000f),
-        OpcionDistancia("100 km", DISTANCIA_MAXIMA_METROS),
-    )
 
     private val categoriasAlmacen = listOf(
         "Todas",
@@ -102,6 +85,12 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
             }
         }
 
+    /**
+     * Ciclo de vida: inicializa la interfaz, el RecyclerView, el filtro de categorías
+     * y carga la lista de almacenes cercanos.
+     *
+     * @param savedInstanceState Estado guardado de la instancia anterior, o null si es nueva.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -118,13 +107,6 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
             insets
         }
 
-        proveedorUbicacion = LocationServices.getFusedLocationProviderClient(this)
-
-        textoDistanciaFiltro = findViewById(R.id.texto_distancia_almacenes)
-        val grupoDistancia = findViewById<ChipGroup>(R.id.grupo_distancia_almacenes)
-        val encabezadoDistancia = findViewById<android.view.View>(R.id.encabezado_distancia_almacenes)
-        val contenidoDistancia = findViewById<android.view.View>(R.id.contenido_distancia_almacenes)
-        val iconoDistancia = findViewById<ImageView>(R.id.icono_distancia_almacenes)
         val recycler = findViewById<RecyclerView>(R.id.recycler_almacenes)
         val campoCategoria = findViewById<AutoCompleteTextView>(R.id.campo_categoria_almacenes)
         contenedorCarga = findViewById(R.id.contenedor_carga_almacenes)
@@ -137,19 +119,25 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         recycler.layoutManager = LinearLayoutManager(this)
         recycler.adapter = adaptador
 
-        configurarDesplegable(encabezadoDistancia, contenidoDistancia, iconoDistancia, expandidoInicial = false)
-        configurarFiltros(grupoDistancia)
         configurarCategoria(campoCategoria)
         configurarNavegacion()
 
         cargarAlmacenes()
     }
 
+    /**
+     * Ciclo de vida: recarga los almacenes al volver a la actividad para reflejar
+     * cualquier cambio ocurrido mientras no estaba visible.
+     */
     override fun onResume() {
         super.onResume()
         cargarAlmacenes()
     }
 
+    /**
+     * Configura la barra de navegación inferior del comprador, permitiendo
+     * navegar entre la lista de productos y la lista de almacenes.
+     */
     private fun configurarNavegacion() {
         val navegacion = findViewById<BottomNavigationView>(R.id.nav_comprador)
         navegacion.selectedItemId = R.id.nav_almacenes_comprador
@@ -168,35 +156,11 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         }
     }
 
-    private fun configurarFiltros(grupoDistancia: ChipGroup) {
-        grupoDistancia.removeAllViews()
-        opcionesDistancia.forEach { opcion ->
-            val chip = Chip(this).apply {
-                text = opcion.etiqueta
-                isCheckable = true
-                isClickable = true
-                isChecked = opcion.metros == DISTANCIA_MAXIMA_METROS
-                setTextAppearanceResource(R.style.TextAppearance_RutaAlmacen_Comprador_BodyMedium)
-            }
-            grupoDistancia.addView(chip)
-        }
-        distanciaMaximaSeleccionada = DISTANCIA_MAXIMA_METROS
-        actualizarEtiquetaDistancia()
-        grupoDistancia.setOnCheckedStateChangeListener { grupo, ids ->
-            val seleccionado = ids.firstOrNull()
-            val chipSeleccionado = if (seleccionado != null) {
-                grupo.findViewById<Chip>(seleccionado)
-            } else {
-                null
-            }
-            val etiqueta = chipSeleccionado?.text?.toString().orEmpty()
-            val opcion = opcionesDistancia.firstOrNull { it.etiqueta == etiqueta }
-            distanciaMaximaSeleccionada = opcion?.metros ?: DISTANCIA_MAXIMA_METROS
-            actualizarEtiquetaDistancia()
-            aplicarFiltros()
-        }
-    }
-
+    /**
+     * Configura el campo de texto con autocompletado para filtrar almacenes por categoría.
+     *
+     * @param campoCategoria Campo de texto donde se muestra el selector de categorías.
+     */
     private fun configurarCategoria(campoCategoria: AutoCompleteTextView) {
         val adaptadorCategorias = ArrayAdapter(
             this,
@@ -211,28 +175,20 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         }
     }
 
-    private fun configurarDesplegable(
-        encabezado: android.view.View,
-        contenido: android.view.View,
-        icono: ImageView,
-        expandidoInicial: Boolean,
-    ) {
-        var expandido = expandidoInicial
-        fun aplicarEstado() {
-            contenido.visibility = if (expandido) android.view.View.VISIBLE else android.view.View.GONE
-            icono.rotation = if (expandido) 180f else 0f
-        }
-        aplicarEstado()
-        encabezado.setOnClickListener {
-            expandido = !expandido
-            aplicarEstado()
-        }
-    }
-
+    /**
+     * Muestra u oculta el indicador de carga en la interfaz.
+     *
+     * @param mostrar True para mostrar el indicador, false para ocultarlo.
+     */
     private fun mostrarCarga(mostrar: Boolean) {
         contenedorCarga.visibility = if (mostrar) View.VISIBLE else View.GONE
     }
 
+    /**
+     * Carga la lista de almacenes desde Firestore, utilizando caché local cuando es posible
+     * para reducir latencia. Solicita permisos de ubicación si no están concedidos y
+     * calcula la distancia a cada almacén.
+     */
     private fun cargarAlmacenes() {
         if (tareaCarga?.isActive == true) return
         tareaCarga = lifecycleScope.launch {
@@ -242,7 +198,8 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
                 return@launch
             }
 
-            if (!tienePermisoUbicacion()) {
+            val permisoUbicacion = UbicacionUtil.tienePermisoUbicacion(this@AlmacenesCercanosActivity)
+            if (!permisoUbicacion && !cargaPendiente) {
                 cargaPendiente = true
                 solicitudPermisoUbicacion.launch(
                     arrayOf(
@@ -250,101 +207,228 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
                         Manifest.permission.ACCESS_COARSE_LOCATION,
                     ),
                 )
+            }
+
+            val ubicacionRapida = if (permisoUbicacion) obtenerUbicacionCacheada() else null
+            val ahora = System.currentTimeMillis()
+            val usarCache = almacenesBase.isNotEmpty() &&
+                ahora - ultimaCargaAlmacenes < HorarioUtil.TIEMPO_CACHE_ALMACENES_MS
+            if (usarCache) {
+                actualizarDistanciasAlmacenes(ubicacionRapida)
+                mostrarCarga(false)
                 return@launch
             }
 
-            mostrarCarga(true)
+            val documentosCache = obtenerVendedoresCache()
+            if (documentosCache.isNotEmpty()) {
+                val nuevosCache = construirAlmacenes(documentosCache, ubicacionRapida)
+                almacenesBase.clear()
+                almacenesBase.addAll(nuevosCache)
+                aplicarFiltros()
+            }
+
+            if (almacenesBase.isEmpty()) {
+                mostrarCarga(true)
+            }
+
             try {
-                val ubicacionComprador = obtenerUbicacionActual()
-                if (ubicacionComprador == null) {
-                    if (!avisoSinUbicacionMostrado) {
-                        mostrarMensaje("No se pudo obtener la ubicación, se mostrará sin distancia")
-                        avisoSinUbicacionMostrado = true
-                    }
-                } else {
-                    avisoSinUbicacionMostrado = false
-                }
-
-                val ahora = System.currentTimeMillis()
-                val usarCache = almacenesBase.isNotEmpty() &&
-                    ahora - ultimaCargaAlmacenes < TIEMPO_CACHE_ALMACENES_MS
-                if (usarCache) {
-                    actualizarDistanciasAlmacenes(ubicacionComprador)
-                    return@launch
-                }
-
-                val documentos = baseDatos.collection("Usuarios")
-                    .whereEqualTo("rol", "vendedor")
-                    .get()
-                    .await()
-                    .documents
-
-                val nuevos = documentos.mapNotNull { documento ->
-                    val latitud = documento.getDouble("latitud")
-                    val longitud = documento.getDouble("longitud")
-                    val nombreAlmacen = documento.getString("nombreAlmacen")
-                        ?.takeIf { it.isNotBlank() }
-                        ?: documento.getString("nombre")?.takeIf { it.isNotBlank() }
-                        ?: "Almacén"
-
-                    val horarioMananaInicio = documento.getString("horarioMananaInicio")
-                        ?: HORARIO_MANANA_INICIO_TEXTO
-                    val horarioMananaFin = documento.getString("horarioMananaFin")
-                        ?: HORARIO_MANANA_FIN_TEXTO
-                    val horarioTardeInicio = documento.getString("horarioTardeInicio")
-                        ?: HORARIO_TARDE_INICIO_TEXTO
-                    val horarioTardeFin = documento.getString("horarioTardeFin")
-                        ?: HORARIO_TARDE_FIN_TEXTO
-                    val horarioAtencion = documento.getString("horarioAtencion")
-                        ?: "$horarioMananaInicio - $horarioMananaFin / $horarioTardeInicio - $horarioTardeFin"
-                    val abiertoAhora = estaAlmacenAbiertoAhora(
-                        horarioMananaInicio,
-                        horarioMananaFin,
-                        horarioTardeInicio,
-                        horarioTardeFin,
-                    )
-                    val distancia = if (
-                        ubicacionComprador != null &&
-                        latitud != null &&
-                        longitud != null
-                    ) {
-                        calcularDistancia(
-                            ubicacionComprador.latitude,
-                            ubicacionComprador.longitude,
-                            latitud,
-                            longitud,
-                        )
+                val documentosServidor = obtenerVendedoresServidor()
+                if (documentosServidor.isNotEmpty()) {
+                    val ubicacionFinal = if (permisoUbicacion) {
+                        obtenerUbicacionCacheada() ?: obtenerUbicacionActual()
                     } else {
                         null
                     }
-                    val categoriaAlmacen = documento.getString("categoriaAlmacen")
-                        ?.takeIf { it.isNotBlank() }
-                        ?: "Sin definir"
+                    if (permisoUbicacion) {
+                        if (ubicacionFinal == null) {
+                            if (!avisoSinUbicacionMostrado) {
+                                mostrarMensaje("No se pudo obtener la ubicación, se mostrará sin distancia")
+                                avisoSinUbicacionMostrado = true
+                            }
+                        } else {
+                            avisoSinUbicacionMostrado = false
+                        }
+                    }
 
-                    AlmacenCercano(
-                        vendedorId = documento.id,
-                        nombreAlmacen = nombreAlmacen,
-                        horarioAtencion = horarioAtencion,
-                        abiertoAhora = abiertoAhora,
-                        distanciaMetros = distancia,
-                        categoriaAlmacen = categoriaAlmacen,
-                        latitud = latitud,
-                        longitud = longitud,
-                    )
+                    val nuevos = construirAlmacenes(documentosServidor, ubicacionFinal)
+                    almacenesBase.clear()
+                    almacenesBase.addAll(nuevos)
+                    ultimaCargaAlmacenes = System.currentTimeMillis()
+                    aplicarFiltros()
+                } else if (almacenesBase.isEmpty()) {
+                    almacenes.clear()
+                    adaptador.notifyDataSetChanged()
                 }
-
-                almacenesBase.clear()
-                almacenesBase.addAll(nuevos)
-                ultimaCargaAlmacenes = System.currentTimeMillis()
-                aplicarFiltros()
-            } catch (excepcion: Exception) {
-                mostrarMensaje("No se pudieron cargar los almacenes")
+            } catch (_: Exception) {
+                if (almacenesBase.isEmpty()) {
+                    mostrarMensaje("No se pudieron cargar los almacenes")
+                }
             } finally {
                 mostrarCarga(false)
             }
         }
     }
 
+    /**
+     * Obtiene la lista de documentos de vendedores desde la caché local de Firestore.
+     *
+     * @return Lista de documentos de vendedores, o lista vacía en caso de error.
+     */
+    private suspend fun obtenerVendedoresCache(): List<DocumentSnapshot> {
+        return try {
+            baseDatos.collection(Constantes.COLECCION_USUARIOS)
+                .whereEqualTo("rol", Constantes.ROL_VENDEDOR)
+                .get(Source.SERVER)
+                .await()
+                .documents
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    /**
+     * Obtiene la lista de documentos de vendedores directamente desde el servidor de Firestore.
+     *
+     * @return Lista de documentos de vendedores obtenidos del servidor.
+     * @throws Exception Si ocurre un error de red o de consulta a Firestore.
+     */
+    private suspend fun obtenerVendedoresServidor(): List<DocumentSnapshot> {
+        return baseDatos.collection(Constantes.COLECCION_USUARIOS)
+            .whereEqualTo("rol", Constantes.ROL_VENDEDOR)
+            .get()
+            .await()
+            .documents
+    }
+
+    /**
+     * Construye la lista de almacenes cercanos a partir de los documentos de Firestore,
+     * calculando el horario de atención, el estado de apertura y la distancia al comprador.
+     *
+     * @param documentos Lista de documentos de vendedores obtenidos de Firestore.
+     * @param ubicacionComprador Ubicación actual del comprador, o null si no está disponible.
+     * @return Lista de [AlmacenCercano] construidos a partir de los documentos.
+     */
+    private fun construirAlmacenes(
+        documentos: List<DocumentSnapshot>,
+        ubicacionComprador: Location?,
+    ): List<AlmacenCercano> {
+        return documentos.mapNotNull { documento ->
+            val latitud = documento.getDouble("latitud")
+            val longitud = documento.getDouble("longitud")
+            val nombreAlmacen = documento.getString("nombreAlmacen")
+                ?.takeIf { it.isNotBlank() }
+                ?: documento.getString("nombre")?.takeIf { it.isNotBlank() }
+                ?: "Almacén"
+
+            val horarioMananaInicio = documento.getString("horarioMananaInicio")
+                ?: HorarioUtil.HORARIO_MANANA_INICIO_TEXTO
+            val horarioMananaFin = documento.getString("horarioMananaFin")
+                ?: HorarioUtil.HORARIO_MANANA_FIN_TEXTO
+            val horarioTardeInicio = documento.getString("horarioTardeInicio")
+                ?: HorarioUtil.HORARIO_TARDE_INICIO_TEXTO
+            val horarioTardeFin = documento.getString("horarioTardeFin")
+                ?: HorarioUtil.HORARIO_TARDE_FIN_TEXTO
+            val horarioAtencion = documento.getString("horarioAtencion")
+                ?: "$horarioMananaInicio - $horarioMananaFin / $horarioTardeInicio - $horarioTardeFin"
+            val abiertoAhora = HorarioUtil.estaAlmacenAbiertoAhora(
+                horarioMananaInicio,
+                horarioMananaFin,
+                horarioTardeInicio,
+                horarioTardeFin,
+            )
+            val distancia = if (
+                ubicacionComprador != null &&
+                latitud != null &&
+                longitud != null
+            ) {
+                UbicacionUtil.calcularDistancia(
+                    ubicacionComprador.latitude,
+                    ubicacionComprador.longitude,
+                    latitud,
+                    longitud,
+                )
+            } else {
+                null
+            }
+            val categoriaAlmacen = documento.getString("categoriaAlmacen")
+                ?.takeIf { it.isNotBlank() }
+                ?: "Sin definir"
+            val metodosPago = (documento.get("metodosPago") as? List<String>).orEmpty()
+            val tieneCajaVecina = documento.getBoolean("tieneCajaVecina") ?: false
+
+            AlmacenCercano(
+                vendedorId = documento.id,
+                nombreAlmacen = nombreAlmacen,
+                horarioAtencion = horarioAtencion,
+                abiertoAhora = abiertoAhora,
+                distanciaMetros = distancia,
+                categoriaAlmacen = categoriaAlmacen,
+                latitud = latitud,
+                longitud = longitud,
+                metodosPago = metodosPago,
+                tieneCajaVecina = tieneCajaVecina,
+            )
+        }
+    }
+
+    /**
+     * Obtiene la ubicación del dispositivo utilizando la caché interna o una ubicación rápida.
+     *
+     * @return Ubicación cacheada o rápida, o null si no se pudo obtener.
+     */
+    private suspend fun obtenerUbicacionCacheada(): Location? {
+        val cacheHit = UbicacionUtil.obtenerUbicacionConCache(
+            ubicacionCache,
+            ubicacionCacheTiempo,
+            HorarioUtil.TIEMPO_CACHE_UBICACION_MS,
+        )
+        if (cacheHit != null) return cacheHit
+        val rapida = UbicacionUtil.obtenerUbicacionRapida(proveedorUbicacion)
+        if (rapida != null) {
+            ubicacionCache = rapida
+            ubicacionCacheTiempo = System.currentTimeMillis()
+        }
+        return rapida
+    }
+
+    /**
+     * Obtiene la ubicación actual del dispositivo intentando múltiples fuentes:
+     * caché, proveedor Fused y ubicación del sistema.
+     *
+     * @return Ubicación más precisa disponible, o null si ninguna fuente responde.
+     */
+    private suspend fun obtenerUbicacionActual(): Location? {
+        val ahora = System.currentTimeMillis()
+        val cacheHit = UbicacionUtil.obtenerUbicacionConCache(
+            ubicacionCache,
+            ubicacionCacheTiempo,
+            HorarioUtil.TIEMPO_CACHE_UBICACION_MS,
+        )
+        if (cacheHit != null) return cacheHit
+
+        val ubicacionFused = UbicacionUtil.obtenerUbicacionFused(proveedorUbicacion)
+        if (ubicacionFused != null) {
+            ubicacionCache = ubicacionFused
+            ubicacionCacheTiempo = ahora
+            return ubicacionFused
+        }
+
+        val ubicacionSistema = UbicacionUtil.obtenerUbicacionSistema(this)
+        if (ubicacionSistema != null) {
+            ubicacionCache = ubicacionSistema
+            ubicacionCacheTiempo = ahora
+            return ubicacionSistema
+        }
+
+        return null
+    }
+
+    /**
+     * Recalcula las distancias de todos los almacenes respecto a la ubicación actual
+     * del comprador y actualiza la lista mostrada.
+     *
+     * @param ubicacionComprador Ubicación actual del comprador, o null si no está disponible.
+     */
     private fun actualizarDistanciasAlmacenes(ubicacionComprador: Location?) {
         val actualizados = almacenesBase.map { almacen ->
             val distancia = if (
@@ -352,7 +436,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
                 almacen.latitud != null &&
                 almacen.longitud != null
             ) {
-                calcularDistancia(
+                UbicacionUtil.calcularDistancia(
                     ubicacionComprador.latitude,
                     ubicacionComprador.longitude,
                     almacen.latitud,
@@ -369,17 +453,12 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         aplicarFiltros()
     }
 
+    /**
+     * Aplica el filtro de categoría seleccionado y ordena los almacenes por estado
+     * de apertura (abiertos primero) y luego por distancia ascendente.
+     */
     private fun aplicarFiltros() {
-        val max = distanciaMaximaSeleccionada.toDouble()
-        val filtrarDistancia = distanciaMaximaSeleccionada < DISTANCIA_MAXIMA_METROS
         val filtrados = almacenesBase.filter { almacen ->
-            val distancia = almacen.distanciaMetros
-            if (distancia == null) {
-                !filtrarDistancia
-            } else {
-                distancia <= max
-            }
-        }.filter { almacen ->
             categoriaSeleccionada == "Todas" || almacen.categoriaAlmacen == categoriaSeleccionada
         }
 
@@ -393,214 +472,12 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         adaptador.notifyDataSetChanged()
     }
 
-    private fun actualizarEtiquetaDistancia() {
-        val textoMax = formatearDistanciaFiltro(distanciaMaximaSeleccionada)
-        textoDistanciaFiltro.text = "Distancia: hasta $textoMax"
-    }
-
-    private fun estaAlmacenAbiertoAhora(
-        mananaInicioTexto: String,
-        mananaFinTexto: String,
-        tardeInicioTexto: String,
-        tardeFinTexto: String,
-    ): Boolean {
-        val calendario = Calendar.getInstance()
-        val minutosActuales = calendario.get(Calendar.HOUR_OF_DAY) * 60 + calendario.get(Calendar.MINUTE)
-        val mananaInicio = convertirHoraAMinutos(mananaInicioTexto) ?: HORARIO_MANANA_INICIO
-        val mananaFin = convertirHoraAMinutos(mananaFinTexto) ?: HORARIO_MANANA_FIN
-        val tardeInicio = convertirHoraAMinutos(tardeInicioTexto) ?: HORARIO_TARDE_INICIO
-        val tardeFin = convertirHoraAMinutos(tardeFinTexto) ?: HORARIO_TARDE_FIN
-        val enTurnoManana = minutosActuales in mananaInicio until mananaFin
-        val enTurnoTarde = minutosActuales in tardeInicio until tardeFin
-        return enTurnoManana || enTurnoTarde
-    }
-
-    private fun convertirHoraAMinutos(hora: String): Int? {
-        val partes = hora.split(":")
-        if (partes.size != 2) {
-            return null
-        }
-        val horas = partes[0].toIntOrNull() ?: return null
-        val minutos = partes[1].toIntOrNull() ?: return null
-        if (horas !in 0..23 || minutos !in 0..59) {
-            return null
-        }
-        return horas * 60 + minutos
-    }
-
-    private fun formatearDistanciaFiltro(metros: Float): String {
-        return if (metros >= 1000f) {
-            val km = metros / 1000f
-            "${String.format(Locale.forLanguageTag("es-CL"), "%.1f", km)} km"
-        } else {
-            "${metros.toInt()} m"
-        }
-    }
-
-    private suspend fun obtenerUbicacionActual(): Location? {
-        val ahora = System.currentTimeMillis()
-        val cache = ubicacionCache
-        if (cache != null && ahora - ubicacionCacheTiempo < TIEMPO_CACHE_UBICACION_MS) {
-            return cache
-        }
-
-        val ubicacionFused = obtenerUbicacionFused()
-        if (ubicacionFused != null) {
-            ubicacionCache = ubicacionFused
-            ubicacionCacheTiempo = ahora
-            return ubicacionFused
-        }
-
-        val ubicacionSistema = obtenerUbicacionSistema()
-        if (ubicacionSistema != null) {
-            ubicacionCache = ubicacionSistema
-            ubicacionCacheTiempo = ahora
-            return ubicacionSistema
-        }
-
-        return null
-    }
-
-    private suspend fun obtenerUbicacionFused(): Location? {
-        return try {
-            val ubicacionActual = proveedorUbicacion
-                .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
-                .await()
-
-            if (ubicacionActual != null) {
-                return ubicacionActual
-            }
-
-            val ultimaUbicacion = proveedorUbicacion.lastLocation.await()
-            if (ultimaUbicacion != null) {
-                return ultimaUbicacion
-            }
-
-            solicitarUbicacionUnica()
-        } catch (excepcion: Exception) {
-            null
-        }
-    }
-
-    private suspend fun obtenerUbicacionSistema(): Location? {
-        val manejador = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        val proveedores = listOf(
-            LocationManager.GPS_PROVIDER,
-            LocationManager.NETWORK_PROVIDER,
-            LocationManager.PASSIVE_PROVIDER,
-        )
-        val ultimaUbicacion = proveedores
-            .filter { proveedor -> manejador.isProviderEnabled(proveedor) }
-            .mapNotNull { proveedor -> manejador.getLastKnownLocation(proveedor) }
-            .maxByOrNull { ubicacion -> ubicacion.time }
-
-        if (ultimaUbicacion != null) {
-            return ultimaUbicacion
-        }
-
-        val proveedorActivo = proveedores.firstOrNull { proveedor -> manejador.isProviderEnabled(proveedor) }
-            ?: return null
-
-        return solicitarUbicacionUnicaSistema(manejador, proveedorActivo)
-    }
-
-    private suspend fun solicitarUbicacionUnica(): Location? {
-        return suspendCancellableCoroutine { continuacion ->
-            val solicitud = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L)
-                .setMinUpdateIntervalMillis(500L)
-                .setMaxUpdates(1)
-                .build()
-
-            val callback = object : LocationCallback() {
-                override fun onLocationResult(resultado: LocationResult) {
-                    proveedorUbicacion.removeLocationUpdates(this)
-                    if (!continuacion.isCompleted) {
-                        continuacion.resume(resultado.lastLocation)
-                    }
-                }
-            }
-
-            proveedorUbicacion.requestLocationUpdates(
-                solicitud,
-                callback,
-                Looper.getMainLooper(),
-            ).addOnFailureListener {
-                proveedorUbicacion.removeLocationUpdates(callback)
-                if (!continuacion.isCompleted) {
-                    continuacion.resume(null)
-                }
-            }
-
-            continuacion.invokeOnCancellation {
-                proveedorUbicacion.removeLocationUpdates(callback)
-            }
-        }
-    }
-
-    private suspend fun solicitarUbicacionUnicaSistema(
-        manejador: LocationManager,
-        proveedor: String,
-    ): Location? {
-        return suspendCancellableCoroutine { continuacion ->
-            val listener = object : LocationListener {
-                override fun onLocationChanged(ubicacion: Location) {
-                    manejador.removeUpdates(this)
-                    if (!continuacion.isCompleted) {
-                        continuacion.resume(ubicacion)
-                    }
-                }
-
-                override fun onProviderDisabled(provider: String) {
-                    manejador.removeUpdates(this)
-                    if (!continuacion.isCompleted) {
-                        continuacion.resume(null)
-                    }
-                }
-
-                override fun onProviderEnabled(provider: String) = Unit
-
-                @Deprecated("Deprecated in Java")
-                override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
-            }
-
-            try {
-                manejador.requestLocationUpdates(
-                    proveedor,
-                    0L,
-                    0f,
-                    listener,
-                    Looper.getMainLooper(),
-                )
-            } catch (excepcion: Exception) {
-                if (!continuacion.isCompleted) {
-                    continuacion.resume(null)
-                }
-                return@suspendCancellableCoroutine
-            }
-
-            continuacion.invokeOnCancellation {
-                manejador.removeUpdates(listener)
-            }
-        }
-    }
-
-    private fun calcularDistancia(
-        latitudOrigen: Double,
-        longitudOrigen: Double,
-        latitudDestino: Double,
-        longitudDestino: Double,
-    ): Double {
-        val resultados = FloatArray(1)
-        Location.distanceBetween(
-            latitudOrigen,
-            longitudOrigen,
-            latitudDestino,
-            longitudDestino,
-            resultados,
-        )
-        return resultados.first().toDouble()
-    }
-
+    /**
+     * Abre la aplicación de Google Maps para navegar hacia la ubicación del almacén.
+     * Si Maps no está instalado, abre la versión web en el navegador.
+     *
+     * @param almacen Almacén destino de la navegación.
+     */
     private fun abrirNavegacion(almacen: AlmacenCercano) {
         val latitud = almacen.latitud
         val longitud = almacen.longitud
@@ -625,6 +502,12 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Abre la actividad de stock del almacén seleccionado, pasando todos los datos
+     * necesarios mediante extras del Intent.
+     *
+     * @param almacen Almacén cuyo stock se desea consultar.
+     */
     private fun abrirStockAlmacen(almacen: AlmacenCercano) {
         val intent = Intent(this, StockAlmacenActivity::class.java).apply {
             putExtra(StockAlmacenActivity.EXTRA_VENDEDOR_ID, almacen.vendedorId)
@@ -632,28 +515,36 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
             putExtra(StockAlmacenActivity.EXTRA_HORARIO_ATENCION, almacen.horarioAtencion)
             putExtra(StockAlmacenActivity.EXTRA_LATITUD_ALMACEN, almacen.latitud)
             putExtra(StockAlmacenActivity.EXTRA_LONGITUD_ALMACEN, almacen.longitud)
+            putExtra(StockAlmacenActivity.EXTRA_METODOS_PAGO, almacen.metodosPago.toTypedArray())
+            putExtra(StockAlmacenActivity.EXTRA_TIENE_CAJA_VECINA, almacen.tieneCajaVecina)
         }
         startActivity(intent)
     }
 
+    /**
+     * Muestra un mensaje breve en pantalla mediante un Toast.
+     *
+     * @param mensaje Texto a mostrar al usuario.
+     */
     private fun mostrarMensaje(mensaje: String) {
         Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show()
     }
 
-    private fun tienePermisoUbicacion(): Boolean {
-        val permisoFino = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-        ) == PackageManager.PERMISSION_GRANTED
-        val permisoAproximado = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-        ) == PackageManager.PERMISSION_GRANTED
-        return permisoFino || permisoAproximado
-    }
-
-    data class OpcionDistancia(val etiqueta: String, val metros: Float)
-
+    /**
+     * Modelo de datos que representa un almacén cercano con toda su información
+     * relevante para la visualización en la lista.
+     *
+     * @property vendedorId Identificador único del vendedor en Firestore.
+     * @property nombreAlmacen Nombre comercial del almacén.
+     * @property horarioAtencion Texto descriptivo del horario de atención.
+     * @property abiertoAhora Indica si el almacén está abierto en este momento.
+     * @property distanciaMetros Distancia en metros desde el comprador, o null si no se pudo calcular.
+     * @property categoriaAlmacen Categoría comercial del almacén.
+     * @property latitud Coordenada de latitud del almacén, o null si no está disponible.
+     * @property longitud Coordenada de longitud del almacén, o null si no está disponible.
+     * @property metodosPago Lista de métodos de pago aceptados por el almacén.
+     * @property tieneCajaVecina Indica si el almacén acepta Caja Vecina.
+     */
     data class AlmacenCercano(
         val vendedorId: String,
         val nombreAlmacen: String,
@@ -663,20 +554,38 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         val categoriaAlmacen: String,
         val latitud: Double?,
         val longitud: Double?,
+        val metodosPago: List<String> = emptyList(),
+        val tieneCajaVecina: Boolean = false,
     )
 
+    /**
+     * Adaptador del RecyclerView que muestra la lista de almacenes cercanos,
+     * enlazando cada elemento con su vista correspondiente.
+     *
+     * @property almacenes Lista de almacenes a mostrar.
+     * @property onVerStock Acción a ejecutar cuando el usuario pulsa «Ver stock».
+     * @property onLlegar Acción a ejecutar cuando el usuario pulsa «Llegar».
+     */
     private class AdaptadorAlmacenes(
         private val almacenes: List<AlmacenCercano>,
         private val onVerStock: (AlmacenCercano) -> Unit,
         private val onLlegar: (AlmacenCercano) -> Unit,
     ) : RecyclerView.Adapter<AdaptadorAlmacenes.VistaAlmacen>() {
 
+        /**
+         * ViewHolder que contiene las referencias a las vistas de cada elemento
+         * de la lista de almacenes cercanos.
+         *
+         * @param itemView Vista raíz del elemento de la lista.
+         */
         class VistaAlmacen(itemView: android.view.View) : RecyclerView.ViewHolder(itemView) {
             val textoNombre: TextView = itemView.findViewById(R.id.texto_nombre_almacen)
             val textoEstado: TextView = itemView.findViewById(R.id.texto_estado_almacen)
             val textoDistancia: TextView = itemView.findViewById(R.id.texto_distancia_almacen)
             val textoCategoria: TextView = itemView.findViewById(R.id.texto_categoria_almacen)
             val textoHorario: TextView = itemView.findViewById(R.id.texto_horario_almacen)
+            val textoPagos: TextView = itemView.findViewById(R.id.texto_pagos_almacen)
+            val textoCajaVecina: TextView = itemView.findViewById(R.id.texto_caja_vecina_almacen)
             val botonStock: MaterialButton = itemView.findViewById(R.id.boton_ver_stock_almacen)
             val botonLlegar: MaterialButton = itemView.findViewById(R.id.boton_llegar_almacen)
         }
@@ -702,12 +611,33 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
             holder.textoDistancia.text = "Distancia: ${formatearDistancia(almacen.distanciaMetros)}"
             holder.textoCategoria.text = "Categoría: ${almacen.categoriaAlmacen}"
             holder.textoHorario.text = "Horario: ${almacen.horarioAtencion}"
+            holder.textoPagos.text = if (almacen.metodosPago.isEmpty()) {
+                "💳 Pagos: No especificado"
+            } else {
+                "💳 Pagos: ${almacen.metodosPago.joinToString(", ")}"
+            }
+            holder.textoCajaVecina.text = if (almacen.tieneCajaVecina) {
+                "🏪 Caja Vecina: ✓ Acepta"
+            } else {
+                "🏪 Caja Vecina: ✗ No acepta"
+            }
+            val colorCaja = if (almacen.tieneCajaVecina) R.color.stock_verde else R.color.stock_rojo
+            holder.textoCajaVecina.setTextColor(
+                ContextCompat.getColor(holder.itemView.context, colorCaja),
+            )
             holder.botonStock.setOnClickListener { onVerStock(almacen) }
             holder.botonLlegar.setOnClickListener { onLlegar(almacen) }
         }
 
         override fun getItemCount(): Int = almacenes.size
 
+        /**
+         * Formatea la distancia en metros a una cadena legible, convirtiéndola
+         * a kilómetros si supera los 1000 metros.
+         *
+         * @param distanciaMetros Distancia en metros, o null si no está disponible.
+         * @return Cadena formateada con la distancia o «Sin ubicación».
+         */
         private fun formatearDistancia(distanciaMetros: Double?): String {
             if (distanciaMetros == null) {
                 return "Sin ubicación"
@@ -719,19 +649,5 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
                 "${distanciaMetros.toInt()} m"
             }
         }
-    }
-
-    private companion object {
-        private const val DISTANCIA_MAXIMA_METROS = 100000f
-        private const val HORARIO_MANANA_INICIO_TEXTO = "09:00"
-        private const val HORARIO_MANANA_FIN_TEXTO = "13:00"
-        private const val HORARIO_TARDE_INICIO_TEXTO = "15:00"
-        private const val HORARIO_TARDE_FIN_TEXTO = "19:00"
-        private const val HORARIO_MANANA_INICIO = 9 * 60
-        private const val HORARIO_MANANA_FIN = 13 * 60
-        private const val HORARIO_TARDE_INICIO = 15 * 60
-        private const val HORARIO_TARDE_FIN = 19 * 60
-        private const val TIEMPO_CACHE_UBICACION_MS = 60_000L
-        private const val TIEMPO_CACHE_ALMACENES_MS = 60_000L
     }
 }

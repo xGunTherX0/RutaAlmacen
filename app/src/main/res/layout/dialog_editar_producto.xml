@@ -2,32 +2,32 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@color/fondo_app">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/padding_card">
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
             android:hint="Nombre del producto">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/campo_nombre_producto_editar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="17sp"
                 android:inputType="textCapWords" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/separador_card"
             android:text="Categoría"
             android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
             android:textStyle="bold" />
@@ -36,27 +36,26 @@
             android:id="@+id/spinner_categoria_editar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="@dimen/espacio_xs" />
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+            android:layout_marginTop="@dimen/separador_card"
             android:hint="Precio">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/campo_precio_producto_editar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="17sp"
                 android:inputType="numberDecimal" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/separador_card"
             android:text="Tipo de precio"
             android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
             android:textStyle="bold" />
@@ -65,20 +64,19 @@
             android:id="@+id/spinner_unidad_precio_editar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="@dimen/espacio_xs" />
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+            android:layout_marginTop="@dimen/separador_card"
             android:hint="Descripción (opcional)">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/campo_descripcion_producto_editar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="17sp"
                 android:inputType="textCapSentences|textMultiLine"
                 android:maxLines="3"
                 android:minLines="2" />

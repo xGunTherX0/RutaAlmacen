@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/nav_productos_comprador"
-        android:icon="@android:drawable/ic_menu_search"
-        android:title="Productos" />
-    <item
         android:id="@+id/nav_almacenes_comprador"
         android:icon="@android:drawable/ic_menu_mylocation"
         android:title="Almacenes" />
+    <item
+        android:id="@+id/nav_productos_comprador"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="Productos" />
 </menu>

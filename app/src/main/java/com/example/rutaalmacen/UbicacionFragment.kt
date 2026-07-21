@@ -21,15 +21,34 @@ import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+/**
+ * Fragmento que gestiona la actualización de la ubicación geográfica del almacén.
+ *
+ * Permite al vendedor registrar su posición actual mediante el proveedor de ubicación
+ * fusionado de Google Play Services y almacenarla en Firestore. Además, sincroniza
+ * la ubicación con los documentos del inventario público para que los compradores
+ * puedan estimar la distancia al almacén.
+ *
+ * Requiere el permiso de ubicación precisa ([Manifest.permission.ACCESS_FINE_LOCATION])
+ * y que el GPS o el proveedor de red estén activos.
+ */
 class UbicacionFragment : Fragment(R.layout.fragment_ubicacion) {
 
+    /** Instancia de Firebase Authentication obtenida de forma perezosa. */
     private val autenticacion: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+    /** Instancia de Firestore obtenida de forma perezosa para lecturas y escrituras remotas. */
     private val baseDatos: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
+    /** Cliente de ubicación fusionada de Google Play Services para obtener la posición actual. */
     private val proveedorUbicacion: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(requireContext())
     }
-    private val coleccionInventarioPublico = "InventarioPublico"
 
+    /**
+     * Lanzador de solicitud de permiso de ubicación precisa.
+     *
+     * Si el permiso es concedido, inicia la actualización de ubicación del almacén.
+     * En caso contrario, muestra un mensaje informativo al usuario.
+     */
     private val solicitudPermisoUbicacion = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { concedido ->
@@ -40,6 +59,12 @@ class UbicacionFragment : Fragment(R.layout.fragment_ubicacion) {
         }
     }
 
+    /**
+     * Inicializa las vistas del fragmento y configura el botón de actualización de ubicación.
+     *
+     * @param view Vista raíz inflada del fragmento.
+     * @param savedInstanceState Estado guardado previamente, o `null` si es un inicio nuevo.
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -47,6 +72,12 @@ class UbicacionFragment : Fragment(R.layout.fragment_ubicacion) {
         botonActualizarUbicacion.setOnClickListener { iniciarActualizacionUbicacion() }
     }
 
+    /**
+     * Inicia el proceso de actualización de ubicación verificando el permiso correspondiente.
+     *
+     * Si el permiso de ubicación precisa ya fue concedido, obtiene la posición directamente.
+     * De lo contrario, lanza la solicitud de permiso al usuario.
+     */
     private fun iniciarActualizacionUbicacion() {
         val permisoConcedido = ContextCompat.checkSelfPermission(
             requireContext(),
@@ -60,6 +91,17 @@ class UbicacionFragment : Fragment(R.layout.fragment_ubicacion) {
         }
     }
 
+    /**
+     * Obtiene la ubicación actual del dispositivo con alta precisión y la almacena en Firestore.
+     *
+     * Verifica que el permiso haya sido concedido y que el GPS esté activo antes de solicitar
+     * la ubicación. Tras obtener las coordenadas, actualiza los campos `latitud` y `longitud`
+     * del documento del usuario en Firestore. Posteriormente, intenta sincronizar la ubicación
+     * con los documentos del inventario público.
+     *
+     * @throws Exception Si la obtención de ubicación o la escritura en Firestore falla;
+     *   se muestra un mensaje de error al usuario.
+     */
     private fun actualizarUbicacionDelAlmacen() {
         val permisoConcedido = ContextCompat.checkSelfPermission(
             requireContext(),
@@ -98,13 +140,14 @@ class UbicacionFragment : Fragment(R.layout.fragment_ubicacion) {
                     "longitud" to ubicacion.longitude,
                 )
 
-                baseDatos.collection("Usuarios")
+                baseDatos.collection(Constantes.COLECCION_USUARIOS)
                     .document(usuario.uid)
                     .set(datos, SetOptions.merge())
                     .await()
 
                 mostrarMensaje("Ubicación del almacén actualizada")
 
+                // Sincroniza la ubicación con el inventario público; si falla, no bloquea el flujo principal
                 try {
                     actualizarInventarioPublico(usuario.uid, datos)
                 } catch (excepcion: Exception) {
@@ -116,18 +159,38 @@ class UbicacionFragment : Fragment(R.layout.fragment_ubicacion) {
         }
     }
 
+    /**
+     * Verifica si al menos un proveedor de ubicación (GPS o red) está habilitado en el dispositivo.
+     *
+     * @return `true` si el GPS o el proveedor de red están activos; `false` en caso contrario.
+     */
     private fun gpsActivo(): Boolean {
         val manejador = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return manejador.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
             manejador.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
+    /**
+     * Muestra un mensaje breve al usuario mediante un [Toast].
+     *
+     * @param mensaje Texto a mostrar.
+     */
     private fun mostrarMensaje(mensaje: String) {
         Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
     }
 
+    /**
+     * Sincroniza la ubicación del almacén con todos los documentos del inventario público del vendedor.
+     *
+     * Busca los documentos asociados al vendedor en la colección de inventario público y actualiza
+     * los campos de ubicación mediante una operación de combinación ([SetOptions.merge]).
+     *
+     * @param uid Identificador único del usuario autenticado.
+     * @param datos Mapa con las claves `latitud` y `longitud` a actualizar.
+     * @throws Exception Si la consulta o la escritura por lotes en Firestore falla.
+     */
     private suspend fun actualizarInventarioPublico(uid: String, datos: Map<String, Any>) {
-        val resultado = baseDatos.collection(coleccionInventarioPublico)
+        val resultado = baseDatos.collection(Constantes.COLECCION_INVENTARIO_PUBLICO)
             .whereEqualTo("vendedorId", uid)
             .get()
             .await()

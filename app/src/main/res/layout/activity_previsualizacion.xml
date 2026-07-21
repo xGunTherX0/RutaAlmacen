@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/contenedor_previsualizacion"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/fondo_app">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar_previsualizacion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel"
+        app:title="Revisar productos" />
+
+    <TextView
+        android:id="@+id/texto_resumen_productos"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_sm"
+        android:paddingHorizontal="@dimen/margen_pantalla"
+        android:text="Productos detectados: 0"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_previsualizacion" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_productos_escaneados"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/separador_card"
+        android:clipToPadding="false"
+        android:paddingHorizontal="@dimen/separador_card"
+        android:paddingBottom="@dimen/espacio_lg"
+        app:layout_constraintBottom_toTopOf="@id/boton_confirmar_ocr"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/texto_resumen_productos"
+        tools:listitem="@layout/item_producto_escaneado" />
+
+    <TextView
+        android:id="@+id/texto_sin_productos_ocr"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="@dimen/espacio_3xl"
+        android:text="No se detectaron productos. Volvé a escanear."
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/boton_confirmar_ocr"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/texto_resumen_productos" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/boton_reintentar_camara"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/espacio_lg"
+        android:layout_marginBottom="@dimen/espacio_sm"
+        app:icon="@android:drawable/ic_menu_camera"
+        android:text="Reintentar cámara"
+        app:layout_constraintBottom_toTopOf="@id/boton_confirmar_ocr"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/boton_confirmar_ocr"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margen_pantalla"
+        android:layout_marginVertical="@dimen/espacio_lg"
+        app:icon="@android:drawable/ic_menu_save"
+        android:text="Confirmar y Guardar Inventario"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

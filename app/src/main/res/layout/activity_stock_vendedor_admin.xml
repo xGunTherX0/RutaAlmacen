@@ -5,51 +5,65 @@
     android:id="@+id/contenedor_stock_admin"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
+    android:background="@color/fondo_app"
+    android:padding="@dimen/margen_pantalla"
     tools:context=".StockVendedorAdminActivity">
 
-    <TextView
-        android:id="@+id/texto_titulo_stock_admin"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/contenedor_encabezado_stock_admin"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Stock del vendedor"
-        android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-        android:textStyle="bold"
+        app:cardBackgroundColor="@color/fondo_card"
+        app:cardCornerRadius="@dimen/radio_card"
+        app:cardElevation="@dimen/elevacion_card"
+        app:cardUseCompatPadding="true"
+        app:strokeWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/texto_detalle_stock_admin"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:text="Vendedor"
-        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/texto_titulo_stock_admin" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/padding_card">
 
-    <TextView
-        android:id="@+id/texto_nombre_almacen_admin"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Almacén"
-        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/texto_detalle_stock_admin" />
+            <TextView
+                android:id="@+id/texto_titulo_stock_admin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Stock del vendedor"
+                android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge" />
+
+            <TextView
+                android:id="@+id/texto_detalle_stock_admin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_sm"
+                android:text="Vendedor"
+                android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+
+            <TextView
+                android:id="@+id/texto_nombre_almacen_admin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_xs"
+                android:text="Almacén"
+                android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/contenedor_busqueda_stock_admin"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/espacio_lg"
         android:hint="Buscar producto"
+        app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/texto_nombre_almacen_admin">
+        app:layout_constraintTop_toBottomOf="@id/contenedor_encabezado_stock_admin">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/campo_busqueda_stock_admin"
@@ -60,11 +74,13 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/contenedor_filtro_categoria_admin"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/espacio_md"
         android:hint="Filtrar por categoría"
         app:endIconMode="dropdown_menu"
+        app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/contenedor_busqueda_stock_admin">
@@ -80,9 +96,10 @@
         android:id="@+id/texto_sin_stock_admin"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/espacio_lg"
+        android:gravity="center"
         android:text="No hay productos cargados."
-        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -92,9 +109,9 @@
         android:id="@+id/recycler_stock_admin"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/espacio_md"
         android:clipToPadding="false"
-        android:paddingBottom="16dp"
+        android:paddingBottom="@dimen/espacio_lg"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

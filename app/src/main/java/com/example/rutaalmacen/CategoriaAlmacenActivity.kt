@@ -16,11 +16,15 @@ import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+/**
+ * Actividad que permite al vendedor seleccionar la categoría comercial de su almacén
+ * (por ejemplo, Verdulería, Panadería, Botillería). La categoría se guarda en Firestore
+ * y se propaga al inventario público.
+ */
 class CategoriaAlmacenActivity : AppCompatActivity() {
 
     private val autenticacion: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     private val baseDatos: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
-    private val coleccionInventarioPublico = "InventarioPublico"
 
     private val categorias = listOf(
         "Almacén",
@@ -34,6 +38,12 @@ class CategoriaAlmacenActivity : AppCompatActivity() {
         "Otro",
     )
 
+    /**
+     * Ciclo de vida: inicializa la interfaz, configura el selector de categorías
+     * y carga la categoría actual del almacén desde Firestore.
+     *
+     * @param savedInstanceState Estado guardado de la instancia anterior, o null si es nueva.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -61,6 +71,12 @@ class CategoriaAlmacenActivity : AppCompatActivity() {
         lifecycleScope.launch { cargarCategoria(campoCategoria) }
     }
 
+    /**
+     * Configura el campo de texto con autocompletado para mostrar las categorías
+     * disponibles y permitir la selección de una de ellas.
+     *
+     * @param campoCategoria Campo de texto donde se muestra el selector de categorías.
+     */
     private fun configurarCategorias(campoCategoria: AutoCompleteTextView) {
         val adaptadorCategorias = ArrayAdapter(
             this,
@@ -71,6 +87,12 @@ class CategoriaAlmacenActivity : AppCompatActivity() {
         campoCategoria.setOnItemClickListener { _, _, _, _ -> }
     }
 
+    /**
+     * Valida y guarda la categoría seleccionada en Firestore. Verifica que la categoría
+     * sea una de las opciones válidas. Propaga los cambios al inventario público.
+     *
+     * @param categoriaTexto Texto de la categoría ingresada o seleccionada por el usuario.
+     */
     private fun guardarCategoria(categoriaTexto: String) {
         val categoria = categoriaTexto.trim()
         if (categoria.isBlank()) {
@@ -91,7 +113,7 @@ class CategoriaAlmacenActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val datos = mapOf("categoriaAlmacen" to categoria)
-                baseDatos.collection("Usuarios")
+                baseDatos.collection(Constantes.COLECCION_USUARIOS)
                     .document(usuario.uid)
                     .set(datos, SetOptions.merge())
                     .await()
@@ -109,10 +131,16 @@ class CategoriaAlmacenActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Carga la categoría actual del almacén desde Firestore y la preselecciona
+     * en el campo de texto con autocompletado.
+     *
+     * @param campoCategoria Campo de texto donde se mostrará la categoría cargada.
+     */
     private suspend fun cargarCategoria(campoCategoria: AutoCompleteTextView) {
         val usuario = autenticacion.currentUser ?: return
         try {
-            val documento = baseDatos.collection("Usuarios")
+            val documento = baseDatos.collection(Constantes.COLECCION_USUARIOS)
                 .document(usuario.uid)
                 .get()
                 .await()
@@ -125,8 +153,15 @@ class CategoriaAlmacenActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Propaga los datos de categoría a todos los documentos del inventario público
+     * del vendedor, utilizando una escritura por lotes de Firestore.
+     *
+     * @param uid Identificador único del vendedor.
+     * @param datos Mapa de datos a actualizar en cada documento.
+     */
     private suspend fun actualizarInventarioPublico(uid: String, datos: Map<String, Any>) {
-        val resultado = baseDatos.collection(coleccionInventarioPublico)
+        val resultado = baseDatos.collection(Constantes.COLECCION_INVENTARIO_PUBLICO)
             .whereEqualTo("vendedorId", uid)
             .get()
             .await()
@@ -140,6 +175,11 @@ class CategoriaAlmacenActivity : AppCompatActivity() {
         lote.commit().await()
     }
 
+    /**
+     * Muestra un mensaje breve en pantalla mediante un Toast.
+     *
+     * @param mensaje Texto a mostrar al usuario.
+     */
     private fun mostrarMensaje(mensaje: String) {
         Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show()
     }

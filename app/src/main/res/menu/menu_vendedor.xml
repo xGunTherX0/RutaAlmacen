@@ -5,10 +5,6 @@
         android:icon="@android:drawable/ic_menu_myplaces"
         android:title="Almacén" />
     <item
-        android:id="@+id/nav_ubicacion"
-        android:icon="@android:drawable/ic_menu_mylocation"
-        android:title="Ubicación" />
-    <item
         android:id="@+id/nav_productos"
         android:icon="@android:drawable/ic_menu_agenda"
         android:title="Productos" />
@@ -20,4 +16,8 @@
         android:id="@+id/nav_alertas"
         android:icon="@android:drawable/ic_dialog_info"
         android:title="Alertas IA" />
+    <item
+        android:id="@+id/nav_inicio"
+        android:icon="@drawable/ic_home"
+        android:title="Inicio" />
 </menu>

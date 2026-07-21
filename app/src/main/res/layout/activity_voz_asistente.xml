@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/fondo_app"
+    android:orientation="vertical"
+    tools:context=".entrada.voz.VozAsistenteActivity">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar_voz"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        app:navigationIcon="@drawable/ic_volver"
+        app:navigationIconTint="@color/white"
+        app:title="Carga por Voz"
+        app:titleTextColor="@color/white" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margen_pantalla"
+        android:layout_marginTop="@dimen/separador_card"
+        android:text="Dicta tus productos: nombre y precio"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margen_pantalla"
+        android:layout_marginTop="@dimen/espacio_xs"
+        android:text='Ej: "Mantequilla milka 3500, dos cajas de leche soprole 1800 cada una, y pan 1200"'
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodySmall"
+        android:textColor="@color/texto_secundario"
+        android:textStyle="italic" />
+
+    <TextView
+        android:id="@+id/texto_escuchado"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margen_pantalla"
+        android:layout_marginTop="@dimen/separador_card"
+        android:background="@color/fondo_card_alt"
+        android:padding="@dimen/separador_card"
+        android:text="Toca el 🎤 para dictar, o escribe abajo"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margen_pantalla"
+        android:layout_marginTop="@dimen/espacio_sm"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/boton_microfono"
+            style="@style/Widget.Material3.Button.IconButton.Filled"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:text="🎤"
+            android:textSize="26sp"
+            app:cornerRadius="32dp" />
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progreso_voz"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="@dimen/espacio_sm"
+            android:indeterminate="true"
+            android:visibility="gone" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/espacio_sm"
+            android:layout_weight="1"
+            android:hint="O escribe aqui">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/campo_texto_manual"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionDone"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/boton_agregar_texto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/espacio_xs"
+            android:text="Agregar" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/panel_resultado"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/espacio_sm"
+        android:layout_weight="1"
+        android:background="@color/colorPrimaryLight"
+        android:orientation="vertical"
+        android:padding="@dimen/separador_card"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/texto_contador_productos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0 producto(s) detectado(s)"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium"
+            android:textColor="@color/texto_en_pastel"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Edita nombre y precio. Toca ▶ para expandir. Toca 🗑 para eliminar."
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodySmall"
+            android:textColor="@color/texto_en_pastel" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_productos_voz"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/espacio_sm"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/espacio_sm" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_sm"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/boton_cancelar"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancelar" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/boton_guardar_todos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Guardar todos" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

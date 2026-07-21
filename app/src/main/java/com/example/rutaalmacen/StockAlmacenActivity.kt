@@ -22,13 +22,16 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import java.text.Normalizer
 import java.util.Locale
 
+/**
+ * Actividad que muestra el stock de productos de un almacén específico visto por el comprador.
+ * Permite buscar productos por nombre, filtrar por categoría y ver información de pagos
+ * y disponibilidad. También ofrece navegación al almacén mediante Google Maps.
+ */
 class StockAlmacenActivity : AppCompatActivity() {
 
     private val baseDatos: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
-    private val coleccionInventarioPublico = "InventarioPublico"
 
     private val productosBase: MutableList<ProductoAlmacen> = mutableListOf()
     private val productosFiltrados: MutableList<ProductoAlmacen> = mutableListOf()
@@ -50,6 +53,12 @@ class StockAlmacenActivity : AppCompatActivity() {
         "Higiene Personal",
     )
 
+    /**
+     * Ciclo de vida: inicializa la interfaz, configura el RecyclerView, los filtros
+     * de búsqueda y categoría, y carga los productos del almacén desde Firestore.
+     *
+     * @param savedInstanceState Estado guardado de la instancia anterior, o null si es nueva.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -89,6 +98,8 @@ class StockAlmacenActivity : AppCompatActivity() {
         } else {
             null
         }
+        val metodosPago = intent.getStringArrayExtra(EXTRA_METODOS_PAGO)?.toList().orEmpty()
+        val tieneCajaVecina = intent.getBooleanExtra(EXTRA_TIENE_CAJA_VECINA, false)
 
         val textoNombre = findViewById<android.widget.TextView>(R.id.texto_nombre_almacen)
         val textoHorario = findViewById<android.widget.TextView>(R.id.texto_horario_almacen)
@@ -99,6 +110,9 @@ class StockAlmacenActivity : AppCompatActivity() {
 
         textoNombre.text = nombreAlmacen
         textoHorario.text = "Horario: $horarioAtencion"
+
+        pintarInfoPagos(metodosPago, tieneCajaVecina)
+
         botonLlegar.setOnClickListener {
             abrirNavegacion(latitudAlmacen, longitudAlmacen, nombreAlmacen)
         }
@@ -119,8 +133,14 @@ class StockAlmacenActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch { cargarProductos(vendedorId) }
+        lifecycleScope.launch { cargarInfoPagos(vendedorId, metodosPago, tieneCajaVecina) }
     }
 
+    /**
+     * Configura el campo de texto con autocompletado para filtrar productos por categoría.
+     *
+     * @param campoCategoria Campo de texto donde se muestra el selector de categorías.
+     */
     private fun configurarCategoria(campoCategoria: AutoCompleteTextView) {
         val adaptadorCategorias = ArrayAdapter(
             this,
@@ -135,9 +155,16 @@ class StockAlmacenActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Carga los productos del inventario público del vendedor desde Firestore
+     * y actualiza la lista mostrada en el RecyclerView.
+     *
+     * @param vendedorId Identificador único del vendedor en Firestore.
+     * @throws Exception Si ocurre un error de red o de consulta a Firestore.
+     */
     private suspend fun cargarProductos(vendedorId: String) {
         try {
-            val documentos = baseDatos.collection(coleccionInventarioPublico)
+            val documentos = baseDatos.collection(Constantes.COLECCION_INVENTARIO_PUBLICO)
                 .whereEqualTo("vendedorId", vendedorId)
                 .get()
                 .await()
@@ -147,7 +174,7 @@ class StockAlmacenActivity : AppCompatActivity() {
                 val nombre = documento.getString("nombre").orEmpty()
                 val nombreNormalizado = documento.getString("nombreNormalizado")
                     ?.takeIf { it.isNotBlank() }
-                    ?: normalizarTexto(nombre)
+                    ?: FiltroContenido.normalizar(nombre)
                 val unidadPrecio = documento.getString("unidadPrecio").orEmpty().ifBlank { "unidad" }
                 ProductoAlmacen(
                     nombre = nombre,
@@ -170,8 +197,55 @@ class StockAlmacenActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Carga la información de métodos de pago y Caja Vecina directamente desde Firestore,
+     * utilizando valores de respaldo si la consulta falla.
+     *
+     * @param vendedorId Identificador único del vendedor en Firestore.
+     * @param fallback Lista de métodos de pago de respaldo.
+     * @param fallbackCaja Valor de respaldo para Caja Vecina.
+     */
+    private suspend fun cargarInfoPagos(vendedorId: String, fallback: List<String>, fallbackCaja: Boolean) {
+        try {
+            val snap = baseDatos.collection(Constantes.COLECCION_USUARIOS)
+                .document(vendedorId)
+                .get()
+                .await()
+            val metodos = (snap.get("metodosPago") as? List<String>).orEmpty()
+            val caja = snap.getBoolean("tieneCajaVecina") ?: false
+            pintarInfoPagos(metodos, caja)
+        } catch (_: Exception) {
+            pintarInfoPagos(fallback, fallbackCaja)
+        }
+    }
+
+    /**
+     * Actualiza las vistas de información de pagos y Caja Vecina en la interfaz.
+     *
+     * @param metodos Lista de métodos de pago aceptados por el almacén.
+     * @param caja Indica si el almacén acepta Caja Vecina.
+     */
+    private fun pintarInfoPagos(metodos: List<String>, caja: Boolean) {
+        val textoPagos = findViewById<android.widget.TextView>(R.id.texto_pagos_almacen_stock)
+        val textoCaja = findViewById<android.widget.TextView>(R.id.texto_caja_vecina_stock)
+        textoPagos.text = if (metodos.isEmpty()) "💳 Pagos: No especificado" else "💳 Pagos: ${metodos.joinToString(", ")}"
+        textoCaja.text = if (caja) "🏪 Caja Vecina: ✓ Acepta" else "🏪 Caja Vecina: ✗ No acepta"
+        textoCaja.setTextColor(
+            androidx.core.content.ContextCompat.getColor(
+                this,
+                if (caja) R.color.stock_verde else R.color.stock_rojo,
+            ),
+        )
+    }
+
+    /**
+     * Aplica los filtros de búsqueda por texto y categoría a la lista de productos,
+     * normalizando el texto para una comparación sin sensibilidad a mayúsculas ni acentos.
+     *
+     * @param consulta Texto de búsqueda ingresado por el usuario.
+     */
     private fun aplicarFiltros(consulta: String) {
-        val consultaNormalizada = normalizarTexto(consulta)
+        val consultaNormalizada = FiltroContenido.normalizar(consulta)
         val filtrados = productosBase.filter { producto ->
             val cumpleCategoria = categoriaSeleccionada == "Todas" || producto.categoria == categoriaSeleccionada
             val cumpleTexto = consultaNormalizada.isBlank() || producto.nombreNormalizado.startsWith(consultaNormalizada)
@@ -183,16 +257,23 @@ class StockAlmacenActivity : AppCompatActivity() {
         adaptador.notifyDataSetChanged()
     }
 
-    private fun normalizarTexto(texto: String): String {
-        val limpio = texto.trim().lowercase(Locale.getDefault())
-        val normalizado = Normalizer.normalize(limpio, Normalizer.Form.NFD)
-        return normalizado.replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
-    }
-
+    /**
+     * Muestra un mensaje breve en pantalla mediante un Toast.
+     *
+     * @param mensaje Texto a mostrar al usuario.
+     */
     private fun mostrarMensaje(mensaje: String) {
         Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show()
     }
 
+    /**
+     * Abre la aplicación de Google Maps para navegar hacia la ubicación del almacén.
+     * Si Maps no está instalado, abre la versión web en el navegador.
+     *
+     * @param latitud Coordenada de latitud del almacén, o null si no está disponible.
+     * @param longitud Coordenada de longitud del almacén, o null si no está disponible.
+     * @param nombreAlmacen Nombre del almacén a mostrar como etiqueta en el mapa.
+     */
     private fun abrirNavegacion(latitud: Double?, longitud: Double?, nombreAlmacen: String) {
         if (latitud == null || longitud == null) {
             mostrarMensaje("Ubicación del almacén no disponible")
@@ -215,6 +296,17 @@ class StockAlmacenActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Modelo de datos que representa un producto del stock de un almacén.
+     *
+     * @property nombre Nombre del producto.
+     * @property nombreNormalizado Nombre normalizado para búsquedas sin sensibilidad a mayúsculas ni acentos.
+     * @property categoria Categoría del producto.
+     * @property precio Precio del producto.
+     * @property unidadPrecio Unidad de venta del producto (unidad o kilo).
+     * @property descripcion Descripción del producto.
+     * @property disponible Indica si el producto está disponible.
+     */
     data class ProductoAlmacen(
         val nombre: String,
         val nombreNormalizado: String,
@@ -225,20 +317,37 @@ class StockAlmacenActivity : AppCompatActivity() {
         val disponible: Boolean,
     )
 
+    /**
+     * Constantes utilizadas para pasar datos entre actividades mediante extras del Intent.
+     */
     companion object {
         const val EXTRA_VENDEDOR_ID = "extra_vendedor_id"
         const val EXTRA_NOMBRE_ALMACEN = "extra_nombre_almacen"
         const val EXTRA_HORARIO_ATENCION = "extra_horario_atencion"
         const val EXTRA_LATITUD_ALMACEN = "extra_latitud_almacen"
         const val EXTRA_LONGITUD_ALMACEN = "extra_longitud_almacen"
+        const val EXTRA_METODOS_PAGO = "extra_metodos_pago"
+        const val EXTRA_TIENE_CAJA_VECINA = "extra_tiene_caja_vecina"
         private const val HORARIO_ATENCION_POR_DEFECTO = "09:00 - 13:00 / 16:00 - 22:00"
     }
 }
 
+/**
+ * Adaptador del RecyclerView que muestra la lista de productos del stock del almacén,
+ * enlazando cada producto con su vista correspondiente.
+ *
+ * @property productos Lista de productos a mostrar.
+ */
 private class AdaptadorStockAlmacen(
     private val productos: List<StockAlmacenActivity.ProductoAlmacen>,
 ) : RecyclerView.Adapter<AdaptadorStockAlmacen.VistaProducto>() {
 
+    /**
+     * ViewHolder que contiene las referencias a las vistas de cada elemento
+     * de la lista de productos del stock.
+     *
+     * @param itemView Vista raíz del elemento de la lista.
+     */
     class VistaProducto(itemView: android.view.View) : RecyclerView.ViewHolder(itemView) {
         val textoNombre: android.widget.TextView = itemView.findViewById(R.id.texto_nombre_producto)
         val chipCategoria: Chip = itemView.findViewById(R.id.chip_categoria_producto)
@@ -280,6 +389,12 @@ private class AdaptadorStockAlmacen(
 
     override fun getItemCount(): Int = productos.size
 
+    /**
+     * Convierte la unidad de precio a una etiqueta corta para mostrar en la interfaz.
+     *
+     * @param unidad Unidad de precio (unidad o kilo).
+     * @return Etiqueta corta: «kg» para kilo, «unidad» para cualquier otro valor.
+     */
     private fun etiquetaUnidadPrecio(unidad: String): String {
         return if (unidad == "kilo") "kg" else "unidad"
     }

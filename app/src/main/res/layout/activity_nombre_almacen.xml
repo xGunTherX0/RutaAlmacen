@@ -5,7 +5,8 @@
     android:id="@+id/contenedor_nombre_almacen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
+    android:background="@color/fondo_app"
+    android:padding="@dimen/margen_pantalla"
     tools:context=".NombreAlmacenActivity">
 
     <TextView
@@ -15,7 +16,6 @@
         android:gravity="center"
         android:text="Nombre del almacén"
         android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge"
-        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -24,7 +24,7 @@
         android:id="@+id/texto_descripcion_nombre_almacen"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="@dimen/espacio_sm"
         android:gravity="center"
         android:text="Actualiza el nombre que verán tus clientes."
         android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
@@ -34,9 +34,10 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/contenedor_campo_nombre_almacen"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/espacio_lg"
         android:hint="Nombre del almacén"
         app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
         app:layout_constraintEnd_toEndOf="parent"
@@ -47,7 +48,6 @@
             android:id="@+id/campo_nombre_almacen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="17sp"
             android:inputType="textCapWords" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -55,9 +55,8 @@
         android:id="@+id/boton_guardar_nombre_almacen"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/espacio_lg"
         android:text="Guardar nombre"
-        android:textSize="17sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/contenedor_campo_nombre_almacen" />

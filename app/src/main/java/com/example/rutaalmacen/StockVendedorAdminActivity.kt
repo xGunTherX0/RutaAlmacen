@@ -21,6 +21,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Locale
 
+/**
+ * Actividad de administración que permite al vendedor gestionar el stock de productos
+ * de su almacén. Ofrece búsqueda por texto, filtro por categoría, creación, edición
+ * y eliminación de productos. Los cambios se sincronizan con Firestore tanto en el
+ * inventario privado como en el público.
+ */
 class StockVendedorAdminActivity : AppCompatActivity() {
 
     private val baseDatos: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
@@ -32,6 +38,12 @@ class StockVendedorAdminActivity : AppCompatActivity() {
     private var textoBusqueda = ""
     private lateinit var vendedorId: String
 
+    /**
+     * Ciclo de vida: inicializa la interfaz, configura el RecyclerView, los filtros
+     * de búsqueda y categoría, y carga los productos del vendedor desde Firestore.
+     *
+     * @param savedInstanceState Estado guardado de la instancia anterior, o null si es nueva.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -86,6 +98,11 @@ class StockVendedorAdminActivity : AppCompatActivity() {
         lifecycleScope.launch { cargarProductos(vendedorId) }
     }
 
+    /**
+     * Configura el campo de texto con autocompletado para filtrar productos por categoría.
+     *
+     * @param campoCategoria Campo de texto donde se muestra el selector de categorías.
+     */
     private fun configurarFiltroCategoria(campoCategoria: AutoCompleteTextView) {
         val opciones = listOf(
             FILTRO_TODAS,
@@ -109,9 +126,15 @@ class StockVendedorAdminActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Carga los productos del inventario privado del vendedor desde Firestore,
+     * ordenados por fecha de actualización descendente.
+     *
+     * @param uid Identificador único del vendedor en Firestore.
+     */
     private suspend fun cargarProductos(uid: String) {
         try {
-            val resultado = baseDatos.collection("Usuarios")
+            val resultado = baseDatos.collection(Constantes.COLECCION_USUARIOS)
                 .document(uid)
                 .collection("Inventario")
                 .orderBy("fechaActualizacion", Query.Direction.DESCENDING)
@@ -125,7 +148,7 @@ class StockVendedorAdminActivity : AppCompatActivity() {
                 ProductoAdmin(
                     id = documento.id,
                     nombre = nombre,
-                    nombreNormalizado = normalizarTexto(nombre),
+                    nombreNormalizado = FiltroContenido.normalizar(nombre),
                     categoria = documento.getString("categoria").orEmpty(),
                     precio = documento.getDouble("precio")
                         ?: documento.getLong("precio")?.toDouble()
@@ -144,8 +167,12 @@ class StockVendedorAdminActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Aplica los filtros de búsqueda por texto y categoría a la lista de productos.
+     * Muestra un mensaje si no hay productos que coincidan con los filtros.
+     */
     private fun aplicarFiltros() {
-        val texto = normalizarTexto(textoBusqueda)
+        val texto = FiltroContenido.normalizar(textoBusqueda)
         val filtrados = productosBase.filter { producto ->
             val cumpleCategoria = filtroCategoria == FILTRO_TODAS || producto.categoria == filtroCategoria
             val cumpleTexto = texto.isBlank() || producto.nombreNormalizado.contains(texto)
@@ -157,6 +184,12 @@ class StockVendedorAdminActivity : AppCompatActivity() {
         textoSinStock.visibility = if (productosFiltrados.isEmpty()) android.view.View.VISIBLE else android.view.View.GONE
     }
 
+    /**
+     * Muestra un diálogo de edición para modificar los datos de un producto existente.
+     * Valida los campos ingresados antes de guardar los cambios.
+     *
+     * @param producto Producto que se desea editar.
+     */
     private fun mostrarDialogoEditar(producto: ProductoAdmin) {
         val vista = layoutInflater.inflate(R.layout.dialog_editar_producto, null)
         val campoNombre = vista.findViewById<com.google.android.material.textfield.TextInputEditText>(
@@ -257,6 +290,17 @@ class StockVendedorAdminActivity : AppCompatActivity() {
         dialogo.show()
     }
 
+    /**
+     * Actualiza los datos de un producto en el inventario privado y en el inventario público.
+     * Recarga la lista de productos tras la actualización exitosa.
+     *
+     * @param producto Producto original con sus datos anteriores.
+     * @param nombre Nuevo nombre del producto.
+     * @param categoria Nueva categoría del producto.
+     * @param precio Nuevo precio del producto.
+     * @param unidadPrecio Nueva unidad de venta (unidad o kilo).
+     * @param descripcion Nueva descripción del producto.
+     */
     private suspend fun actualizarProducto(
         producto: ProductoAdmin,
         nombre: String,
@@ -268,20 +312,20 @@ class StockVendedorAdminActivity : AppCompatActivity() {
         try {
             val datos = mapOf(
                 "nombre" to nombre,
-                "nombreNormalizado" to normalizarTexto(nombre),
+                "nombreNormalizado" to FiltroContenido.normalizar(nombre),
                 "categoria" to categoria,
                 "precio" to precio,
                 "unidadPrecio" to unidadPrecio,
                 "descripcion" to descripcion,
                 "fechaActualizacion" to System.currentTimeMillis(),
             )
-            val referencia = baseDatos.collection("Usuarios")
+            val referencia = baseDatos.collection(Constantes.COLECCION_USUARIOS)
                 .document(vendedorId)
                 .collection("Inventario")
                 .document(producto.id)
             referencia.set(datos, SetOptions.merge()).await()
 
-            val documentoPublico = baseDatos.collection("InventarioPublico")
+            val documentoPublico = baseDatos.collection(Constantes.COLECCION_INVENTARIO_PUBLICO)
                 .whereEqualTo("vendedorId", vendedorId)
                 .whereEqualTo("productoId", producto.id)
                 .get()
@@ -299,6 +343,12 @@ class StockVendedorAdminActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Muestra un diálogo de confirmación antes de eliminar un producto.
+     * Si el usuario confirma, ejecuta la eliminación.
+     *
+     * @param producto Producto que se desea eliminar.
+     */
     private fun confirmarEliminarProducto(producto: ProductoAdmin) {
         MaterialAlertDialogBuilder(this)
             .setTitle("Eliminar producto")
@@ -310,16 +360,23 @@ class StockVendedorAdminActivity : AppCompatActivity() {
             .show()
     }
 
+    /**
+     * Elimina un producto del inventario privado y del inventario público.
+     * Utiliza una escritura por lotes para eliminar los documentos públicos.
+     * Recarga la lista de productos tras la eliminación exitosa.
+     *
+     * @param producto Producto que se desea eliminar.
+     */
     private suspend fun eliminarProducto(producto: ProductoAdmin) {
         try {
-            baseDatos.collection("Usuarios")
+            baseDatos.collection(Constantes.COLECCION_USUARIOS)
                 .document(vendedorId)
                 .collection("Inventario")
                 .document(producto.id)
                 .delete()
                 .await()
 
-            val documentoPublico = baseDatos.collection("InventarioPublico")
+            val documentoPublico = baseDatos.collection(Constantes.COLECCION_INVENTARIO_PUBLICO)
                 .whereEqualTo("vendedorId", vendedorId)
                 .whereEqualTo("productoId", producto.id)
                 .get()
@@ -339,16 +396,28 @@ class StockVendedorAdminActivity : AppCompatActivity() {
         }
     }
 
-    private fun normalizarTexto(texto: String): String {
-        val limpio = texto.trim().lowercase(Locale.getDefault())
-        val normalizado = java.text.Normalizer.normalize(limpio, java.text.Normalizer.Form.NFD)
-        return normalizado.replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
-    }
-
+    /**
+     * Muestra un mensaje breve en pantalla mediante un Toast.
+     *
+     * @param mensaje Texto a mostrar al usuario.
+     */
     private fun mostrarMensaje(mensaje: String) {
         Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show()
     }
 
+    /**
+     * Modelo de datos que representa un producto del inventario del vendedor
+     * en la vista de administración.
+     *
+     * @property id Identificador único del producto en Firestore.
+     * @property nombre Nombre del producto.
+     * @property nombreNormalizado Nombre normalizado para búsquedas sin sensibilidad a mayúsculas ni acentos.
+     * @property categoria Categoría del producto.
+     * @property precio Precio del producto.
+     * @property unidadPrecio Unidad de venta del producto (unidad o kilo).
+     * @property descripcion Descripción del producto.
+     * @property disponible Indica si el producto está disponible.
+     */
     data class ProductoAdmin(
         val id: String,
         val nombre: String,
@@ -360,6 +429,10 @@ class StockVendedorAdminActivity : AppCompatActivity() {
         val disponible: Boolean,
     )
 
+    /**
+     * Constantes utilizadas para pasar datos entre actividades mediante extras del Intent
+     * y para definir el filtro de categoría por defecto.
+     */
     companion object {
         const val EXTRA_USUARIO_ID = "extra_usuario_id"
         const val EXTRA_NOMBRE = "extra_nombre"
@@ -369,12 +442,27 @@ class StockVendedorAdminActivity : AppCompatActivity() {
     }
 }
 
+/**
+ * Adaptador del RecyclerView que muestra la lista de productos en la vista de administración,
+ * enlazando cada producto con su vista correspondiente y permitiendo acciones de edición
+ * y eliminación.
+ *
+ * @property productos Lista de productos a mostrar.
+ * @property onEditar Acción a ejecutar cuando el usuario pulsa «Editar».
+ * @property onEliminar Acción a ejecutar cuando el usuario pulsa «Eliminar».
+ */
 private class AdaptadorStockAdmin(
     private val productos: List<StockVendedorAdminActivity.ProductoAdmin>,
     private val onEditar: (StockVendedorAdminActivity.ProductoAdmin) -> Unit,
     private val onEliminar: (StockVendedorAdminActivity.ProductoAdmin) -> Unit,
 ) : RecyclerView.Adapter<AdaptadorStockAdmin.VistaProducto>() {
 
+    /**
+     * ViewHolder que contiene las referencias a las vistas de cada elemento
+     * de la lista de productos en la administración.
+     *
+     * @param itemView Vista raíz del elemento de la lista.
+     */
     class VistaProducto(itemView: android.view.View) : RecyclerView.ViewHolder(itemView) {
         val textoNombre: android.widget.TextView = itemView.findViewById(R.id.texto_nombre_producto_admin)
         val chipCategoria: com.google.android.material.chip.Chip =
@@ -423,6 +511,12 @@ private class AdaptadorStockAdmin(
 
     override fun getItemCount(): Int = productos.size
 
+    /**
+     * Convierte la unidad de precio a una etiqueta corta para mostrar en la interfaz.
+     *
+     * @param unidad Unidad de precio (unidad o kilo).
+     * @return Etiqueta corta: «kg» para kilo, «unidad» para cualquier otro valor.
+     */
     private fun etiquetaUnidadPrecio(unidad: String): String {
         return if (unidad == "kilo") "kg" else "unidad"
     }

@@ -5,7 +5,8 @@
     android:id="@+id/contenedor_palabras_bloqueadas"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
+    android:background="@color/fondo_app"
+    android:padding="@dimen/margen_pantalla"
     tools:context=".PalabrasBloqueadasActivity">
 
     <TextView
@@ -13,8 +14,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Palabras bloqueadas"
-        android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -23,19 +23,21 @@
         android:id="@+id/texto_detalle_palabras"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="@dimen/espacio_xs"
         android:text="Estas palabras o frases no generarán alertas ni resultados."
-        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/texto_titulo_palabras" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/contenedor_palabra_bloqueada"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/separador_card"
         android:hint="Nueva palabra o frase bloqueada"
+        app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/texto_detalle_palabras">
@@ -51,7 +53,7 @@
         android:id="@+id/boton_agregar_palabra"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="@dimen/espacio_md"
         android:text="Agregar bloqueo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -59,10 +61,12 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/contenedor_busqueda_palabras"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/separador_card"
         android:hint="Buscar palabra o frase"
+        app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/boton_agregar_palabra">
@@ -78,9 +82,9 @@
         android:id="@+id/texto_sin_palabras"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/separador_card"
         android:text="No hay palabras o frases bloqueadas."
-        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -90,9 +94,9 @@
         android:id="@+id/recycler_palabras_bloqueadas"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/separador_card"
         android:clipToPadding="false"
-        android:paddingBottom="16dp"
+        android:paddingBottom="@dimen/espacio_lg"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

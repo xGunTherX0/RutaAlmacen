@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/espacio_xs"
+    android:layout_marginVertical="@dimen/espacio_xs"
+    app:cardBackgroundColor="@color/fondo_card"
+    app:cardCornerRadius="@dimen/radio_card"
+    app:cardElevation="@dimen/elevacion_card"
+    app:cardUseCompatPadding="true"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_card">
+
+        <TextView
+            android:id="@+id/texto_producto_reporte"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium"
+            android:text="Producto" />
+
+        <TextView
+            android:id="@+id/texto_mensaje_reporte"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+            android:text="Mensaje" />
+
+        <TextView
+            android:id="@+id/texto_comprador_reporte"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodySmall"
+            android:text="Comprador" />
+
+        <TextView
+            android:id="@+id/texto_fecha_reporte"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xxs"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodySmall"
+            android:text="Fecha" />
+
+        <TextView
+            android:id="@+id/texto_estado_reporte"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xxs"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodySmall"
+            android:textStyle="bold"
+            android:text="Estado" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_md"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/boton_eliminar_reporte"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Eliminar"
+                android:textColor="@color/estado_cerrado" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/boton_bloquear_comprador"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/espacio_sm"
+                android:text="Bloquear cuenta" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/espacio_xs"
+    android:layout_marginVertical="@dimen/espacio_xs"
+    app:cardBackgroundColor="@color/fondo_card"
+    app:cardCornerRadius="@dimen/radio_card"
+    app:cardElevation="@dimen/elevacion_card"
+    app:cardUseCompatPadding="true"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_card">
+
+        <TextView
+            android:id="@+id/texto_nombre_usuario_promover"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium"
+            android:text="Nombre" />
+
+        <TextView
+            android:id="@+id/texto_correo_usuario_promover"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+            android:text="correo@ejemplo.com" />
+
+        <TextView
+            android:id="@+id/texto_rol_usuario_promover"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+            android:text="Rol: vendedor" />
+
+        <TextView
+            android:id="@+id/texto_estado_usuario_promover"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+            android:text="Estado: Activo" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/boton_promover_usuario"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_md"
+            android:text="Promover a Administrador"
+            app:icon="@drawable/ic_grant_privilege"
+            app:iconGravity="textStart" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/boton_quitar_admin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:text="Quitar privilegio Admin"
+            android:textColor="@color/estado_cerrado"
+            android:visibility="gone"
+            app:icon="@android:drawable/ic_menu_delete"
+            app:iconGravity="textStart" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

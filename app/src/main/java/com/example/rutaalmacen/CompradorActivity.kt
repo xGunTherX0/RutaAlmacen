@@ -1,82 +1,101 @@
 package com.example.rutaalmacen
 
 import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.content.Intent
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
-import android.os.Looper
-import android.widget.Toast
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-import android.widget.ImageView
 import android.view.View
-import java.util.Calendar
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.rutaalmacen.productos.OfertaUtil
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import com.google.firebase.firestore.Source
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
-import java.text.Normalizer
 import java.util.Locale
-import kotlin.coroutines.resume
 
+/**
+ * Actividad principal del módulo de comprador.
+ *
+ * Permite buscar productos por nombre o categoría en el inventario público y privado,
+ * muestra resultados ordenados por cercanía y estado de apertura del almacén,
+ * gestiona permisos de ubicación, calcula distancias, notifica a vendedores sobre
+ * productos no encontrados y ofrece navegación hacia Google Maps.
+ *
+ * Implementa un sistema de caché en memoria y Firestore para optimizar las consultas,
+ * y registra búsquedas fallidas e historial para análisis posterior.
+ */
 class CompradorActivity : AppCompatActivity() {
 
+    /** Instancia de [FirebaseAuth] para obtener el usuario autenticado actual. */
     private val autenticacion: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+
+    /** Instancia de [FirebaseFirestore] para acceder a la base de datos. */
     private val baseDatos: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
+
+    /** Proveedor de ubicación combinada de Google Play Services. */
     private val proveedorUbicacion: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(this)
     }
-    private val coleccionInventarioPublico = "InventarioPublico"
 
+    /** Lista mutable de resultados actualmente mostrados en el adaptador. */
     private val resultados: MutableList<ResultadoBusqueda> = mutableListOf()
+
+    /** Lista base de resultados antes de aplicar filtros de categoría. */
     private val resultadosBase: MutableList<ResultadoBusqueda> = mutableListOf()
+
+    /** Adaptador del [RecyclerView] que muestra los resultados de búsqueda. */
     private lateinit var adaptadorResultados: AdaptadorResultados
-    private var tareaBusqueda: Job? = null
+
+    /** Texto de búsqueda pendiente que requiere permiso de ubicación antes de ejecutarse. */
     private var busquedaPendiente: String? = null
+
+    /** Categoría pendiente que requiere permiso de ubicación antes de ejecutarse. */
     private var categoriaPendiente: String? = null
+
+    /** Bandera para evitar mostrar múltiples avisos de falta de ubicación. */
     private var avisoSinUbicacionMostrado = false
+
+    /** Categoría actualmente seleccionada en el filtro de la interfaz. */
     private var categoriaSeleccionada = "Todas"
-    private var distanciaMaximaSeleccionada = DISTANCIA_MAXIMA_METROS
-    private lateinit var textoDistanciaFiltro: android.widget.TextView
+
+    /** Vista de carga que se muestra u oculta durante las operaciones asíncronas. */
     private lateinit var contenedorCarga: View
+
+    /** Caché en memoria de documentos de usuarios (vendedores) para evitar lecturas repetidas. */
     private val cacheUsuarios: MutableMap<String, DocumentSnapshot> = mutableMapOf()
+
+    /** Caché en memoria del inventario público obtenido desde Firestore. */
     private var inventarioPublicoCache: List<DocumentSnapshot>? = null
+
+    /** Caché en memoria del inventario privado (subcolecciones «Inventario») obtenido desde Firestore. */
     private var inventarioPrivadoCache: List<DocumentSnapshot>? = null
+
+    /** Última ubicación conocida del comprador, utilizada para cálculos de distancia. */
     private var ubicacionCache: Location? = null
+
+    /** Marca de tiempo de la última actualización de [ubicacionCache]. */
     private var ubicacionCacheTiempo = 0L
 
+    /** Categorías disponibles para el filtro de productos en la interfaz. */
     private val categorias = listOf(
         "Todas",
         "Despensa",
@@ -91,17 +110,12 @@ class CompradorActivity : AppCompatActivity() {
         "Higiene Personal",
     )
 
-    private val opcionesDistancia = listOf(
-        OpcionDistancia("0,5 km", 500f),
-        OpcionDistancia("1 km", 1000f),
-        OpcionDistancia("2 km", 2000f),
-        OpcionDistancia("5 km", 5000f),
-        OpcionDistancia("10 km", 10000f),
-        OpcionDistancia("20 km", 20000f),
-        OpcionDistancia("50 km", 50000f),
-        OpcionDistancia("100 km", 100000f),
-    )
-
+    /**
+     * Lanzador de actividad que procesa el resultado de la solicitud de permisos de ubicación.
+     *
+     * Si el permiso es concedido, ejecuta la búsqueda o el filtro por categoría que
+     * estaba pendiente. Si es denegado, muestra un mensaje al usuario.
+     */
     private val solicitudPermisoUbicacion = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { resultados ->
@@ -122,6 +136,14 @@ class CompradorActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Inicializa la actividad del comprador: configura el diseño edge-to-edge,
+     * el [RecyclerView] de resultados, los filtros de categoría, la barra de navegación
+     * inferior, el botón de búsqueda y el botón de información de alertas.
+     * Carga los productos iniciales de forma asíncrona.
+     *
+     * @param savedInstanceState Estado guardado previamente, o `null` si es la primera creación.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -141,16 +163,9 @@ class CompradorActivity : AppCompatActivity() {
         val campoBusqueda = findViewById<TextInputEditText>(R.id.campo_busqueda_producto)
         val recyclerResultados = findViewById<RecyclerView>(R.id.recycler_resultados)
         val campoCategoria = findViewById<AutoCompleteTextView>(R.id.campo_categoria)
-        val grupoDistancia = findViewById<ChipGroup>(R.id.grupo_distancia)
-        textoDistanciaFiltro = findViewById(R.id.texto_distancia_filtro)
-        val encabezadoFiltros = findViewById<android.view.View>(R.id.encabezado_filtros)
-        val contenidoFiltros = findViewById<android.view.View>(R.id.contenido_filtros)
-        val iconoFiltros = findViewById<ImageView>(R.id.icono_filtros)
-        val encabezadoDistancia = findViewById<android.view.View>(R.id.encabezado_distancia)
-        val contenidoDistancia = findViewById<android.view.View>(R.id.contenido_distancia)
         val navegacion = findViewById<BottomNavigationView>(R.id.nav_comprador)
-        val iconoDistancia = findViewById<ImageView>(R.id.icono_distancia)
         contenedorCarga = findViewById(R.id.contenedor_carga_comprador)
+        val botonBuscar = findViewById<com.google.android.material.button.MaterialButton>(R.id.boton_buscar_producto)
 
         adaptadorResultados = AdaptadorResultados(
             resultados = resultados,
@@ -160,17 +175,26 @@ class CompradorActivity : AppCompatActivity() {
         recyclerResultados.layoutManager = LinearLayoutManager(this)
         recyclerResultados.adapter = adaptadorResultados
 
-        configurarDesplegable(encabezadoFiltros, contenidoFiltros, iconoFiltros, expandidoInicial = false)
-        configurarDesplegable(encabezadoDistancia, contenidoDistancia, iconoDistancia, expandidoInicial = false)
-        configurarFiltros(campoCategoria, grupoDistancia, campoBusqueda)
+        configurarFiltros(campoCategoria)
         configurarNavegacion(navegacion)
 
-        campoBusqueda.doOnTextChanged { texto, _, _, _ ->
-            val consulta = texto?.toString()?.trim().orEmpty()
-            lanzarBusqueda(consulta, conDelay = true)
+        botonBuscar.setOnClickListener {
+            ejecutarBusquedaManual(campoBusqueda.text?.toString().orEmpty())
         }
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.boton_info_alertas).setOnClickListener {
+            startActivity(Intent(this, InfoAlertasActivity::class.java))
+        }
+        lifecycleScope.launch { cargarProductosIniciales() }
     }
 
+    /**
+     * Configura la barra de navegación inferior del comprador.
+     *
+     * Permite alternar entre la vista de productos (actual) y la vista de almacenes cercanos.
+     * Al navegar a almacenes cercanos, se finaliza esta actividad para evitar acumulación en la pila.
+     *
+     * @param navegacion Barra de navegación inferior a configurar.
+     */
     private fun configurarNavegacion(navegacion: BottomNavigationView) {
         navegacion.selectedItemId = R.id.nav_productos_comprador
         navegacion.setOnItemSelectedListener { item ->
@@ -188,6 +212,15 @@ class CompradorActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Busca productos en el inventario público y, si no hay resultados, en el inventario privado.
+     *
+     * Solicita permiso de ubicación si no está concedido, obtiene la ubicación del comprador,
+     * normaliza la consulta, construye los resultados con distancia y notifica a los vendedores
+     * que no tienen el producto buscado. Registra la búsqueda si no se encontraron resultados.
+     *
+     * @param consulta Texto ingresado por el comprador para buscar productos.
+     */
     private suspend fun buscarProductos(consulta: String) {
         val usuario = autenticacion.currentUser
         if (usuario == null) {
@@ -195,7 +228,7 @@ class CompradorActivity : AppCompatActivity() {
             return
         }
 
-        if (!tienePermisoUbicacion()) {
+        if (!UbicacionUtil.tienePermisoUbicacion(this)) {
             busquedaPendiente = consulta
             solicitudPermisoUbicacion.launch(
                 arrayOf(
@@ -208,17 +241,17 @@ class CompradorActivity : AppCompatActivity() {
 
         mostrarCarga(true)
         try {
-            val ubicacionComprador = obtenerUbicacionActual()
+            val ubicacionComprador = obtenerUbicacionParaAlerta()
             if (ubicacionComprador == null) {
                 if (!avisoSinUbicacionMostrado) {
-                    mostrarMensaje("No se pudo obtener la ubicación, se mostrará sin distancia")
+                    mostrarMensaje("No se pudo obtener la ubicación, se enviará la alerta sin coordenadas")
                     avisoSinUbicacionMostrado = true
                 }
             } else {
                 avisoSinUbicacionMostrado = false
             }
 
-            val consultaNormalizada = normalizarTexto(consulta)
+            val consultaNormalizada = FiltroContenido.normalizar(consulta)
             val documentos = linkedMapOf<String, DocumentSnapshot>()
 
             val documentosLocal = buscarInventarioLocalPublico(consultaNormalizada)
@@ -255,13 +288,75 @@ class CompradorActivity : AppCompatActivity() {
             resultadosBase.clear()
             resultadosBase.addAll(nuevosResultados)
             aplicarFiltros()
-        } catch (excepcion: Exception) {
+        } catch (_: Exception) {
             mostrarMensaje("No se pudo completar la búsqueda")
         } finally {
             mostrarCarga(false)
         }
     }
 
+    /**
+     * Carga los productos iniciales mostrando primero la caché disponible
+     * y luego refrescando con datos del servidor.
+     *
+     * Utiliza la ubicación en caché si está disponible para evitar retrasos.
+     * Si no hay caché, muestra el indicador de carga hasta obtener los datos.
+     */
+    private suspend fun cargarProductosIniciales() {
+        val permisoUbicacion = UbicacionUtil.tienePermisoUbicacion(this)
+        val ubicacionRapida = if (permisoUbicacion) obtenerUbicacionCacheada() else null
+        val documentosCache = try {
+            obtenerInventarioPublicoCache()
+        } catch (_: Exception) {
+            emptyList()
+        }
+        val hayCache = documentosCache.isNotEmpty()
+        if (!hayCache) {
+            mostrarCarga(true)
+        } else {
+            actualizarResultados(documentosCache, ubicacionRapida)
+        }
+        try {
+            val documentosServidor = obtenerInventarioPublicoServidor()
+            if (documentosServidor.isNotEmpty()) {
+                val ubicacionFinal = if (permisoUbicacion) {
+                    obtenerUbicacionCacheada() ?: obtenerUbicacionActual()
+                } else {
+                    null
+                }
+                if (permisoUbicacion) {
+                    if (ubicacionFinal == null) {
+                        if (!avisoSinUbicacionMostrado) {
+                            mostrarMensaje("No se pudo obtener la ubicación, se mostrará sin distancia")
+                            avisoSinUbicacionMostrado = true
+                        }
+                    } else {
+                        avisoSinUbicacionMostrado = false
+                    }
+                }
+                actualizarResultados(documentosServidor, ubicacionFinal)
+            } else if (!hayCache) {
+                resultadosBase.clear()
+                resultados.clear()
+                adaptadorResultados.notifyDataSetChanged()
+            }
+        } catch (_: Exception) {
+            if (!hayCache) {
+                mostrarMensaje("No se pudieron cargar los productos")
+            }
+        } finally {
+            mostrarCarga(false)
+        }
+    }
+
+    /**
+     * Busca productos filtrados por categoría en el inventario público local.
+     *
+     * Solicita permiso de ubicación si no está concedido, notifica a los vendedores
+     * sobre la búsqueda de categoría y construye los resultados con información de distancia.
+     *
+     * @param categoria Nombre de la categoría por la cual filtrar los productos.
+     */
     private suspend fun buscarProductosPorCategoria(categoria: String) {
         val usuario = autenticacion.currentUser
         if (usuario == null) {
@@ -269,7 +364,7 @@ class CompradorActivity : AppCompatActivity() {
             return
         }
 
-        if (!tienePermisoUbicacion()) {
+        if (!UbicacionUtil.tienePermisoUbicacion(this)) {
             categoriaPendiente = categoria
             solicitudPermisoUbicacion.launch(
                 arrayOf(
@@ -282,7 +377,7 @@ class CompradorActivity : AppCompatActivity() {
 
         mostrarCarga(true)
         try {
-            val ubicacionComprador = obtenerUbicacionActual()
+            val ubicacionComprador = obtenerUbicacionCacheada()
             if (ubicacionComprador == null) {
                 if (!avisoSinUbicacionMostrado) {
                     mostrarMensaje("No se pudo obtener la ubicación, se mostrará sin distancia")
@@ -313,17 +408,21 @@ class CompradorActivity : AppCompatActivity() {
             resultadosBase.clear()
             resultadosBase.addAll(nuevosResultados)
             aplicarFiltros()
-        } catch (excepcion: Exception) {
+        } catch (_: Exception) {
             mostrarMensaje("No se pudo completar la búsqueda")
         } finally {
             mostrarCarga(false)
         }
     }
 
+    /**
+     * Configura el campo de autocompletado de categorías con un adaptador
+     * que muestra las opciones disponibles y aplica el filtro al seleccionar una.
+     *
+     * @param campoCategoria Campo de texto con autocompletado donde se muestra el selector de categorías.
+     */
     private fun configurarFiltros(
         campoCategoria: AutoCompleteTextView,
-        grupoDistancia: ChipGroup,
-        campoBusqueda: TextInputEditText,
     ) {
         val adaptadorCategorias = ArrayAdapter(
             this,
@@ -334,68 +433,26 @@ class CompradorActivity : AppCompatActivity() {
         campoCategoria.setText(categoriaSeleccionada, false)
         campoCategoria.setOnItemClickListener { _, _, posicion, _ ->
             categoriaSeleccionada = categorias.getOrNull(posicion) ?: "Todas"
-            val consulta = campoBusqueda.text?.toString()?.trim().orEmpty()
-            lanzarBusqueda(consulta, conDelay = false)
-        }
-
-        grupoDistancia.removeAllViews()
-        opcionesDistancia.forEach { opcion ->
-            val chip = Chip(this).apply {
-                text = opcion.etiqueta
-                isCheckable = true
-                isClickable = true
-                isChecked = opcion.metros == DISTANCIA_MAXIMA_METROS
-                setTextAppearanceResource(R.style.TextAppearance_RutaAlmacen_Comprador_BodyMedium)
-            }
-            grupoDistancia.addView(chip)
-        }
-        distanciaMaximaSeleccionada = DISTANCIA_MAXIMA_METROS
-        actualizarEtiquetaDistancia()
-        grupoDistancia.setOnCheckedStateChangeListener { grupo, ids ->
-            val seleccionado = ids.firstOrNull()
-            val chipSeleccionado = if (seleccionado != null) {
-                grupo.findViewById<Chip>(seleccionado)
-            } else {
-                null
-            }
-            val etiqueta = chipSeleccionado?.text?.toString().orEmpty()
-            val opcion = opcionesDistancia.firstOrNull { it.etiqueta == etiqueta }
-            distanciaMaximaSeleccionada = opcion?.metros ?: DISTANCIA_MAXIMA_METROS
-            actualizarEtiquetaDistancia()
             aplicarFiltros()
         }
     }
 
-    private fun configurarDesplegable(
-        encabezado: android.view.View,
-        contenido: android.view.View,
-        icono: ImageView,
-        expandidoInicial: Boolean,
-    ) {
-        var expandido = expandidoInicial
-        fun aplicarEstado() {
-            contenido.visibility = if (expandido) android.view.View.VISIBLE else android.view.View.GONE
-            icono.rotation = if (expandido) 180f else 0f
-        }
-        aplicarEstado()
-        encabezado.setOnClickListener {
-            expandido = !expandido
-            aplicarEstado()
-        }
-    }
-
-    private fun lanzarBusqueda(consulta: String, conDelay: Boolean) {
-        tareaBusqueda?.cancel()
-        tareaBusqueda = lifecycleScope.launch {
-            if (conDelay) {
-                delay(200)
-            }
+    /**
+     * Ejecuta una búsqueda manual iniciada por el usuario desde el botón de buscar.
+     *
+     * Si el texto está vacío y no hay categoría seleccionada, recarga los productos iniciales.
+     * Si el texto está vacío pero hay categoría, busca por categoría.
+     * Oculta el teclado antes de iniciar la búsqueda.
+     *
+     * @param consulta Texto ingresado en el campo de búsqueda.
+     */
+    private fun ejecutarBusquedaManual(consulta: String) {
+        ocultarTeclado()
+        lifecycleScope.launch {
             val texto = consulta.trim()
             if (texto.isBlank()) {
                 if (categoriaSeleccionada == "Todas") {
-                    resultadosBase.clear()
-                    resultados.clear()
-                    adaptadorResultados.notifyDataSetChanged()
+                    cargarProductosIniciales()
                     return@launch
                 }
                 buscarProductosPorCategoria(categoriaSeleccionada)
@@ -405,17 +462,38 @@ class CompradorActivity : AppCompatActivity() {
         }
     }
 
+    /** Oculta el teclado en pantalla y limpia el foco de la vista actual. */
+    private fun ocultarTeclado() {
+        val vista = currentFocus ?: View(this)
+        val gestor = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        gestor.hideSoftInputFromWindow(vista.windowToken, 0)
+        vista.clearFocus()
+    }
+
+    /**
+     * Construye la lista de [ResultadoBusqueda] a partir de los documentos de Firestore.
+     *
+     * Para cada documento, obtiene los datos del vendedor desde la caché o Firestore,
+     * calcula la distancia al almacén, evalúa el estado de apertura y las ofertas vigentes.
+     * Detecta ofertas expiradas y programa su reseteo automático.
+     *
+     * @param documentos Colección de documentos de producto obtenidos desde Firestore.
+     * @param ubicacionComprador Ubicación actual del comprador, o `null` si no está disponible.
+     * @return Lista de resultados de búsqueda listos para ser mostrados.
+     */
     private suspend fun construirResultados(
         documentos: Collection<DocumentSnapshot>,
         ubicacionComprador: Location?,
     ): List<ResultadoBusqueda> {
         val nuevosResultados = mutableListOf<ResultadoBusqueda>()
+        val ofertasExpiradas = mutableListOf<Pair<String, String>>()
 
         for (documento in documentos) {
             val vendedorId = documento.getString("vendedorId").orEmpty()
-            val documentoUsuario = if (!vendedorId.isNullOrBlank()) {
+            val productoId = documento.getString("productoId").orEmpty()
+            val documentoUsuario = if (vendedorId.isNotBlank()) {
                 cacheUsuarios[vendedorId]
-                    ?: baseDatos.collection("Usuarios")
+                    ?: baseDatos.collection(Constantes.COLECCION_USUARIOS)
                         .document(vendedorId)
                         .get()
                         .await()
@@ -432,6 +510,11 @@ class CompradorActivity : AppCompatActivity() {
                 ?: 0.0
             val unidadPrecio = documento.getString("unidadPrecio").orEmpty().ifBlank { "unidad" }
             val disponibleProducto = documento.getBoolean("disponible") ?: true
+            val datosOferta = OfertaUtil.leerProducto(documento)
+            val ofertaVigente = OfertaUtil.estaVigente(datosOferta.enOferta, datosOferta.fechaFinOferta)
+            if (datosOferta.enOferta && !ofertaVigente && vendedorId.isNotBlank() && productoId.isNotBlank()) {
+                ofertasExpiradas.add(vendedorId to productoId)
+            }
             val nombreAlmacen = documento.getString("nombreAlmacen")
                 ?: documentoUsuario?.getString("nombreAlmacen")
                 ?: documentoUsuario?.getString("nombre")
@@ -441,13 +524,17 @@ class CompradorActivity : AppCompatActivity() {
             val longitudAlmacen = documento.getDouble("longitud")
                 ?: documentoUsuario?.getDouble("longitud")
 
-            val horarioMananaInicio = documento.getString("horarioMananaInicio") ?: HORARIO_MANANA_INICIO_TEXTO
-            val horarioMananaFin = documento.getString("horarioMananaFin") ?: HORARIO_MANANA_FIN_TEXTO
-            val horarioTardeInicio = documento.getString("horarioTardeInicio") ?: HORARIO_TARDE_INICIO_TEXTO
-            val horarioTardeFin = documento.getString("horarioTardeFin") ?: HORARIO_TARDE_FIN_TEXTO
+            val horarioMananaInicio = documento.getString("horarioMananaInicio")
+                ?: HorarioUtil.HORARIO_MANANA_INICIO_TEXTO
+            val horarioMananaFin = documento.getString("horarioMananaFin")
+                ?: HorarioUtil.HORARIO_MANANA_FIN_TEXTO
+            val horarioTardeInicio = documento.getString("horarioTardeInicio")
+                ?: HorarioUtil.HORARIO_TARDE_INICIO_TEXTO
+            val horarioTardeFin = documento.getString("horarioTardeFin")
+                ?: HorarioUtil.HORARIO_TARDE_FIN_TEXTO
             val horarioAtencion = documento.getString("horarioAtencion")
                 ?: "$horarioMananaInicio - $horarioMananaFin / $horarioTardeInicio - $horarioTardeFin"
-            val abiertoAhora = estaAlmacenAbiertoAhora(
+            val abiertoAhora = HorarioUtil.estaAlmacenAbiertoAhora(
                 horarioMananaInicio,
                 horarioMananaFin,
                 horarioTardeInicio,
@@ -458,7 +545,7 @@ class CompradorActivity : AppCompatActivity() {
                 latitudAlmacen != null &&
                 longitudAlmacen != null
             ) {
-                calcularDistancia(
+                UbicacionUtil.calcularDistancia(
                     ubicacionComprador.latitude,
                     ubicacionComprador.longitude,
                     latitudAlmacen,
@@ -476,6 +563,7 @@ class CompradorActivity : AppCompatActivity() {
                     descripcion = descripcionProducto,
                     categoria = categoriaProducto,
                     vendedorId = vendedorId,
+                    productoId = productoId,
                     nombreAlmacen = nombreAlmacen,
                     horarioAtencion = horarioAtencion,
                     abiertoAhora = abiertoAhora,
@@ -483,30 +571,100 @@ class CompradorActivity : AppCompatActivity() {
                     latitudAlmacen = latitudAlmacen,
                     longitudAlmacen = longitudAlmacen,
                     disponible = disponibleProducto,
+                    enOferta = ofertaVigente,
+                    precioOferta = if (ofertaVigente) datosOferta.precioOferta else null,
+                    descuentoPorcentaje = if (ofertaVigente) datosOferta.descuentoPorcentaje else null,
+                    fechaFinOferta = if (ofertaVigente) datosOferta.fechaFinOferta else null,
                 ),
             )
+        }
+
+        if (ofertasExpiradas.isNotEmpty()) {
+            lifecycleScope.launch { resetearOfertasExpiradas(ofertasExpiradas) }
         }
 
         return nuevosResultados
     }
 
+    /**
+     * Resetea las ofertas expiradas detectadas durante la construcción de resultados.
+     *
+     * Limpia los campos de oferta en el inventario público y, si el comprador actual
+     * es también el vendedor propietario, en el inventario privado.
+     *
+     * @param ofertas Lista de pares (vendedorId, productoId) con ofertas expiradas.
+     */
+    private suspend fun resetearOfertasExpiradas(ofertas: List<Pair<String, String>>) {
+        val ahora = System.currentTimeMillis()
+        val datosReset = mapOf(
+            "enOferta" to false,
+            "precioOferta" to null,
+            "descuentoPorcentaje" to null,
+            "fechaFinOferta" to null,
+            "fechaActualizacion" to ahora,
+        )
+        val uidActual = autenticacion.currentUser?.uid
+        ofertas.forEach { (vendedorId, productoId) ->
+            if (vendedorId.isBlank() || productoId.isBlank()) return@forEach
+            val docPublicoId = "${vendedorId}_$productoId"
+            try {
+                baseDatos.collection(Constantes.COLECCION_INVENTARIO_PUBLICO)
+                    .document(docPublicoId)
+                    .set(datosReset, SetOptions.merge())
+                    .await()
+            } catch (_: Exception) {
+                // El vendedor que sea dueño limpiará el privado en su propio refresh
+            }
+            if (uidActual != null && uidActual == vendedorId) {
+                try {
+                    baseDatos.collection(Constantes.COLECCION_USUARIOS)
+                        .document(vendedorId)
+                        .collection("Inventario")
+                        .document(productoId)
+                        .set(datosReset, SetOptions.merge())
+                        .await()
+                } catch (_: Exception) {
+                    // Silenciar
+                }
+            }
+        }
+    }
+
+    /**
+     * Reemplaza los resultados base con los nuevos documentos y aplica los filtros activos.
+     *
+     * @param documentos Colección de documentos de producto obtenidos desde Firestore.
+     * @param ubicacionComprador Ubicación actual del comprador para cálculo de distancias.
+     */
+    private suspend fun actualizarResultados(
+        documentos: Collection<DocumentSnapshot>,
+        ubicacionComprador: Location?,
+    ) {
+        val nuevosResultados = construirResultados(documentos, ubicacionComprador)
+        resultadosBase.clear()
+        resultadosBase.addAll(nuevosResultados)
+        aplicarFiltros()
+    }
+
+    /**
+     * Muestra u oculta el indicador visual de carga.
+     *
+     * @param mostrar `true` para mostrar el indicador, `false` para ocultarlo.
+     */
     private fun mostrarCarga(mostrar: Boolean) {
         contenedorCarga.visibility = if (mostrar) View.VISIBLE else View.GONE
     }
 
+    /**
+     * Aplica el filtro de categoría y ordena los resultados por estado de apertura
+     * (abiertos primero) y por distancia ascendente.
+     *
+     * Actualiza la lista mostrada en el adaptador y notifica los cambios.
+     */
     private fun aplicarFiltros() {
         val categoria = categoriaSeleccionada
-        val max = distanciaMaximaSeleccionada.toDouble()
-        val filtrarDistancia = distanciaMaximaSeleccionada < DISTANCIA_MAXIMA_METROS
         val filtrados = resultadosBase.filter { resultado ->
-            val cumpleCategoria = categoria == "Todas" || resultado.categoria == categoria
-            val distancia = resultado.distanciaMetros
-            val cumpleDistancia = if (distancia == null) {
-                !filtrarDistancia
-            } else {
-                distancia <= max
-            }
-            cumpleCategoria && cumpleDistancia
+            categoria == "Todas" || resultado.categoria == categoria
         }
 
         val ordenados = filtrados.sortedWith(
@@ -519,63 +677,37 @@ class CompradorActivity : AppCompatActivity() {
         adaptadorResultados.notifyDataSetChanged()
     }
 
-    private fun actualizarEtiquetaDistancia() {
-        val textoMax = formatearDistanciaFiltro(distanciaMaximaSeleccionada)
-        textoDistanciaFiltro.text = "Distancia: hasta $textoMax"
-    }
-
-    private fun estaAlmacenAbiertoAhora(
-        mananaInicioTexto: String,
-        mananaFinTexto: String,
-        tardeInicioTexto: String,
-        tardeFinTexto: String,
-    ): Boolean {
-        val calendario = Calendar.getInstance()
-        val minutosActuales = calendario.get(Calendar.HOUR_OF_DAY) * 60 + calendario.get(Calendar.MINUTE)
-        val mananaInicio = convertirHoraAMinutos(mananaInicioTexto) ?: HORARIO_MANANA_INICIO
-        val mananaFin = convertirHoraAMinutos(mananaFinTexto) ?: HORARIO_MANANA_FIN
-        val tardeInicio = convertirHoraAMinutos(tardeInicioTexto) ?: HORARIO_TARDE_INICIO
-        val tardeFin = convertirHoraAMinutos(tardeFinTexto) ?: HORARIO_TARDE_FIN
-        val enTurnoManana = minutosActuales in mananaInicio until mananaFin
-        val enTurnoTarde = minutosActuales in tardeInicio until tardeFin
-        return enTurnoManana || enTurnoTarde
-    }
-
-    private fun convertirHoraAMinutos(hora: String): Int? {
-        val partes = hora.split(":")
-        if (partes.size != 2) {
-            return null
-        }
-        val horas = partes[0].toIntOrNull() ?: return null
-        val minutos = partes[1].toIntOrNull() ?: return null
-        if (horas !in 0..23 || minutos !in 0..59) {
-            return null
-        }
-        return horas * 60 + minutos
-    }
-
-    private fun formatearDistanciaFiltro(metros: Float): String {
-        return if (metros >= 1000f) {
-            val km = metros / 1000f
-            "${String.format(Locale.forLanguageTag("es-CL"), "%.1f", km)} km"
-        } else {
-            "${metros.toInt()} m"
-        }
-    }
-
+    /**
+     * Registra una búsqueda fallida en la colección de búsquedas históricas de Firestore.
+     *
+     * Incluye el texto consultado, la ubicación del comprador y el identificador del comprador.
+     *
+     * @param consulta Texto que el comprador buscó sin resultados.
+     * @param ubicación Ubicación del comprador al momento de la búsqueda, o `null`.
+     */
     private suspend fun registrarBusquedaFallida(consulta: String, ubicacion: Location?) {
         val datos = mapOf(
             "nombreProducto" to consulta,
             "latitud" to ubicacion?.latitude,
             "longitud" to ubicacion?.longitude,
             "resultadoExitoso" to false,
+            "compradorId" to (autenticacion.currentUser?.uid ?: ""),
         )
 
-        baseDatos.collection("Busquedas_Historicas")
+        baseDatos.collection(Constantes.COLECCION_BUSQUEDAS_HISTORICAS)
             .add(datos)
             .await()
     }
 
+    /**
+     * Extrae el identificador del vendedor desde un documento de producto.
+     *
+     * Intenta leer el campo `vendedorId`; si no está presente, obtiene el identificador
+     * del documento padre (subcolección del usuario).
+     *
+     * @param documento Documento de producto desde Firestore.
+     * @return Identificador del vendedor, o `null` si no se pudo determinar.
+     */
     private fun obtenerVendedorIdDocumento(documento: DocumentSnapshot): String? {
         val vendedorId = documento.getString("vendedorId")
         if (!vendedorId.isNullOrBlank()) {
@@ -584,6 +716,18 @@ class CompradorActivity : AppCompatActivity() {
         return documento.reference.parent.parent?.id
     }
 
+    /**
+     * Notifica a los vendedores que no tienen el producto o categoría buscada por el comprador.
+     *
+     * Crea documentos de notificación en la colección de notificaciones de IA para cada
+     * vendedor que no aparezca en la lista de vendedores con el producto. Calcula el radio
+     * de cobertura basado en la ubicación de los almacenes que sí tienen el producto.
+     *
+     * @param producto Nombre del producto o categoría buscada.
+     * @param documentosConProducto Documentos que sí contienen el producto encontrado.
+     * @param ubicacionComprador Ubicación del comprador, o `null` si no está disponible.
+     * @param esCategoria `true` si la búsqueda fue por categoría, `false` si fue por nombre de producto.
+     */
     private suspend fun notificarVendedoresSinProducto(
         producto: String,
         documentosConProducto: Collection<DocumentSnapshot>,
@@ -601,8 +745,8 @@ class CompradorActivity : AppCompatActivity() {
             obtenerVendedorIdDocumento(documento)
         }.toSet()
 
-        val vendedores = baseDatos.collection("Usuarios")
-            .whereEqualTo("rol", "vendedor")
+        val vendedores = baseDatos.collection(Constantes.COLECCION_USUARIOS)
+            .whereEqualTo("rol", Constantes.ROL_VENDEDOR)
             .get()
             .await()
             .documents
@@ -611,59 +755,154 @@ class CompradorActivity : AppCompatActivity() {
             return
         }
 
+        val encontroAlgo = vendedoresConProducto.isNotEmpty()
         val mensaje = if (esCategoria) {
-            "¡Oportunidad! Un comprador buscó la categoría $producto y no encontró productos en tu stock."
+            if (encontroAlgo) {
+                "¡Oportunidad! Hay compradores buscando la categoría $producto."
+            } else {
+                "¡Oportunidad! Un comprador buscó la categoría $producto y no encontró productos en tu stock."
+            }
         } else {
-            "¡Oportunidad! Un comprador buscó $producto y no lo encontró en tu stock."
+            if (encontroAlgo) {
+                "¡Oportunidad! Hay compradores buscando $producto cerca de ti."
+            } else {
+                "¡Oportunidad! Un comprador buscó $producto y no lo encontró en tu stock."
+            }
         }
-        val radioMetros = if (distanciaMaximaSeleccionada < DISTANCIA_MAXIMA_METROS) {
-            distanciaMaximaSeleccionada.toDouble()
-        } else {
-            null
-        }
+
+        val radioMetros = calcularRadioCobertura(documentosConProducto, ubicacionComprador)
+
         val fechaCreacion = System.currentTimeMillis()
         val latitud = ubicacionComprador?.latitude
         val longitud = ubicacionComprador?.longitude
+        val compradorId = autenticacion.currentUser?.uid ?: ""
 
         vendedores.forEach { vendedor ->
             val vendedorId = vendedor.id
             if (vendedorId.isBlank() || vendedoresConProducto.contains(vendedorId)) {
                 return@forEach
             }
-            val idAlerta = "${productoId}_$vendedorId"
+            val idAlerta = "${productoId}_${vendedorId}_$fechaCreacion"
             val datos = mapOf(
                 "producto" to producto,
                 "productoNormalizado" to productoNormalizado,
                 "vendedorId" to vendedorId,
+                "compradorId" to compradorId,
                 "mensaje" to mensaje,
                 "latitudCentro" to latitud,
                 "longitudCentro" to longitud,
                 "radioMetros" to radioMetros,
                 "fechaCreacion" to fechaCreacion,
-                "totalBusquedas" to FieldValue.increment(1),
+                "totalBusquedas" to 1,
             )
-            baseDatos.collection("Notificaciones_IA")
-                .document(idAlerta)
-                .set(datos, SetOptions.merge())
-                .await()
+            try {
+                baseDatos.collection(Constantes.COLECCION_NOTIFICACIONES_IA)
+                    .document(idAlerta)
+                    .set(datos)
+                    .await()
+            } catch (_: Exception) {
+                // Continuar con los demas vendedores aunque uno falle
+            }
         }
     }
 
-    private suspend fun obtenerUbicacionActual(): Location? {
-        val ahora = System.currentTimeMillis()
-        val cache = ubicacionCache
-        if (cache != null && ahora - ubicacionCacheTiempo < TIEMPO_CACHE_UBICACION_MS) {
-            return cache
+    /**
+     * Calcula el radio de cobertura para las notificaciones de oportunidad.
+     *
+     * Determina la distancia máxima desde el comprador hasta los almacenes que
+     * tienen el producto, añadiendo un margen. Si no hay ubicación o almacenes,
+     * utiliza un radio predeterminado. El resultado se limita entre los valores
+     * mínimo y máximo configurados.
+     *
+     * @param documentosConProducto Documentos de los almacenes que tienen el producto.
+     * @param ubicacionComprador Ubicación del comprador, o `null` si no está disponible.
+     * @return Radio de cobertura en metros, acotado entre [RADIO_MINIMO_METROS] y [RADIO_MAXIMO_METROS].
+     */
+    private fun calcularRadioCobertura(
+        documentosConProducto: Collection<DocumentSnapshot>,
+        ubicacionComprador: Location?,
+    ): Double {
+        if (ubicacionComprador == null) {
+            return RADIO_DEFAULT_METROS
         }
+        var radioMaximo = 0.0
+        var hayAlmacen = false
+        for (documento in documentosConProducto) {
+            val latitudAlmacen = documento.getDouble("latitud")
+            val longitudAlmacen = documento.getDouble("longitud")
+            if (latitudAlmacen == null || longitudAlmacen == null) continue
+            hayAlmacen = true
+            val distancia = UbicacionUtil.calcularDistancia(
+                ubicacionComprador.latitude,
+                ubicacionComprador.longitude,
+                latitudAlmacen,
+                longitudAlmacen,
+            )
+            if (distancia > radioMaximo) radioMaximo = distancia
+        }
+        val margen = RADIO_MARGEN_METROS
+        val radioCalculado = if (hayAlmacen) radioMaximo + margen else RADIO_DEFAULT_METROS
+        return radioCalculado.coerceIn(RADIO_MINIMO_METROS, RADIO_MAXIMO_METROS)
+    }
 
-        val ubicacionFused = obtenerUbicacionFused()
+    /**
+     * Obtiene la ubicación del comprador para enviar en las alertas de oportunidad.
+     *
+     * Prioriza la ubicación en caché; si no está disponible, solicita la ubicación actual.
+     *
+     * @return Ubicación del comprador, o `null` si no se pudo obtener.
+     */
+    private suspend fun obtenerUbicacionParaAlerta(): Location? {
+        val cacheada = obtenerUbicacionCacheada()
+        if (cacheada != null) return cacheada
+        return obtenerUbicacionActual()
+    }
+
+    /**
+     * Obtiene la ubicación del comprador desde la caché en memoria o, si ha expirado,
+     * solicita una ubicación rápida al proveedor de ubicación combinada.
+     *
+     * @return Ubicación del comprador, o `null` si no se pudo obtener.
+     */
+    private suspend fun obtenerUbicacionCacheada(): Location? {
+        val cacheHit = UbicacionUtil.obtenerUbicacionConCache(
+            ubicacionCache,
+            ubicacionCacheTiempo,
+            HorarioUtil.TIEMPO_CACHE_UBICACION_MS,
+        )
+        if (cacheHit != null) return cacheHit
+        val rapida = UbicacionUtil.obtenerUbicacionRapida(proveedorUbicacion)
+        if (rapida != null) {
+            ubicacionCache = rapida
+            ubicacionCacheTiempo = System.currentTimeMillis()
+        }
+        return rapida
+    }
+
+    /**
+     * Obtiene la ubicación actual del comprador intentando múltiples fuentes en cascada:
+     * caché en memoria, proveedor Fused de Google Play Services y ubicación del sistema.
+     *
+     * @return Ubicación más reciente disponible, o `null` si ninguna fuente respondió.
+     */
+    private suspend fun obtenerUbicacionActual(): Location? {
+        val proveedor = proveedorUbicacion
+        val ahora = System.currentTimeMillis()
+        val cacheHit = UbicacionUtil.obtenerUbicacionConCache(
+            ubicacionCache,
+            ubicacionCacheTiempo,
+            HorarioUtil.TIEMPO_CACHE_UBICACION_MS,
+        )
+        if (cacheHit != null) return cacheHit
+
+        val ubicacionFused = UbicacionUtil.obtenerUbicacionFused(proveedor)
         if (ubicacionFused != null) {
             ubicacionCache = ubicacionFused
             ubicacionCacheTiempo = ahora
             return ubicacionFused
         }
 
-        val ubicacionSistema = obtenerUbicacionSistema()
+        val ubicacionSistema = UbicacionUtil.obtenerUbicacionSistema(this)
         if (ubicacionSistema != null) {
             ubicacionCache = ubicacionSistema
             ubicacionCacheTiempo = ahora
@@ -673,103 +912,22 @@ class CompradorActivity : AppCompatActivity() {
         return null
     }
 
-    private suspend fun obtenerUbicacionFused(): Location? {
-        return try {
-            val ubicacionActual = proveedorUbicacion
-                .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
-                .await()
-
-            if (ubicacionActual != null) {
-                return ubicacionActual
-            }
-
-            val ultimaUbicacion = proveedorUbicacion.lastLocation.await()
-            if (ultimaUbicacion != null) {
-                return ultimaUbicacion
-            }
-
-            solicitarUbicacionUnica()
-        } catch (excepcion: Exception) {
-            null
-        }
-    }
-
-    private suspend fun obtenerUbicacionSistema(): Location? {
-        val manejador = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        val proveedores = listOf(
-            LocationManager.GPS_PROVIDER,
-            LocationManager.NETWORK_PROVIDER,
-            LocationManager.PASSIVE_PROVIDER,
-        )
-        val ultimaUbicacion = proveedores
-            .filter { proveedor -> manejador.isProviderEnabled(proveedor) }
-            .mapNotNull { proveedor -> manejador.getLastKnownLocation(proveedor) }
-            .maxByOrNull { ubicacion -> ubicacion.time }
-
-        if (ultimaUbicacion != null) {
-            return ultimaUbicacion
-        }
-
-        val proveedorActivo = proveedores.firstOrNull { proveedor -> manejador.isProviderEnabled(proveedor) }
-            ?: return null
-
-        return solicitarUbicacionUnicaSistema(manejador, proveedorActivo)
-    }
-
-    private suspend fun solicitarUbicacionUnica(): Location? {
-        return suspendCancellableCoroutine { continuacion ->
-            val solicitud = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L)
-                .setMinUpdateIntervalMillis(500L)
-                .setMaxUpdates(1)
-                .build()
-
-            val callback = object : LocationCallback() {
-                override fun onLocationResult(resultado: LocationResult) {
-                    proveedorUbicacion.removeLocationUpdates(this)
-                    if (!continuacion.isCompleted) {
-                        continuacion.resume(resultado.lastLocation)
-                    }
-                }
-            }
-
-            proveedorUbicacion.requestLocationUpdates(
-                solicitud,
-                callback,
-                Looper.getMainLooper(),
-            ).addOnFailureListener {
-                proveedorUbicacion.removeLocationUpdates(callback)
-                if (!continuacion.isCompleted) {
-                    continuacion.resume(null)
-                }
-            }
-
-            continuacion.invokeOnCancellation {
-                proveedorUbicacion.removeLocationUpdates(callback)
-            }
-        }
-    }
-
-    private fun calcularDistancia(
-        latitudOrigen: Double,
-        longitudOrigen: Double,
-        latitudDestino: Double,
-        longitudDestino: Double,
-    ): Double {
-        val resultados = FloatArray(1)
-        Location.distanceBetween(
-            latitudOrigen,
-            longitudOrigen,
-            latitudDestino,
-            longitudDestino,
-            resultados,
-        )
-        return resultados.first().toDouble()
-    }
-
+    /**
+     * Muestra un mensaje breve al usuario mediante un [android.widget.Toast].
+     *
+     * @param mensaje Texto que se desplegará en pantalla.
+     */
     private fun mostrarMensaje(mensaje: String) {
-        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show()
+        android.widget.Toast.makeText(this, mensaje, android.widget.Toast.LENGTH_SHORT).show()
     }
 
+    /**
+     * Abre la aplicación de Google Maps con indicaciones de navegación hacia el almacén.
+     *
+     * Si Google Maps no está instalado, abre la versión web como alternativa.
+     *
+     * @param resultado Resultado de búsqueda que contiene las coordenadas y el nombre del almacén.
+     */
     private fun abrirNavegacion(resultado: ResultadoBusqueda) {
         val latitud = resultado.latitudAlmacen
         val longitud = resultado.longitudAlmacen
@@ -794,6 +952,14 @@ class CompradorActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Abre la actividad de detalle de stock de un almacén específico.
+     *
+     * Transmite el identificador del vendedor, nombre del almacén, horario de atención
+     * y coordenadas geográficas como extras del intent.
+     *
+     * @param resultado Resultado de búsqueda que contiene los datos del almacén.
+     */
     private fun abrirStockAlmacen(resultado: ResultadoBusqueda) {
         if (resultado.vendedorId.isBlank()) {
             mostrarMensaje("No se pudo identificar el almacén")
@@ -809,6 +975,13 @@ class CompradorActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    /**
+     * Busca productos en la caché local del inventario público por coincidencia de prefijo
+     * sobre el nombre normalizado.
+     *
+     * @param consultaNormalizada Texto de búsqueda ya normalizado para comparación.
+     * @return Lista de documentos cuyo nombre normalizado comienza con la consulta.
+     */
     private suspend fun buscarInventarioLocalPublico(consultaNormalizada: String): List<DocumentSnapshot> {
         if (consultaNormalizada.isBlank()) {
             return emptyList()
@@ -818,11 +991,18 @@ class CompradorActivity : AppCompatActivity() {
             val nombre = documento.getString("nombre").orEmpty()
             val nombreNormalizado = documento.getString("nombreNormalizado")
                 ?.takeIf { it.isNotBlank() }
-                ?: normalizarTexto(nombre)
+                ?: FiltroContenido.normalizar(nombre)
             nombreNormalizado.startsWith(consultaNormalizada)
         }
     }
 
+    /**
+     * Busca productos en la caché local del inventario privado (subcolecciones «Inventario»)
+     * por coincidencia de prefijo sobre el nombre normalizado.
+     *
+     * @param consultaNormalizada Texto de búsqueda ya normalizado para comparación.
+     * @return Lista de documentos cuyo nombre normalizado comienza con la consulta.
+     */
     private suspend fun buscarInventarioLocalPrivado(consultaNormalizada: String): List<DocumentSnapshot> {
         if (consultaNormalizada.isBlank()) {
             return emptyList()
@@ -833,14 +1013,20 @@ class CompradorActivity : AppCompatActivity() {
                 val nombre = documento.getString("nombre").orEmpty()
                 val nombreNormalizado = documento.getString("nombreNormalizado")
                     ?.takeIf { it.isNotBlank() }
-                    ?: normalizarTexto(nombre)
+                    ?: FiltroContenido.normalizar(nombre)
                 nombreNormalizado.startsWith(consultaNormalizada)
             }
-        } catch (excepcion: Exception) {
+        } catch (_: Exception) {
             emptyList()
         }
     }
 
+    /**
+     * Busca productos en la caché local del inventario público filtrados por categoría exacta.
+     *
+     * @param categoria Nombre de la categoría a filtrar. Se ignora si es «Todas» o está vacía.
+     * @return Lista de documentos cuyo campo `categoria` coincide exactamente con la categoría indicada.
+     */
     private suspend fun buscarInventarioLocalPublicoPorCategoria(categoria: String): List<DocumentSnapshot> {
         if (categoria.isBlank() || categoria == "Todas") {
             return emptyList()
@@ -851,21 +1037,71 @@ class CompradorActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Obtiene los documentos del inventario público utilizando caché en memoria,
+     * luego caché de Firestore y finalmente el servidor como último recurso.
+     *
+     * @return Lista de documentos del inventario público.
+     */
     private suspend fun obtenerInventarioPublicoCache(): List<DocumentSnapshot> {
         val cache = inventarioPublicoCache
         if (cache != null) {
             return cache
         }
-        val resultado = baseDatos.collection(coleccionInventarioPublico)
+        val cacheFirestore = try {
+            baseDatos.collection(Constantes.COLECCION_INVENTARIO_PUBLICO)
+                .get(Source.CACHE)
+                .await()
+                .documents
+        } catch (_: Exception) {
+            emptyList()
+        }
+        if (cacheFirestore.isNotEmpty()) {
+            inventarioPublicoCache = cacheFirestore
+            return cacheFirestore
+        }
+        val resultado = baseDatos.collection(Constantes.COLECCION_INVENTARIO_PUBLICO)
             .get()
             .await()
         return resultado.documents.also { inventarioPublicoCache = it }
     }
 
+    /**
+     * Obtiene los documentos del inventario público directamente desde el servidor de Firestore
+     * y actualiza la caché en memoria.
+     *
+     * @return Lista de documentos del inventario público obtenidos del servidor.
+     */
+    private suspend fun obtenerInventarioPublicoServidor(): List<DocumentSnapshot> {
+        val resultado = baseDatos.collection(Constantes.COLECCION_INVENTARIO_PUBLICO)
+            .get()
+            .await()
+        return resultado.documents.also { inventarioPublicoCache = it }
+    }
+
+    /**
+     * Obtiene los documentos del inventario privado (subcolecciones «Inventario» de todos
+     * los usuarios) utilizando caché en memoria, luego caché de Firestore y finalmente
+     * el servidor como último recurso.
+     *
+     * @return Lista de documentos del inventario privado.
+     */
     private suspend fun obtenerInventarioPrivadoCache(): List<DocumentSnapshot> {
         val cache = inventarioPrivadoCache
         if (cache != null) {
             return cache
+        }
+        val cacheFirestore = try {
+            baseDatos.collectionGroup("Inventario")
+                .get(Source.CACHE)
+                .await()
+                .documents
+        } catch (_: Exception) {
+            emptyList()
+        }
+        if (cacheFirestore.isNotEmpty()) {
+            inventarioPrivadoCache = cacheFirestore
+            return cacheFirestore
         }
         val resultado = baseDatos.collectionGroup("Inventario")
             .get()
@@ -873,76 +1109,32 @@ class CompradorActivity : AppCompatActivity() {
         return resultado.documents.also { inventarioPrivadoCache = it }
     }
 
-    private fun normalizarTexto(texto: String): String {
-        val limpio = texto.trim().lowercase(Locale.getDefault())
-        val normalizado = Normalizer.normalize(limpio, Normalizer.Form.NFD)
-        return normalizado.replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
-    }
-
-    private fun tienePermisoUbicacion(): Boolean {
-        val permisoFino = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-        ) == PackageManager.PERMISSION_GRANTED
-        val permisoAproximado = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-        ) == PackageManager.PERMISSION_GRANTED
-        return permisoFino || permisoAproximado
-    }
-
-    private suspend fun solicitarUbicacionUnicaSistema(
-        manejador: LocationManager,
-        proveedor: String,
-    ): Location? {
-        return suspendCancellableCoroutine { continuacion ->
-            val listener = object : LocationListener {
-                override fun onLocationChanged(ubicacion: Location) {
-                    manejador.removeUpdates(this)
-                    if (!continuacion.isCompleted) {
-                        continuacion.resume(ubicacion)
-                    }
-                }
-
-                override fun onProviderDisabled(provider: String) {
-                    manejador.removeUpdates(this)
-                    if (!continuacion.isCompleted) {
-                        continuacion.resume(null)
-                    }
-                }
-
-                override fun onProviderEnabled(provider: String) = Unit
-
-                @Deprecated("Deprecated in Java")
-                override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
-            }
-
-            try {
-                manejador.requestLocationUpdates(
-                    proveedor,
-                    0L,
-                    0f,
-                    listener,
-                    Looper.getMainLooper(),
-                )
-            } catch (excepcion: SecurityException) {
-                manejador.removeUpdates(listener)
-                if (!continuacion.isCompleted) {
-                    continuacion.resume(null)
-                }
-            } catch (excepcion: IllegalArgumentException) {
-                manejador.removeUpdates(listener)
-                if (!continuacion.isCompleted) {
-                    continuacion.resume(null)
-                }
-            }
-
-            continuacion.invokeOnCancellation {
-                manejador.removeUpdates(listener)
-            }
-        }
-    }
-
+    /**
+     * Modelo de datos que representa un resultado de búsqueda de producto.
+     *
+     * Contiene toda la información necesaria para mostrar un producto en la interfaz
+     * del comprador, incluyendo datos del producto, del almacén, distancia, estado
+     * de apertura y ofertas vigentes.
+     *
+     * @property nombreProducto Nombre del producto encontrado.
+     * @property precio Precio original del producto.
+     * @property unidadPrecio Unidad de venta del producto (por unidad o por kilo).
+     * @property descripcion Descripción del producto, puede estar vacía.
+     * @property categoria Categoría a la que pertenece el producto.
+     * @property vendedorId Identificador del vendedor propietario del producto.
+     * @property productoId Identificador único del producto.
+     * @property nombreAlmacen Nombre del almacén donde se vende el producto.
+     * @property horarioAtencion Texto descriptivo del horario de atención del almacén.
+     * @property abiertoAhora Indica si el almacén está abierto en este momento.
+     * @property distanciaMetros Distancia en metros desde el comprador al almacén, o `null`.
+     * @property latitudAlmacen Latitud geográfica del almacén, o `null`.
+     * @property longitudAlmacen Longitud geográfica del almacén, o `null`.
+     * @property disponible Indica si el producto está disponible.
+     * @property enOferta Indica si el producto tiene una oferta vigente.
+     * @property precioOferta Precio con descuento aplicado, o `null` si no hay oferta.
+     * @property descuentoPorcentaje Porcentaje de descuento de la oferta, o `null`.
+     * @property fechaFinOferta Marca de tiempo de finalización de la oferta, o `null`.
+     */
     data class ResultadoBusqueda(
         val nombreProducto: String,
         val precio: Double,
@@ -950,6 +1142,7 @@ class CompradorActivity : AppCompatActivity() {
         val descripcion: String,
         val categoria: String,
         val vendedorId: String,
+        val productoId: String,
         val nombreAlmacen: String,
         val horarioAtencion: String,
         val abiertoAhora: Boolean,
@@ -957,56 +1150,152 @@ class CompradorActivity : AppCompatActivity() {
         val latitudAlmacen: Double?,
         val longitudAlmacen: Double?,
         val disponible: Boolean,
+        val enOferta: Boolean = false,
+        val precioOferta: Double? = null,
+        val descuentoPorcentaje: Int? = null,
+        val fechaFinOferta: Long? = null,
     )
 
-    data class OpcionDistancia(
-        val etiqueta: String,
-        val metros: Float,
-    )
-
-    companion object {
-        private const val DISTANCIA_MAXIMA_METROS = 100000f
-        private const val HORARIO_MANANA_INICIO_TEXTO = "09:00"
-        private const val HORARIO_MANANA_FIN_TEXTO = "13:00"
-        private const val HORARIO_TARDE_INICIO_TEXTO = "16:00"
-        private const val HORARIO_TARDE_FIN_TEXTO = "22:00"
-        private const val HORARIO_MANANA_INICIO = 9 * 60
-        private const val HORARIO_MANANA_FIN = 13 * 60
-        private const val HORARIO_TARDE_INICIO = 16 * 60
-        private const val HORARIO_TARDE_FIN = 22 * 60
-        private const val TIEMPO_CACHE_UBICACION_MS = 60_000L
-    }
-
+    /**
+     * Adaptador del [RecyclerView] que renderiza los resultados de búsqueda de productos.
+     *
+     * Muestra información completa de cada producto: nombre, precio (con soporte de ofertas),
+     * descripción, almacén, horario, distancia, disponibilidad y botones de acción
+     * para navegar al almacén o ver su stock.
+     *
+     * @param resultados Lista de resultados de búsqueda que se mostrarán.
+     * @param onLlegar Acción ejecutada al pulsar el botón «Llegar» de un resultado.
+     * @param onVerStock Acción ejecutada al pulsar el botón «Ver stock» de un resultado.
+     */
     private class AdaptadorResultados(
         private val resultados: List<ResultadoBusqueda>,
         private val onLlegar: (ResultadoBusqueda) -> Unit,
         private val onVerStock: (ResultadoBusqueda) -> Unit,
     ) : RecyclerView.Adapter<AdaptadorResultados.VistaResultado>() {
 
+        /**
+         * Contenedor de vistas para cada elemento de la lista de resultados de productos.
+         *
+         * Mantiene referencias a todos los elementos visuales de [R.layout.item_resultado_producto]
+         * para evitar búsquedas repetidas durante el desplazamiento.
+         *
+         * @param itemView Vista raíz del elemento de la lista.
+         */
         class VistaResultado(itemView: android.view.View) : RecyclerView.ViewHolder(itemView) {
+            /** Tarjeta principal del resultado de producto. */
+            val tarjeta: com.google.android.material.card.MaterialCardView =
+                itemView.findViewById(R.id.tarjeta_resultado)
+            /** Etiqueta con el nombre del producto. */
             val textoNombre: android.widget.TextView = itemView.findViewById(R.id.texto_nombre_producto)
+            /** Etiqueta con el precio original del producto. */
             val textoPrecio: android.widget.TextView = itemView.findViewById(R.id.texto_precio_producto)
+            /** Contenedor del bloque de precio de oferta. */
+            val contenedorPrecioOferta: android.widget.LinearLayout =
+                itemView.findViewById(R.id.contenedor_precio_oferta)
+            /** Etiqueta con el precio con descuento aplicado. */
+            val textoPrecioOferta: android.widget.TextView =
+                itemView.findViewById(R.id.texto_precio_oferta)
+            /** Etiqueta con la unidad de venta del precio de oferta. */
+            val textoUnidadOferta: android.widget.TextView =
+                itemView.findViewById(R.id.texto_unidad_oferta)
+            /** Insignia que muestra el porcentaje de descuento. */
+            val badgeDescuento: android.widget.TextView = itemView.findViewById(R.id.badge_descuento)
+            /** Etiqueta con el tiempo restante de la oferta. */
+            val textoTiempoRestante: android.widget.TextView =
+                itemView.findViewById(R.id.texto_tiempo_restante)
+            /** Etiqueta con la descripción del producto. */
             val textoDescripcion: android.widget.TextView = itemView.findViewById(R.id.texto_descripcion_producto)
+            /** Etiqueta con el nombre del almacén. */
             val textoAlmacen: android.widget.TextView = itemView.findViewById(R.id.texto_almacen_producto)
+            /** Etiqueta con el horario de atención del almacén. */
             val textoHorario: android.widget.TextView = itemView.findViewById(R.id.texto_horario_almacen)
+            /** Etiqueta con el estado de apertura actual del almacén. */
             val textoEstadoHorario: android.widget.TextView = itemView.findViewById(R.id.texto_estado_horario)
+            /** Etiqueta con la distancia al almacén. */
             val textoDistancia: android.widget.TextView = itemView.findViewById(R.id.texto_distancia_producto)
+            /** Etiqueta con el estado de disponibilidad del producto. */
             val textoEstado: android.widget.TextView = itemView.findViewById(R.id.texto_estado_producto)
+            /** Botón para ver el stock completo del almacén. */
             val botonVerStock: MaterialButton = itemView.findViewById(R.id.boton_ver_stock)
+            /** Botón para abrir la navegación hacia el almacén. */
             val botonLlegar: MaterialButton = itemView.findViewById(R.id.boton_llegar_almacen)
         }
 
+        /**
+         * Crea una nueva vista de elemento inflando el diseño [R.layout.item_resultado_producto].
+         *
+         * @param parent Grupo de vistas padre donde se insertará la nueva vista.
+         * @param viewType Tipo de vista (no utilizado en este adaptador).
+         * @return Nueva instancia de [VistaResultado] enlazada al diseño inflado.
+         */
         override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): VistaResultado {
             val vista = android.view.LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_resultado_producto, parent, false)
             return VistaResultado(vista)
         }
 
+        /**
+         * Vincula los datos de un resultado de búsqueda con los elementos visuales de la vista.
+         *
+         * Configura los textos de nombre, precio (normal o con oferta tachada), descripción,
+         * almacén, horario, estado de apertura, distancia y disponibilidad. Ajusta los colores
+         * de la tarjeta según si hay oferta vigente. Asigna los listeners de los botones
+         * «Llegar» y «Ver stock».
+         *
+         * @param holder Vista del elemento que se va a vincular.
+         * @param position Posición del elemento dentro de la lista.
+         */
         override fun onBindViewHolder(holder: VistaResultado, position: Int) {
             val resultado = resultados[position]
+            val contexto = holder.itemView.context
             holder.textoNombre.text = resultado.nombreProducto
-            holder.textoPrecio.text = "Precio: $${String.format(Locale.forLanguageTag("es-CL"), "%.0f", resultado.precio)} / " +
+
+            val precioOriginalTexto = "$${String.format(Locale.forLanguageTag("es-CL"), "%.0f", resultado.precio)} / " +
                 etiquetaUnidadPrecio(resultado.unidadPrecio)
+
+            val precioOfertaValor = resultado.precioOferta
+            val ofertaVigente = precioOfertaValor != null &&
+                OfertaUtil.estaVigente(resultado.enOferta, resultado.fechaFinOferta)
+            if (ofertaVigente) {
+                holder.tarjeta.setCardBackgroundColor(
+                    androidx.core.content.ContextCompat.getColor(contexto, R.color.oferta_card_fondo),
+                )
+
+                holder.textoPrecio.text = "Antes: $precioOriginalTexto"
+                holder.textoPrecio.paintFlags =
+                    holder.textoPrecio.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                holder.textoPrecio.setTextColor(
+                    androidx.core.content.ContextCompat.getColor(contexto, R.color.oferta_precio_tachado),
+                )
+                holder.textoPrecio.textSize = 13f
+
+                holder.contenedorPrecioOferta.visibility = android.view.View.VISIBLE
+                holder.textoPrecioOferta.text =
+                    "$${String.format(Locale.forLanguageTag("es-CL"), "%.0f", precioOfertaValor)}"
+                holder.textoUnidadOferta.text = "/ ${etiquetaUnidadPrecio(resultado.unidadPrecio)}"
+
+                holder.badgeDescuento.visibility = android.view.View.VISIBLE
+                holder.badgeDescuento.text = "-${resultado.descuentoPorcentaje ?: 0}% OFF"
+
+                holder.textoTiempoRestante.visibility = android.view.View.VISIBLE
+                holder.textoTiempoRestante.text = OfertaUtil.tiempoRestanteTexto(resultado.fechaFinOferta)
+            } else {
+                holder.tarjeta.setCardBackgroundColor(
+                    androidx.core.content.ContextCompat.getColor(contexto, R.color.fondo_card),
+                )
+                holder.textoPrecio.text = "Precio: $precioOriginalTexto"
+                holder.textoPrecio.paintFlags =
+                    holder.textoPrecio.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                holder.textoPrecio.setTextColor(
+                    androidx.core.content.ContextCompat.getColor(contexto, R.color.texto_secundario),
+                )
+                holder.textoPrecio.textSize = 14f
+
+                holder.contenedorPrecioOferta.visibility = android.view.View.GONE
+                holder.badgeDescuento.visibility = android.view.View.GONE
+                holder.textoTiempoRestante.visibility = android.view.View.GONE
+            }
+
             if (resultado.descripcion.isBlank()) {
                 holder.textoDescripcion.visibility = android.view.View.GONE
             } else {
@@ -1049,8 +1338,21 @@ class CompradorActivity : AppCompatActivity() {
             holder.botonVerStock.setOnClickListener { onVerStock(resultado) }
         }
 
+        /**
+         * @return Cantidad total de elementos que muestra el adaptador.
+         */
         override fun getItemCount(): Int = resultados.size
 
+        /**
+         * Formatea una distancia en metros a una cadena legible.
+         *
+         * Si la distancia es mayor o igual a 1000 metros, la convierte a kilómetros
+         * con un decimal. Si es menor, la muestra en metros enteros.
+         * Si la distancia es `null`, devuelve «Sin ubicación».
+         *
+         * @param distanciaMetros Distancia en metros, o `null` si no está disponible.
+         * @return Cadena formateada con la distancia y su unidad.
+         */
         private fun formatearDistancia(distanciaMetros: Double?): String {
             if (distanciaMetros == null) {
                 return "Sin ubicación"
@@ -1063,8 +1365,26 @@ class CompradorActivity : AppCompatActivity() {
             }
         }
 
+        /**
+         * Convierte el valor interno de unidad de precio a su etiqueta corta para la interfaz.
+         *
+         * @param unidad Valor de unidad de precio (por ejemplo, «kilo» o «unidad»).
+         * @return Etiqueta abreviada: «kg» para kilo, «unidad» para cualquier otro valor.
+         */
         private fun etiquetaUnidadPrecio(unidad: String): String {
             return if (unidad == "kilo") "kg" else "unidad"
         }
+    }
+
+    /** Constantes utilizadas para el cálculo del radio de cobertura de notificaciones. */
+    companion object {
+        /** Radio predeterminado en metros cuando no se puede calcular uno específico. */
+        private const val RADIO_DEFAULT_METROS = 5_000.0
+        /** Margen adicional en metros que se suma al radio máximo calculado. */
+        private const val RADIO_MARGEN_METROS = 2_000.0
+        /** Radio mínimo permitido en metros para las notificaciones de cobertura. */
+        private const val RADIO_MINIMO_METROS = 1_000.0
+        /** Radio máximo permitido en metros para las notificaciones de cobertura. */
+        private const val RADIO_MAXIMO_METROS = 50_000.0
     }
 }

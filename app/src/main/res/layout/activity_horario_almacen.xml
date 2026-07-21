@@ -5,8 +5,9 @@
     android:id="@+id/contenedor_horario_almacen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/fondo_app"
     android:fillViewport="true"
-    android:padding="20dp"
+    android:padding="@dimen/margen_pantalla"
     tools:context=".HorarioAlmacenActivity">
 
     <LinearLayout
@@ -20,14 +21,13 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="Horario de atención"
-            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge"
-            android:textStyle="bold" />
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge" />
 
         <TextView
             android:id="@+id/texto_descripcion_horario_almacen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="@dimen/espacio_sm"
             android:gravity="center"
             android:text="Configura los turnos de tu almacén."
             android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium" />
@@ -36,7 +36,7 @@
             android:id="@+id/texto_horario_almacen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/espacio_lg"
             android:text="Horario de atención: 09:00 - 13:00 / 16:00 - 22:00"
             android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
             android:textStyle="bold" />
@@ -44,17 +44,18 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="1dp"
-            app:strokeColor="?attr/colorOutlineVariant"
-            app:strokeWidth="1dp">
+            android:layout_marginTop="@dimen/separador_card"
+            app:cardBackgroundColor="@color/fondo_card"
+            app:cardCornerRadius="@dimen/radio_card"
+            app:cardElevation="@dimen/elevacion_card"
+            app:cardUseCompatPadding="true"
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="@dimen/padding_card">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -79,7 +80,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/separador_card"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -100,7 +101,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/separador_card"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -121,7 +122,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/separador_card"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -145,8 +146,7 @@
             android:id="@+id/boton_guardar_horario"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Guardar horario"
-            android:textSize="17sp" />
+            android:layout_marginTop="@dimen/espacio_lg"
+            android:text="Guardar horario" />
     </LinearLayout>
 </ScrollView>
