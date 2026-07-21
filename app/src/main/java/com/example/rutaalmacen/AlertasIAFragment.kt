@@ -64,7 +64,7 @@ class AlertasIAFragment : Fragment(R.layout.fragment_alertas_ia) {
     /** Indica si se muestran únicamente las alertas de las últimas 24 horas. */
     private var mostrarSoloNuevas = false
     /** Radio de distancia seleccionado por el usuario, en kilómetros. */
-    private var radioSeleccionadoMetros: Double = RadioAlertasPreferencias.RADIO_POR_DEFECTO
+    private var radioSeleccionadoKm: Double = RadioAlertasPreferencias.RADIO_POR_DEFECTO
 
     /**
      * Convierte un valor en kilómetros a la posición normalizada del deslizador.
@@ -141,17 +141,17 @@ class AlertasIAFragment : Fragment(R.layout.fragment_alertas_ia) {
         recycler.layoutManager = LinearLayoutManager(requireContext())
         recycler.adapter = adaptador
 
-        radioSeleccionadoMetros = RADIO_MIN_KM
-        val valorInicialSlider = metrosASlider(radioSeleccionadoMetros)
+        radioSeleccionadoKm = RADIO_MIN_KM
+        val valorInicialSlider = metrosASlider(radioSeleccionadoKm)
         sliderRango.value = valorInicialSlider
-        textoValorRango.text = formatearEtiquetaRango(radioSeleccionadoMetros)
+        textoValorRango.text = formatearEtiquetaRango(radioSeleccionadoKm)
 
         sliderRango.addOnChangeListener { slider, valor, desdeUsuario ->
-            radioSeleccionadoMetros = sliderAKm(valor)
-            textoValorRango.text = formatearEtiquetaRango(radioSeleccionadoMetros)
+            radioSeleccionadoKm = sliderAKm(valor)
+            textoValorRango.text = formatearEtiquetaRango(radioSeleccionadoKm)
             actualizarResumenFiltros()
             if (desdeUsuario) {
-                RadioAlertasPreferencias.guardar(requireContext(), radioSeleccionadoMetros)
+                RadioAlertasPreferencias.guardar(requireContext(), radioSeleccionadoKm)
             }
             aplicarFiltroAlertas()
         }
@@ -193,7 +193,7 @@ class AlertasIAFragment : Fragment(R.layout.fragment_alertas_ia) {
      */
     private fun actualizarResumenFiltros() {
         if (!::textoResumenFiltros.isInitialized) return
-        val rango = formatearEtiquetaRango(radioSeleccionadoMetros)
+        val rango = formatearEtiquetaRango(radioSeleccionadoKm)
         textoResumenFiltros.text = if (mostrarSoloNuevas) {
             "Filtros · $rango · Solo nuevas"
         } else {
@@ -374,8 +374,8 @@ class AlertasIAFragment : Fragment(R.layout.fragment_alertas_ia) {
         } else {
             alertasTodas
         }
-        val radioEnMetros = radioSeleccionadoMetros * 1_000.0
-        val conFiltroRango = if (radioSeleccionadoMetros >= RADIO_MAX_KM) {
+        val radioEnMetros = radioSeleccionadoKm * 1_000.0
+        val conFiltroRango = if (radioSeleccionadoKm >= RADIO_MAX_KM) {
             conFiltroTiempo
         } else {
             conFiltroTiempo.filter { alerta ->
@@ -728,19 +728,3 @@ private class AdaptadorAlertas(
     }
 }
 
-/**
- * Formatea una distancia en metros a una cadena legible.
- *
- * Si la distancia es mayor o igual a 1000 metros, la convierte a kilómetros con un decimal.
- *
- * @param metros Distancia en metros.
- * @return Cadena formateada (por ejemplo, «1.5 km» o «500 m»).
- */
-fun formatearMetros(metros: Double): String {
-    return if (metros >= 1000) {
-        val km = metros / 1000.0
-        String.format(java.util.Locale.forLanguageTag("es-CL"), "%.1f km", km)
-    } else {
-        "${metros.toInt()} m"
-    }
-}
