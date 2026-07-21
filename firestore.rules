@@ -29,7 +29,7 @@ service cloud.firestore {
     }
 
     match /Usuarios/{userId} {
-      allow read: if estaAutenticado() && noEstaBloqueado();
+      allow read: if (estaAutenticado() && request.auth.uid == userId && noEstaBloqueado()) || esAdministrador();
       allow create: if request.auth != null
         && request.auth.uid == userId
         && request.resource.data.rol in ['vendedor', 'comprador']
@@ -79,7 +79,7 @@ service cloud.firestore {
     match /Notificaciones_IA/{notifId} {
       allow read: if estaAutenticado()
         && (resource.data.vendedorId == request.auth.uid || esAdministrador());
-      allow create: if esComprador() || esAdministrador();
+      allow create: if (esComprador() && request.resource.data.compradorId == request.auth.uid) || esAdministrador();
       allow update: if esVendedor() && resource.data.vendedorId == request.auth.uid
         || esAdministrador();
       allow delete: if esVendedor() && resource.data.vendedorId == request.auth.uid

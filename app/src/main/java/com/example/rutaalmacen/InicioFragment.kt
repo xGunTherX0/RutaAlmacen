@@ -218,7 +218,7 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
 
                 Log.d(TAG, "Nombre cargado: $nombre")
 
-                val estadoSuscripcion = planManager.cargarEstadoActual()
+                val estadoSuscripcion = planManager.cargarEstadoActual(requireContext())
                 actualizarInformacionPlan(estadoSuscripcion)
             } catch (excepcion: Exception) {
                 Log.e(TAG, "Error al cargar datos", excepcion)

@@ -1,5 +1,6 @@
 package com.example.rutaalmacen.pagos
 
+import android.content.Context
 import com.example.rutaalmacen.Constantes
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -72,7 +73,7 @@ class PlanManager(
      *
      * @return Estado de suscripción del usuario con todos los datos de uso y plan actual.
      */
-    suspend fun cargarEstadoActual(): EstadoSuscripcion {
+    suspend fun cargarEstadoActual(context: Context? = null): EstadoSuscripcion {
         val usuario = autenticacion.currentUser
             ?: return EstadoSuscripcion(plan = Plan.GRATIS)
 
@@ -89,14 +90,20 @@ class PlanManager(
 
             val (productos, alertas) = cargarConteos(usuario.uid, fechaVencimiento)
 
-            EstadoSuscripcion(
+            val estado = EstadoSuscripcion(
                 plan = plan,
                 productosActuales = productos,
                 alertasHoy = alertas,
                 fechaVencimientoMillis = fechaVencimiento,
                 compraVerificadaServidor = compraVerificada,
             )
+            if (context != null) guardarEstadoCache(context, usuario.uid, estado)
+            estado
         } catch (e: Exception) {
+            if (context != null) {
+                val cache = cargarEstadoCache(context, usuario.uid)
+                if (cache != null) return cache
+            }
             EstadoSuscripcion(plan = Plan.GRATIS)
         }
     }
@@ -112,6 +119,31 @@ class PlanManager(
         val productos = contarProductos(uid)
         val alertas = contarAlertasHoy(uid)
         return productos to alertas
+    }
+
+    private fun prefs(context: Context) =
+        context.getSharedPreferences("plan_cache", Context.MODE_PRIVATE)
+
+    private fun guardarEstadoCache(context: Context, uid: String, estado: EstadoSuscripcion) {
+        prefs(context).edit()
+            .putString("plan_${uid}", estado.plan.codigo.id)
+            .putLong("plan_vencimiento_${uid}", estado.fechaVencimientoMillis ?: 0L)
+            .putBoolean("plan_verificada_${uid}", estado.compraVerificadaServidor)
+            .apply()
+    }
+
+    private fun cargarEstadoCache(context: Context, uid: String): EstadoSuscripcion? {
+        val prefs = prefs(context)
+        val planId = prefs.getString("plan_${uid}", null) ?: return null
+        val codigo = CodigoPlan.desdeId(planId)
+        val plan = Plan.desdeCodigo(codigo)
+        val vencimiento = prefs.getLong("plan_vencimiento_${uid}", 0L).takeIf { it > 0 }
+        val verificada = prefs.getBoolean("plan_verificada_${uid}", false)
+        return EstadoSuscripcion(
+            plan = plan,
+            fechaVencimientoMillis = vencimiento,
+            compraVerificadaServidor = verificada,
+        )
     }
 
     /**

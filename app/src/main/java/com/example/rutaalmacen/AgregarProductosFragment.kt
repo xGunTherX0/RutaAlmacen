@@ -144,7 +144,7 @@ class AgregarProductosFragment : Fragment(R.layout.fragment_agregar_productos) {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            estadoSuscripcion = planManager.cargarEstadoActual()
+            estadoSuscripcion = planManager.cargarEstadoActual(requireContext())
             actualizarContadorProductos(textoLimiteProductos)
         }
     }
@@ -152,7 +152,7 @@ class AgregarProductosFragment : Fragment(R.layout.fragment_agregar_productos) {
     override fun onResume() {
         super.onResume()
         viewLifecycleOwner.lifecycleScope.launch {
-            estadoSuscripcion = planManager.cargarEstadoActual()
+            estadoSuscripcion = planManager.cargarEstadoActual(requireContext())
             val textoLimiteProductos = view?.findViewById<TextView>(R.id.texto_limite_productos)
             if (textoLimiteProductos != null) {
                 actualizarContadorProductos(textoLimiteProductos)
@@ -185,7 +185,7 @@ class AgregarProductosFragment : Fragment(R.layout.fragment_agregar_productos) {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            val estado = estadoSuscripcion ?: planManager.cargarEstadoActual().also { estadoSuscripcion = it }
+            val estado = estadoSuscripcion ?: planManager.cargarEstadoActual(requireContext()).also { estadoSuscripcion = it }
             when (val resultado = planManager.validarGuardarProducto(estado)) {
                 is ResultadoValidacion.Bloqueado -> {
                     mostrarDialogoLimite(resultado)

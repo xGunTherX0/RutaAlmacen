@@ -141,7 +141,7 @@ class PlanSuscripcionActivity : AppCompatActivity() {
      */
     private fun cargarEstado() {
         lifecycleScope.launch {
-            estadoActual = planManager.cargarEstadoActual()
+            estadoActual = planManager.cargarEstadoActual(this@PlanSuscripcionActivity)
             mostrarEstadoActual()
             mostrarPlanes()
         }

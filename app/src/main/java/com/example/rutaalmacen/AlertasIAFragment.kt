@@ -165,7 +165,7 @@ class AlertasIAFragment : Fragment(R.layout.fragment_alertas_ia) {
 
         actualizarResumenFiltros()
         viewLifecycleOwner.lifecycleScope.launch {
-            estadoSuscripcion = planManager.cargarEstadoActual()
+            estadoSuscripcion = planManager.cargarEstadoActual(requireContext())
             actualizarContadorAlertas()
             cargarAlertas()
         }
@@ -207,7 +207,7 @@ class AlertasIAFragment : Fragment(R.layout.fragment_alertas_ia) {
     override fun onResume() {
         super.onResume()
         viewLifecycleOwner.lifecycleScope.launch {
-            estadoSuscripcion = planManager.cargarEstadoActual()
+            estadoSuscripcion = planManager.cargarEstadoActual(requireContext())
             actualizarContadorAlertas()
             cargarAlertas()
         }

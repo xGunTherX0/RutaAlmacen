@@ -97,7 +97,7 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
         recyclerProductos.adapter = adaptadorProductos
 
         viewLifecycleOwner.lifecycleScope.launch {
-            estadoSuscripcion = planManager.cargarEstadoActual()
+            estadoSuscripcion = planManager.cargarEstadoActual(requireContext())
             actualizarContadorProductos(textoLimiteProductos)
             cargarProductos()
         }
@@ -106,7 +106,7 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
     override fun onResume() {
         super.onResume()
         viewLifecycleOwner.lifecycleScope.launch {
-            estadoSuscripcion = planManager.cargarEstadoActual()
+            estadoSuscripcion = planManager.cargarEstadoActual(requireContext())
             val textoLimiteProductos = view?.findViewById<TextView>(R.id.texto_limite_productos)
             if (textoLimiteProductos != null) {
                 actualizarContadorProductos(textoLimiteProductos)
@@ -119,7 +119,7 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
         super.onHiddenChanged(hidden)
         if (!hidden) {
             viewLifecycleOwner.lifecycleScope.launch {
-                estadoSuscripcion = planManager.cargarEstadoActual()
+                estadoSuscripcion = planManager.cargarEstadoActual(requireContext())
                 val textoLimiteProductos = view?.findViewById<TextView>(R.id.texto_limite_productos)
                 if (textoLimiteProductos != null) {
                     actualizarContadorProductos(textoLimiteProductos)
