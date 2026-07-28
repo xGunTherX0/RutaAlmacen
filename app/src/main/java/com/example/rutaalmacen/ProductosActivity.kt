@@ -17,7 +17,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rutaalmacen.productos.OfertaUtil
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -108,7 +107,6 @@ class ProductosActivity : AppCompatActivity() {
         val campoBusqueda = findViewById<TextInputEditText>(R.id.campo_busqueda_producto)
         val recyclerResultados = findViewById<RecyclerView>(R.id.recycler_resultados)
         val campoCategoria = findViewById<AutoCompleteTextView>(R.id.campo_categoria)
-        val navegacion = findViewById<BottomNavigationView>(R.id.nav_productos)
         contenedorCarga = findViewById(R.id.contenedor_carga_comprador)
         val botonBuscar = findViewById<MaterialButton>(R.id.boton_buscar_producto)
 
@@ -121,7 +119,7 @@ class ProductosActivity : AppCompatActivity() {
         recyclerResultados.adapter = adaptadorResultados
 
         configurarFiltros(campoCategoria)
-        configurarNavegacion(navegacion)
+        configurarBotonVolver()
 
         botonBuscar.setOnClickListener {
             ejecutarBusquedaManual(campoBusqueda.text?.toString().orEmpty())
@@ -139,20 +137,12 @@ class ProductosActivity : AppCompatActivity() {
         }
     }
 
-    private fun configurarNavegacion(navegacion: BottomNavigationView) {
-        navegacion.selectedItemId = R.id.nav_productos_comprador
-        navegacion.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_productos_comprador -> true
-                R.id.nav_almacenes_comprador -> {
-                    val intent = Intent(this, AlmacenesCercanosActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                    startActivity(intent)
-                    finish()
-                    true
-                }
-                else -> false
-            }
+    private fun configurarBotonVolver() {
+        findViewById<MaterialButton>(R.id.boton_volver_home).setOnClickListener {
+            val intent = Intent(this, CompradorActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            startActivity(intent)
+            finish()
         }
     }
 

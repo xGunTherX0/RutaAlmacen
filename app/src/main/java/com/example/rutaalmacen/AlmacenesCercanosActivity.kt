@@ -20,7 +20,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
@@ -121,39 +120,22 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         recycler.adapter = adaptador
 
         configurarCategoria(campoCategoria)
-        configurarNavegacion()
+        configurarBotonVolver()
 
         cargarAlmacenes()
     }
 
-    /**
-     * Ciclo de vida: recarga los almacenes al volver a la actividad para reflejar
-     * cualquier cambio ocurrido mientras no estaba visible.
-     */
     override fun onResume() {
         super.onResume()
         cargarAlmacenes()
     }
 
-    /**
-     * Configura la barra de navegación inferior del comprador, permitiendo
-     * navegar entre la lista de productos y la lista de almacenes.
-     */
-    private fun configurarNavegacion() {
-        val navegacion = findViewById<BottomNavigationView>(R.id.nav_comprador)
-        navegacion.selectedItemId = R.id.nav_almacenes_comprador
-        navegacion.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_productos_comprador -> {
-                    val intent = Intent(this, CompradorActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                    startActivity(intent)
-                    finish()
-                    true
-                }
-                R.id.nav_almacenes_comprador -> true
-                else -> false
-            }
+    private fun configurarBotonVolver() {
+        findViewById<MaterialButton>(R.id.boton_volver_home).setOnClickListener {
+            val intent = Intent(this, CompradorActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            startActivity(intent)
+            finish()
         }
     }
 

@@ -9,16 +9,43 @@
     android:padding="@dimen/margen_pantalla"
     tools:context=".AlmacenesCercanosActivity">
 
-    <TextView
-        android:id="@+id/texto_titulo_almacenes"
+    <LinearLayout
+        android:id="@+id/header_almacenes"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Buscar almacenes"
-        android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleLarge"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/boton_volver_home"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:text="←"
+            android:textSize="20sp"
+            app:cornerRadius="24dp" />
+
+        <TextView
+            android:id="@+id/texto_titulo_almacenes"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Buscar almacenes"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleLarge" />
+
+        <View
+            android:layout_width="48dp"
+            android:layout_height="48dp" />
+    </LinearLayout>
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/contenedor_filtro_distancia_almacenes"
@@ -32,7 +59,7 @@
         app:strokeWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/texto_titulo_almacenes">
+        app:layout_constraintTop_toBottomOf="@id/header_almacenes">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -89,27 +116,11 @@
         android:layout_marginTop="@dimen/espacio_sm"
         android:clipToPadding="false"
         android:paddingBottom="@dimen/espacio_lg"
-        app:layout_constraintBottom_toTopOf="@id/nav_comprador"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/texto_resultados_almacenes"
         tools:listitem="@layout/item_almacen_cercano" />
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/nav_comprador"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/fondo_card"
-        app:itemIconSize="@dimen/ancho_icono_grande"
-        app:itemIconTint="@color/colorPrimary"
-        app:itemTextAppearanceActive="@style/TextAppearance.RutaAlmacen.Comprador.Nav"
-        app:itemTextAppearanceInactive="@style/TextAppearance.RutaAlmacen.Comprador.Nav"
-        app:itemTextColor="@color/colorPrimary"
-        app:labelVisibilityMode="labeled"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/menu_comprador" />
 
     <LinearLayout
         android:id="@+id/contenedor_carga_almacenes"
