@@ -458,7 +458,7 @@ class LoginActivity : AppCompatActivity() {
      *
      * - Administrador: [AdminActivity]
      * - Vendedor: [VendedorActivity]
-     * - Comprador: [AlmacenesCercanosActivity]
+     * - Comprador: [CompradorActivity]
      *
      * Si el rol no es reconocido, muestra un mensaje y cierra la sesión temporal.
      *
@@ -468,7 +468,7 @@ class LoginActivity : AppCompatActivity() {
         val destino = when (rol.lowercase()) {
             Constantes.ROL_ADMINISTRADOR -> AdminActivity::class.java
             Constantes.ROL_VENDEDOR -> VendedorActivity::class.java
-            Constantes.ROL_COMPRADOR -> AlmacenesCercanosActivity::class.java
+            Constantes.ROL_COMPRADOR -> CompradorActivity::class.java
             else -> null
         }
 
