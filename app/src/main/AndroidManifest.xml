@@ -44,6 +44,9 @@
             android:name=".AlmacenesCercanosActivity"
             android:exported="false" />
         <activity
+            android:name=".ProductosActivity"
+            android:exported="false" />
+        <activity
             android:name=".StockAlmacenActivity"
             android:exported="false" />
         <activity
