@@ -21,6 +21,12 @@ class CompradorActivity : AppCompatActivity() {
         CategoriaHome("Bebidas", R.drawable.ic_bebidas, "Bebidas y Jugos"),
         CategoriaHome("Panadería", R.drawable.ic_panaderia, "Pan y Pastelería"),
         CategoriaHome("Abarrotes", R.drawable.ic_abarrotes, "Despensa"),
+        CategoriaHome("Lácteos", R.drawable.ic_lacteos, "Lácteos y Huevos"),
+        CategoriaHome("Frutas", R.drawable.ic_frutas, "Frutas y Verduras"),
+        CategoriaHome("Snacks", R.drawable.ic_snacks, "Snacks y Dulces"),
+        CategoriaHome("Congelados", R.drawable.ic_congelados, "Congelados"),
+        CategoriaHome("Aseo", R.drawable.ic_aseo, "Aseo Hogar"),
+        CategoriaHome("Higiene", R.drawable.ic_higiene, "Higiene Personal"),
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
