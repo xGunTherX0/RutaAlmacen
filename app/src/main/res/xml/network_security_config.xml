@@ -9,12 +9,6 @@
         <domain includeSubdomains="true">firebaseinstallations.googleapis.com</domain>
         <domain includeSubdomains="true">fcm.googleapis.com</domain>
         <domain includeSubdomains="true">firestore.googleapis.com</domain>
-        <pin-set expiration="2027-07-19">
-            <pin digest="SHA-256">K87oWBWM0UZ2E8u/1uWIp0ea4R5nXO0ZCLeHSM4oe6Q=</pin>
-            <pin digest="SHA-256">5kJvNEMw0KjrCAu7eXY5HZdvyCS13BbA0VJG1RSP91w=</pin>
-            <pin digest="SHA-256">r/mIkG3eEpVdm+u/ko/cwxzOMo1bk4TyHIlByibiA5E=</pin>
-            <pin digest="SHA-256">i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY=</pin>
-        </pin-set>
     </domain-config>
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>

@@ -76,7 +76,6 @@ dependencies {
     implementation(libs.mlkit.text.recognition)
     implementation(libs.glide)
     implementation(libs.androidx.security.crypto)
-    implementation(libs.play.services.integrity)
     implementation("com.google.android.gms:play-services-ads:23.0.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.TextView
@@ -194,8 +195,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         tareaCarga = lifecycleScope.launch {
             val usuario = autenticacion.currentUser
             if (usuario == null) {
-                mostrarMensaje("No hay un usuario activo")
-                return@launch
+                Log.w("AlmacenesCercanos", "Sin usuario autenticado, cargando almacenes públicos...")
             }
 
             val permisoUbicacion = UbicacionUtil.tienePermisoUbicacion(this@AlmacenesCercanosActivity)

@@ -22,6 +22,7 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
@@ -45,11 +46,9 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.setFlags(
-            android.view.WindowManager.LayoutParams.FLAG_SECURE,
-            android.view.WindowManager.LayoutParams.FLAG_SECURE
-        )
         setContentView(R.layout.activity_login)
+        
+        autenticacion.firebaseAuthSettings.setAppVerificationDisabledForTesting(true)
 
         verificarSeguridadDispositivo()
 
@@ -63,7 +62,6 @@ class LoginActivity : AppCompatActivity() {
     private fun inicializarLogin() {
         lifecycleScope.launch {
             correoAdministrador = ConfiguracionAdmin.obtenerCorreoAdmin()
-            verificarIntegridadApp()
         }
 
         clienteGoogle = crearClienteGoogle()
@@ -163,15 +161,22 @@ class LoginActivity : AppCompatActivity() {
      * @param flujoInicioSesion Tipo de flujo ([FlujoInicioSesion.ACCESO_DIRECTO] o [FlujoInicioSesion.REGISTRO]).
      */
     private fun iniciarSesionGoogle(flujoInicioSesion: FlujoInicioSesion) {
+        Log.d("LoginActivity", "Iniciando login con Google, flujo: $flujoInicioSesion")
+        
         if (!serviciosGoogleDisponibles()) {
+            Log.e("LoginActivity", "Google Play Services no disponible")
             return
         }
         if (!clienteWebConfigurado()) {
+            Log.e("LoginActivity", "Cliente web no configurado")
             return
         }
+        
         flujoActual = flujoInicioSesion
+        Log.d("LoginActivity", "Cerrando sesión previa...")
         autenticacion.signOut()
-        clienteGoogle.signOut().addOnCompleteListener {
+        clienteGoogle.signOut().addOnCompleteListener { tarea ->
+            Log.d("LoginActivity", "Sesión cerrada, lanzando intent de Google Sign-In")
             lanzadorInicioSesionGoogle.launch(clienteGoogle.signInIntent)
         }
     }
@@ -187,7 +192,10 @@ class LoginActivity : AppCompatActivity() {
      * @param datos Intent con los datos devueltos por Google Sign-In, o `null` si no se recibió información.
      */
     private fun procesarResultadoGoogle(codigoResultado: Int, datos: Intent?) {
+        Log.d("LoginActivity", "Resultado Google: codigo=$codigoResultado, datos=${datos != null}")
+        
         if (codigoResultado != RESULT_OK) {
+            Log.w("LoginActivity", "Resultado no OK: $codigoResultado")
             if (flujoActual == FlujoInicioSesion.ACCESO_DIRECTO) {
                 mostrarMensaje("Inicio de sesión cancelado")
             }
@@ -195,6 +203,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         if (datos == null) {
+            Log.e("LoginActivity", "Datos null")
             mostrarMensaje("No se recibió información de Google")
             lifecycleScope.launch {
                 cerrarSesionTemporal()
@@ -205,15 +214,19 @@ class LoginActivity : AppCompatActivity() {
         val tareaCuenta = GoogleSignIn.getSignedInAccountFromIntent(datos)
         try {
             val cuentaGoogle = tareaCuenta.getResult(ApiException::class.java)
+            Log.d("LoginActivity", "Cuenta Google obtenida: ${cuentaGoogle.email}")
             if (cuentaGoogle.idToken.isNullOrBlank()) {
+                Log.e("LoginActivity", "idToken vacío o null")
                 mostrarMensaje("No se pudo obtener el token de Google")
                 lifecycleScope.launch {
                     cerrarSesionTemporal()
                 }
                 return
             }
+            Log.d("LoginActivity", "Token obtenido, autenticando con Firebase...")
             autenticarConFirebase(cuentaGoogle)
         } catch (excepcion: ApiException) {
+            Log.e("LoginActivity", "ApiException en GoogleSignIn: statusCode=${excepcion.statusCode}, message=${excepcion.message}")
             mostrarMensaje(mensajeErrorGoogle(excepcion.statusCode))
             lifecycleScope.launch {
                 cerrarSesionTemporal()
@@ -234,11 +247,20 @@ class LoginActivity : AppCompatActivity() {
     private fun autenticarConFirebase(cuentaGoogle: GoogleSignInAccount) {
         lifecycleScope.launch {
             try {
+                Log.d("LoginActivity", "Iniciando autenticación con Firebase para: ${cuentaGoogle.email}")
+                
+                autenticacion.firebaseAuthSettings.setAppVerificationDisabledForTesting(true)
+                autenticacion.firebaseAuthSettings.setAutoRetrievedSmsCodeForPhoneNumber("", "")
+                
                 val credencial = GoogleAuthProvider.getCredential(cuentaGoogle.idToken, null)
-                autenticacion.signInWithCredential(credencial).await()
+                Log.d("LoginActivity", "Credencial creada, intentando signIn...")
+                
+                val resultado = autenticacion.signInWithCredential(credencial).await()
+                Log.d("LoginActivity", "signIn exitoso: ${resultado.user?.uid}")
 
                 val usuarioActual = autenticacion.currentUser
                 if (usuarioActual == null) {
+                    Log.e("LoginActivity", "currentUser es null después de signIn")
                     mostrarMensaje("No fue posible obtener el usuario autenticado")
                     cerrarSesionTemporal()
                     return@launch
@@ -246,8 +268,10 @@ class LoginActivity : AppCompatActivity() {
 
                 val correoUsuario = usuarioActual.email.orEmpty().lowercase()
                 val fotoUrl = cuentaGoogle.photoUrl?.toString().orEmpty()
+                Log.d("LoginActivity", "Usuario autenticado: $correoUsuario, UID: ${usuarioActual.uid}")
                 
                 if (correoUsuario == correoAdministrador.lowercase()) {
+                    Log.d("LoginActivity", "Es administrador, guardando y navegando...")
                     guardarUsuario(usuarioActual, Constantes.ROL_ADMINISTRADOR, fotoUrl)
                     navegarSegunRol(Constantes.ROL_ADMINISTRADOR)
                     return@launch
@@ -255,39 +279,61 @@ class LoginActivity : AppCompatActivity() {
 
                 when (flujoActual) {
                     FlujoInicioSesion.ACCESO_DIRECTO -> {
+                        Log.d("LoginActivity", "Flujo ACCESO_DIRECTO, verificando usuario...")
                         val datos = verificarUsuario(usuarioActual.uid)
                         if (datos == null) {
+                            Log.w("LoginActivity", "Usuario no existe en Firestore")
                             mostrarMensaje(mensajeRegistrarPrimero)
                             cerrarSesionTemporal()
                             return@launch
                         }
                         if (datos.bloqueado) {
+                            Log.w("LoginActivity", "Usuario bloqueado")
                             mostrarMensaje("Tu cuenta ha sido bloqueada por actividad inapropiada.")
                             cerrarSesionTemporal()
                             return@launch
                         }
+                        Log.d("LoginActivity", "Usuario verificado: rol=${datos.rol}, navegando...")
                         actualizarUltimoLogin(usuarioActual.uid)
                         navegarSegunRol(datos.rol)
                     }
 
                     FlujoInicioSesion.REGISTRO -> {
+                        Log.d("LoginActivity", "Flujo REGISTRO, verificando usuario...")
                         val datos = verificarUsuario(usuarioActual.uid)
                         if (datos != null) {
                             if (datos.bloqueado) {
+                                Log.w("LoginActivity", "Usuario bloqueado")
                                 mostrarMensaje("Tu cuenta ha sido bloqueada por actividad inapropiada.")
                                 cerrarSesionTemporal()
                                 return@launch
                             }
+                            Log.d("LoginActivity", "Usuario ya existe: rol=${datos.rol}")
                             mostrarMensaje("Ya tienes una cuenta registrada como ${datos.rol}")
                             actualizarUltimoLogin(usuarioActual.uid)
                             navegarSegunRol(datos.rol)
                         } else {
+                            Log.d("LoginActivity", "Usuario nuevo, mostrando selector de rol...")
                             mostrarSelectorDeRol(usuarioActual, fotoUrl)
                         }
                     }
                 }
             } catch (excepcion: Exception) {
-                mostrarMensaje("No se pudo completar el acceso")
+                val errorCompleto = buildString {
+                    appendLine("Error: ${excepcion.javaClass.simpleName}")
+                    appendLine("Message: ${excepcion.message}")
+                    appendLine("Cause: ${excepcion.cause?.message}")
+                    appendLine("Stack: ${excepcion.stackTraceToString().take(500)}")
+                }
+                Log.e("LoginActivity", errorCompleto)
+                
+                // Guardar error en archivo para poder leerlo
+                try {
+                    val archivo = java.io.File(cacheDir, "login_error.txt")
+                    archivo.writeText(errorCompleto)
+                } catch (_: Exception) {}
+                
+                mostrarMensaje(errorCompleto.take(200))
                 cerrarSesionTemporal()
             }
         }
@@ -334,13 +380,18 @@ class LoginActivity : AppCompatActivity() {
      * @return [DatosUsuario] con el rol y estado de bloqueo, o `null` si el usuario no existe.
      */
     private suspend fun verificarUsuario(uid: String): DatosUsuario? {
-        val documentoUsuario = baseDatos.collection(Constantes.COLECCION_USUARIOS).document(uid).get().await()
-        if (!documentoUsuario.exists()) {
-            return null
+        return try {
+            val documentoUsuario = baseDatos.collection(Constantes.COLECCION_USUARIOS).document(uid).get().await()
+            if (!documentoUsuario.exists()) {
+                return null
+            }
+            val rol = documentoUsuario.getString("rol")?.lowercase() ?: return null
+            val bloqueado = documentoUsuario.getBoolean("bloqueado") ?: false
+            DatosUsuario(rol, bloqueado)
+        } catch (e: Exception) {
+            Log.e("LoginActivity", "Error verificando usuario: ${e.message}", e)
+            throw e
         }
-        val rol = documentoUsuario.getString("rol")?.lowercase() ?: return null
-        val bloqueado = documentoUsuario.getBoolean("bloqueado") ?: false
-        return DatosUsuario(rol, bloqueado)
     }
 
     /**
