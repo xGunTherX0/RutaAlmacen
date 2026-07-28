@@ -29,7 +29,7 @@ service cloud.firestore {
     }
 
     match /Usuarios/{userId} {
-      allow read: if estaAutenticado() && noEstaBloqueado();
+      allow read: if (estaAutenticado() && request.auth.uid == userId && noEstaBloqueado()) || esAdministrador();
       allow list: if estaAutenticado();
       allow create: if request.auth != null
         && request.auth.uid == userId
@@ -69,7 +69,7 @@ service cloud.firestore {
     }
 
     match /InventarioPublico/{docId} {
-      allow read: if estaAutenticado();
+      allow read: if estaAutenticado() && noEstaBloqueado();
       allow create, update: if esVendedor()
         && request.resource.data.vendedorId == request.auth.uid;
       allow delete: if esVendedor()
@@ -80,8 +80,7 @@ service cloud.firestore {
     match /Notificaciones_IA/{notifId} {
       allow read: if estaAutenticado()
         && (resource.data.vendedorId == request.auth.uid || esAdministrador());
-      allow create: if estaAutenticado() && request.resource.data.compradorId == request.auth.uid
-        || esAdministrador();
+      allow create: if (esComprador() && request.resource.data.compradorId == request.auth.uid) || esAdministrador();
       allow update: if esVendedor() && resource.data.vendedorId == request.auth.uid
         || esAdministrador();
       allow delete: if esVendedor() && resource.data.vendedorId == request.auth.uid
@@ -90,7 +89,7 @@ service cloud.firestore {
 
     match /Busquedas_Historicas/{busqId} {
       allow read: if esAdministrador();
-      allow create: if estaAutenticado() && noEstaBloqueado();
+      allow create: if esComprador() && noEstaBloqueado();
       allow update, delete: if esAdministrador();
     }
 
