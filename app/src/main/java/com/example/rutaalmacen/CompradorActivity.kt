@@ -6,6 +6,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.ads.AdRequest
@@ -63,7 +64,7 @@ class CompradorActivity : AppCompatActivity() {
                 }
             }
         )
-        recyclerCategorias.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        recyclerCategorias.layoutManager = GridLayoutManager(this, 5)
         recyclerCategorias.adapter = adaptadorCategorias
 
         configurarAccesosDirectos()
