@@ -17,7 +17,7 @@ import com.google.android.material.card.MaterialCardView
 class CompradorActivity : AppCompatActivity() {
 
     private val categoriasHome = listOf(
-        CategoriaHome("Caja Vecina", R.drawable.ic_caja_vecina, "Caja Vecina"),
+        CategoriaHome("Caja Vecina", R.drawable.ic_caja_vecina, "caja_vecina"),
         CategoriaHome("Bebidas", R.drawable.ic_bebidas, "Bebidas y Jugos"),
         CategoriaHome("Panadería", R.drawable.ic_panaderia, "Pan y Pastelería"),
         CategoriaHome("Abarrotes", R.drawable.ic_abarrotes, "Despensa"),
@@ -46,9 +46,15 @@ class CompradorActivity : AppCompatActivity() {
         val adaptadorCategorias = AdaptadorCategorias(
             categorias = categoriasHome,
             onCategoriaClick = { categoria ->
-                val intent = Intent(this, ProductosActivity::class.java)
-                intent.putExtra("categoria", categoria.categoriaBusqueda)
-                startActivity(intent)
+                if (categoria.categoriaBusqueda == "caja_vecina") {
+                    val intent = Intent(this, AlmacenesCercanosActivity::class.java)
+                    intent.putExtra("filtro_caja_vecina", true)
+                    startActivity(intent)
+                } else {
+                    val intent = Intent(this, ProductosActivity::class.java)
+                    intent.putExtra("categoria", categoria.categoriaBusqueda)
+                    startActivity(intent)
+                }
             }
         )
         recyclerCategorias.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)

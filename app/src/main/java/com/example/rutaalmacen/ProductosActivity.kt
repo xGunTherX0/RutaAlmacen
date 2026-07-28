@@ -130,8 +130,9 @@ class ProductosActivity : AppCompatActivity() {
 
         val categoriaIntent = intent.getStringExtra("categoria")
         if (!categoriaIntent.isNullOrBlank()) {
-            campoBusqueda.setText(categoriaIntent)
-            lifecycleScope.launch { buscarProductos(categoriaIntent) }
+            categoriaSeleccionada = categoriaIntent
+            campoCategoria.setText(categoriaIntent, false)
+            lifecycleScope.launch { buscarProductosPorCategoria(categoriaIntent) }
         } else {
             lifecycleScope.launch { cargarProductosIniciales() }
         }

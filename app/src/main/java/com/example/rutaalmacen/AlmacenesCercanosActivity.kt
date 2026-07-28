@@ -50,6 +50,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
     private val almacenes: MutableList<AlmacenCercano> = mutableListOf()
     private lateinit var adaptador: AdaptadorAlmacenes
     private var categoriaSeleccionada = "Todas"
+    private var filtroCajaVecina = false
     private lateinit var contenedorCarga: View
     private var ubicacionCache: Location? = null
     private var ubicacionCacheTiempo = 0L
@@ -121,6 +122,8 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
 
         configurarCategoria(campoCategoria)
         configurarBotonVolver()
+
+        filtroCajaVecina = intent.getBooleanExtra("filtro_caja_vecina", false)
 
         cargarAlmacenes()
     }
@@ -441,7 +444,9 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
      */
     private fun aplicarFiltros() {
         val filtrados = almacenesBase.filter { almacen ->
-            categoriaSeleccionada == "Todas" || almacen.categoriaAlmacen == categoriaSeleccionada
+            val coincideCategoria = categoriaSeleccionada == "Todas" || almacen.categoriaAlmacen == categoriaSeleccionada
+            val coincideCajaVecina = !filtroCajaVecina || almacen.tieneCajaVecina
+            coincideCategoria && coincideCajaVecina
         }
 
         val ordenados = filtrados.sortedWith(
