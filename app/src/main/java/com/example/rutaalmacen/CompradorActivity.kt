@@ -112,7 +112,21 @@ class CompradorActivity : AppCompatActivity() {
     ) { resultados ->
         val concedido = resultados[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
             resultados[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-        if (!concedido) {
+        if (concedido) {
+            val textoPendiente = busquedaPendiente
+            val categoriaPendienteActual = categoriaPendiente
+            busquedaPendiente = null
+            categoriaPendiente = null
+            if (!textoPendiente.isNullOrBlank()) {
+                lifecycleScope.launch { buscarProductos(textoPendiente) }
+            } else if (!categoriaPendienteActual.isNullOrBlank()) {
+                lifecycleScope.launch { buscarProductosPorCategoria(categoriaPendienteActual) }
+            }
+            if (cargaPendienteAlmacenes) {
+                cargaPendienteAlmacenes = false
+                cargarAlmacenes()
+            }
+        } else {
             mostrarMensaje("Permiso de ubicación denegado")
         }
     }
@@ -135,29 +149,70 @@ class CompradorActivity : AppCompatActivity() {
 
         MobileAds.initialize(this) {}
 
+        val campoBusqueda = findViewById<TextInputEditText>(R.id.campo_busqueda_producto)
+        val recyclerResultados = findViewById<RecyclerView>(R.id.recycler_resultados)
+        val recyclerAlmacenes = findViewById<RecyclerView>(R.id.recycler_almacenes)
         val recyclerCategorias = findViewById<RecyclerView>(R.id.recycler_categorias)
+        val campoCategoriaAlmacen = findViewById<AutoCompleteTextView>(R.id.campo_categoria_almacenes)
         contenedorCarga = findViewById(R.id.contenedor_carga_comprador)
+        val textoSinAlmacenes = findViewById<TextView>(R.id.texto_sin_almacenes)
+        val textoResultadosProductos = findViewById<TextView>(R.id.texto_resultados_productos)
+
+        adaptadorResultados = AdaptadorResultados(
+            resultados = resultados,
+            onLlegar = { resultado -> abrirNavegacion(resultado) },
+            onVerStock = { resultado -> abrirStockAlmacen(resultado) },
+        )
+        recyclerResultados.layoutManager = LinearLayoutManager(this)
+        recyclerResultados.adapter = adaptadorResultados
+
+        adaptadorAlmacenes = AdaptadorAlmacenes(
+            almacenes = almacenes,
+            onVerStock = { almacen -> abrirStockAlmacen(almacen) },
+            onLlegar = { almacen -> abrirNavegacion(almacen) },
+        )
+        recyclerAlmacenes.layoutManager = LinearLayoutManager(this)
+        recyclerAlmacenes.adapter = adaptadorAlmacenes
 
         val adaptadorCategorias = AdaptadorCategorias(
             categorias = categoriasHome,
             onCategoriaClick = { categoria ->
+                campoBusqueda.setText(categoria.categoriaBusqueda)
                 ejecutarBusquedaManual(categoria.categoriaBusqueda)
             }
         )
         recyclerCategorias.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         recyclerCategorias.adapter = adaptadorCategorias
 
+        configurarFiltroCategoriaAlmacen(campoCategoriaAlmacen)
         configurarAccesosDirectos()
+        configurarBusqueda(campoBusqueda)
         configurarBotonAlertas()
         configurarAdView()
+
+        lifecycleScope.launch {
+            cargarProductosIniciales()
+            cargarAlmacenes()
+        }
     }
 
     private fun configurarAccesosDirectos() {
         findViewById<MaterialCardView>(R.id.card_almacenes).setOnClickListener {
-            startActivity(Intent(this, AlmacenesCercanosActivity::class.java))
+            val recyclerAlmacenes = findViewById<RecyclerView>(R.id.recycler_almacenes)
+            recyclerAlmacenes.smoothScrollToPosition(0)
         }
         findViewById<MaterialCardView>(R.id.card_productos).setOnClickListener {
-            startActivity(Intent(this, ProductosActivity::class.java))
+            findViewById<TextInputEditText>(R.id.campo_busqueda_producto).requestFocus()
+        }
+    }
+
+    private fun configurarBusqueda(campoBusqueda: TextInputEditText) {
+        findViewById<ImageView>(R.id.icono_busqueda).setOnClickListener {
+            ejecutarBusquedaManual(campoBusqueda.text?.toString().orEmpty())
+        }
+        campoBusqueda.setOnEditorActionListener { _, _, _ ->
+            ejecutarBusquedaManual(campoBusqueda.text?.toString().orEmpty())
+            true
         }
     }
 
@@ -173,7 +228,370 @@ class CompradorActivity : AppCompatActivity() {
         adView.loadAd(adRequest)
     }
 
+    private fun configurarFiltroCategoriaAlmacen(campoCategoria: AutoCompleteTextView) {
+        val adaptadorCategorias = ArrayAdapter(
+            this,
+            android.R.layout.simple_dropdown_item_1line,
+            categoriasAlmacen,
+        )
+        campoCategoria.setAdapter(adaptadorCategorias)
+        campoCategoria.setText(categoriaAlmacenSeleccionada, false)
+        campoCategoria.setOnItemClickListener { _, _, posicion, _ ->
+            categoriaAlmacenSeleccionada = categoriasAlmacen.getOrNull(posicion) ?: "Todas"
+            aplicarFiltrosAlmacenes()
+        }
+    }
+
+    private fun cargarAlmacenes() {
+        if (tareaCargaAlmacenes?.isActive == true) return
+        tareaCargaAlmacenes = lifecycleScope.launch {
+            val permisoUbicacion = UbicacionUtil.tienePermisoUbicacion(this@CompradorActivity)
+            if (!permisoUbicacion && !cargaPendienteAlmacenes) {
+                cargaPendienteAlmacenes = true
+                solicitudPermisoUbicacion.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                    ),
+                )
+            }
+
+            val ubicacionRapida = if (permisoUbicacion) obtenerUbicacionCacheada() else null
+            val ahora = System.currentTimeMillis()
+            val usarCache = almacenesBase.isNotEmpty() &&
+                ahora - ultimaCargaAlmacenes < HorarioUtil.TIEMPO_CACHE_ALMACENES_MS
+            if (usarCache) {
+                actualizarDistanciasAlmacenes(ubicacionRapida)
+                return@launch
+            }
+
+            val documentosCache = obtenerVendedoresCache()
+            if (documentosCache.isNotEmpty()) {
+                val nuevosCache = construirAlmacenes(documentosCache, ubicacionRapida)
+                almacenesBase.clear()
+                almacenesBase.addAll(nuevosCache)
+                aplicarFiltrosAlmacenes()
+            }
+
+            try {
+                val documentosServidor = obtenerVendedoresServidor()
+                if (documentosServidor.isNotEmpty()) {
+                    val ubicacionFinal = if (permisoUbicacion) {
+                        obtenerUbicacionCacheada() ?: obtenerUbicacionActual()
+                    } else {
+                        null
+                    }
+                    val nuevos = construirAlmacenes(documentosServidor, ubicacionFinal)
+                    almacenesBase.clear()
+                    almacenesBase.addAll(nuevos)
+                    ultimaCargaAlmacenes = System.currentTimeMillis()
+                    aplicarFiltrosAlmacenes()
+                }
+            } catch (_: Exception) {
+                if (almacenesBase.isEmpty()) {
+                    mostrarMensaje("No se pudieron cargar los almacenes")
+                }
+            }
+        }
+    }
+
+    private suspend fun obtenerVendedoresCache(): List<DocumentSnapshot> {
+        return try {
+            baseDatos.collection(Constantes.COLECCION_USUARIOS)
+                .whereEqualTo("rol", Constantes.ROL_VENDEDOR)
+                .get(Source.SERVER)
+                .await()
+                .documents
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    private suspend fun obtenerVendedoresServidor(): List<DocumentSnapshot> {
+        return baseDatos.collection(Constantes.COLECCION_USUARIOS)
+            .whereEqualTo("rol", Constantes.ROL_VENDEDOR)
+            .get()
+            .await()
+            .documents
+    }
+
+    private fun construirAlmacenes(
+        documentos: List<DocumentSnapshot>,
+        ubicacionComprador: Location?,
+    ): List<AlmacenCercano> {
+        return documentos.mapNotNull { documento ->
+            val latitud = documento.getDouble("latitud")
+            val longitud = documento.getDouble("longitud")
+            val nombreAlmacen = documento.getString("nombreAlmacen")
+                ?.takeIf { it.isNotBlank() }
+                ?: documento.getString("nombre")?.takeIf { it.isNotBlank() }
+                ?: "Almacén"
+
+            val horarioMananaInicio = documento.getString("horarioMananaInicio")
+                ?: HorarioUtil.HORARIO_MANANA_INICIO_TEXTO
+            val horarioMananaFin = documento.getString("horarioMananaFin")
+                ?: HorarioUtil.HORARIO_MANANA_FIN_TEXTO
+            val horarioTardeInicio = documento.getString("horarioTardeInicio")
+                ?: HorarioUtil.HORARIO_TARDE_INICIO_TEXTO
+            val horarioTardeFin = documento.getString("horarioTardeFin")
+                ?: HorarioUtil.HORARIO_TARDE_FIN_TEXTO
+            val horarioAtencion = documento.getString("horarioAtencion")
+                ?: "$horarioMananaInicio - $horarioMananaFin / $horarioTardeInicio - $horarioTardeFin"
+            val abiertoAhora = HorarioUtil.estaAlmacenAbiertoAhora(
+                horarioMananaInicio,
+                horarioMananaFin,
+                horarioTardeInicio,
+                horarioTardeFin,
+            )
+            val distancia = if (
+                ubicacionComprador != null &&
+                latitud != null &&
+                longitud != null
+            ) {
+                UbicacionUtil.calcularDistancia(
+                    ubicacionComprador.latitude,
+                    ubicacionComprador.longitude,
+                    latitud,
+                    longitud,
+                )
+            } else {
+                null
+            }
+            val categoriaAlmacen = documento.getString("categoriaAlmacen")
+                ?.takeIf { it.isNotBlank() }
+                ?: "Sin definir"
+            val metodosPago = (documento.get("metodosPago") as? List<String>).orEmpty()
+            val tieneCajaVecina = documento.getBoolean("tieneCajaVecina") ?: false
+
+            AlmacenCercano(
+                vendedorId = documento.id,
+                nombreAlmacen = nombreAlmacen,
+                horarioAtencion = horarioAtencion,
+                abiertoAhora = abiertoAhora,
+                distanciaMetros = distancia,
+                categoriaAlmacen = categoriaAlmacen,
+                latitud = latitud,
+                longitud = longitud,
+                metodosPago = metodosPago,
+                tieneCajaVecina = tieneCajaVecina,
+            )
+        }
+    }
+
+    private fun actualizarDistanciasAlmacenes(ubicacionComprador: Location?) {
+        val actualizados = almacenesBase.map { almacen ->
+            val distancia = if (
+                ubicacionComprador != null &&
+                almacen.latitud != null &&
+                almacen.longitud != null
+            ) {
+                UbicacionUtil.calcularDistancia(
+                    ubicacionComprador.latitude,
+                    ubicacionComprador.longitude,
+                    almacen.latitud,
+                    almacen.longitud,
+                )
+            } else {
+                null
+            }
+            almacen.copy(distanciaMetros = distancia)
+        }
+
+        almacenesBase.clear()
+        almacenesBase.addAll(actualizados)
+        aplicarFiltrosAlmacenes()
+    }
+
+    private fun aplicarFiltrosAlmacenes() {
+        val filtrados = almacenesBase.filter { almacen ->
+            categoriaAlmacenSeleccionada == "Todas" || almacen.categoriaAlmacen == categoriaAlmacenSeleccionada
+        }
+
+        val ordenados = filtrados.sortedWith(
+            compareBy<AlmacenCercano> { !it.abiertoAhora }
+                .thenBy { it.distanciaMetros ?: Double.MAX_VALUE },
+        )
+
+        almacenes.clear()
+        almacenes.addAll(ordenados)
+        adaptadorAlmacenes.notifyDataSetChanged()
+
+        val textoSinAlmacenes = findViewById<TextView>(R.id.texto_sin_almacenes)
+        textoSinAlmacenes.visibility = if (almacenes.isEmpty()) View.VISIBLE else View.GONE
+    }
+
+    private fun buscarProductos(consulta: String) {
+        lifecycleScope.launch {
+            val usuario = autenticacion.currentUser
+            if (usuario == null) {
+                mostrarMensaje("No hay un usuario activo")
+                return@launch
+            }
+
+            if (!UbicacionUtil.tienePermisoUbicacion(this@CompradorActivity)) {
+                busquedaPendiente = consulta
+                solicitudPermisoUbicacion.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                    ),
+                )
+                return@launch
+            }
+
+            mostrarCarga(true)
+            try {
+                val ubicacionComprador = obtenerUbicacionParaAlerta()
+
+                val consultaNormalizada = FiltroContenido.normalizar(consulta)
+                val documentos = linkedMapOf<String, DocumentSnapshot>()
+
+                val documentosLocal = buscarInventarioLocalPublico(consultaNormalizada)
+                documentosLocal.forEach { documento ->
+                    documentos[documento.reference.path] = documento
+                }
+
+                if (documentos.isEmpty()) {
+                    val documentosPrivados = buscarInventarioLocalPrivado(consultaNormalizada)
+                    documentosPrivados.forEach { documento ->
+                        documentos[documento.reference.path] = documento
+                    }
+                }
+
+                notificarVendedoresSinProducto(
+                    producto = consulta,
+                    documentosConProducto = documentos.values,
+                    ubicacionComprador = ubicacionComprador,
+                    esCategoria = false,
+                )
+
+                if (documentos.isEmpty()) {
+                    registrarBusquedaFallida(consulta, ubicacionComprador)
+                    resultadosBase.clear()
+                    resultados.clear()
+                    adaptadorResultados.notifyDataSetChanged()
+                    mostrarResultadosProductos(false)
+                    mostrarMensaje("No se encontraron productos")
+                    return@launch
+                }
+
+                val nuevosResultados = construirResultados(documentos.values, ubicacionComprador)
+                resultadosBase.clear()
+                resultadosBase.addAll(nuevosResultados)
+                aplicarFiltros()
+                mostrarResultadosProductos(true)
+            } catch (_: Exception) {
+                mostrarMensaje("No se pudo completar la búsqueda")
+            } finally {
+                mostrarCarga(false)
+            }
+        }
+    }
+
+    private fun mostrarResultadosProductos(mostrar: Boolean) {
+        findViewById<TextView>(R.id.texto_resultados_productos).visibility = if (mostrar) View.VISIBLE else View.GONE
+        findViewById<RecyclerView>(R.id.recycler_resultados).visibility = if (mostrar) View.VISIBLE else View.GONE
+    }
+
+    private suspend fun cargarProductosIniciales() {
+        val permisoUbicacion = UbicacionUtil.tienePermisoUbicacion(this)
+        val ubicacionRapida = if (permisoUbicacion) obtenerUbicacionCacheada() else null
+        val documentosCache = try {
+            obtenerInventarioPublicoCache()
+        } catch (_: Exception) {
+            emptyList()
+        }
+        val hayCache = documentosCache.isNotEmpty()
+        if (!hayCache) {
+            mostrarCarga(true)
+        } else {
+            actualizarResultados(documentosCache, ubicacionRapida)
+        }
+        try {
+            val documentosServidor = obtenerInventarioPublicoServidor()
+            if (documentosServidor.isNotEmpty()) {
+                val ubicacionFinal = if (permisoUbicacion) {
+                    obtenerUbicacionCacheada() ?: obtenerUbicacionActual()
+                } else {
+                    null
+                }
+                actualizarResultados(documentosServidor, ubicacionFinal)
+            } else if (!hayCache) {
+                resultadosBase.clear()
+                resultados.clear()
+                adaptadorResultados.notifyDataSetChanged()
+            }
+        } catch (_: Exception) {
+            if (!hayCache) {
+                mostrarMensaje("No se pudieron cargar los productos")
+            }
+        } finally {
+            mostrarCarga(false)
+        }
+    }
+
+    private fun buscarProductosPorCategoria(categoria: String) {
+        lifecycleScope.launch {
+            val usuario = autenticacion.currentUser
+            if (usuario == null) {
+                mostrarMensaje("No hay un usuario activo")
+                return@launch
+            }
+
+            if (!UbicacionUtil.tienePermisoUbicacion(this@CompradorActivity)) {
+                categoriaPendiente = categoria
+                solicitudPermisoUbicacion.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                    ),
+                )
+                return@launch
+            }
+
+            mostrarCarga(true)
+            try {
+                val ubicacionComprador = obtenerUbicacionCacheada()
+
+                val documentos = buscarInventarioLocalPublicoPorCategoria(categoria)
+
+                notificarVendedoresSinProducto(
+                    producto = categoria,
+                    documentosConProducto = documentos,
+                    ubicacionComprador = ubicacionComprador,
+                    esCategoria = true,
+                )
+
+                if (documentos.isEmpty()) {
+                    resultadosBase.clear()
+                    resultados.clear()
+                    adaptadorResultados.notifyDataSetChanged()
+                    mostrarResultadosProductos(false)
+                    mostrarMensaje("No se encontraron productos")
+                    return@launch
+                }
+
+                val nuevosResultados = construirResultados(documentos, ubicacionComprador)
+                resultadosBase.clear()
+                resultadosBase.addAll(nuevosResultados)
+                aplicarFiltros()
+                mostrarResultadosProductos(true)
+            } catch (_: Exception) {
+                mostrarMensaje("No se pudo completar la búsqueda")
+            } finally {
+                mostrarCarga(false)
+            }
+        }
+    }
+
     private fun ejecutarBusquedaManual(consulta: String) {
+        ocultarTeclado()
+        val texto = consulta.trim()
+        if (texto.isBlank()) {
+            mostrarResultadosProductos(false)
+            return
+        }
+        buscarProductos(texto)
     }
 
     private fun ocultarTeclado() {

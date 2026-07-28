@@ -60,6 +60,41 @@
                 android:textStyle="bold"
                 app:rippleColor="#33FFFFFF" />
         </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/contenedor_busqueda_pill"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="@dimen/espacio_md"
+            android:background="@drawable/bg_search_pill"
+            android:elevation="2dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/espacio_md">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/campo_busqueda_producto"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:hint="Busca almacenes, productos..."
+                android:imeOptions="actionSearch"
+                android:inputType="textCapWords"
+                android:maxLines="1"
+                android:textColor="@color/texto_principal"
+                android:textColorHint="@color/texto_terciario"
+                android:textSize="@dimen/texto_cuerpo_lg" />
+
+            <ImageView
+                android:id="@+id/icono_busqueda"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="@dimen/espacio_sm"
+                android:contentDescription="Buscar"
+                android:src="@drawable/ic_search"
+                android:tint="@color/colorPrimary" />
+        </LinearLayout>
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -179,6 +214,87 @@
                 android:nestedScrollingEnabled="false"
                 android:orientation="horizontal"
                 android:overScrollMode="never" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_xl"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Almacenes cercanos"
+                    android:textColor="@color/texto_principal"
+                    android:textSize="@dimen/texto_titulo_md"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/contenedor_categoria_almacenes"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="140dp"
+                    app:boxCornerRadiusBottomEnd="@dimen/radio_chip"
+                    app:boxCornerRadiusBottomStart="@dimen/radio_chip"
+                    app:boxCornerRadiusTopEnd="@dimen/radio_chip"
+                    app:boxCornerRadiusTopStart="@dimen/radio_chip"
+                    app:endIconMode="dropdown_menu"
+                    app:hintEnabled="false">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/campo_categoria_almacenes"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:inputType="none"
+                        android:paddingHorizontal="@dimen/espacio_sm"
+                        android:paddingVertical="0dp"
+                        android:textSize="@dimen/texto_cuerpo_md" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/texto_sin_almacenes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_md"
+                android:gravity="center"
+                android:text="No se encontraron almacenes"
+                android:textColor="@color/texto_terciario"
+                android:textSize="@dimen/texto_cuerpo_md"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_almacenes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_sm"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
+
+            <TextView
+                android:id="@+id/texto_resultados_productos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_xl"
+                android:text="Productos"
+                android:textColor="@color/texto_principal"
+                android:textSize="@dimen/texto_titulo_md"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_resultados"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_sm"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never"
+                android:visibility="gone" />
 
             <com.google.android.gms.ads.AdView
                 android:id="@+id/ad_view"
