@@ -6,162 +6,305 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/fondo_app"
-    android:paddingHorizontal="@dimen/margen_pantalla"
-    android:paddingTop="@dimen/espacio_sm"
-    android:paddingBottom="@dimen/espacio_xs"
     tools:context=".CompradorActivity">
 
-    <TextView
-        android:id="@+id/texto_titulo_comprador"
+    <LinearLayout
+        android:id="@+id/header_home"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Buscar productos"
-        android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleLarge"
+        android:background="@drawable/bg_header_gradient"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/margen_pantalla"
+        android:paddingTop="@dimen/espacio_xl"
+        android:paddingBottom="@dimen/espacio_lg"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/contenedor_busqueda_card"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/espacio_sm"
-        app:cardBackgroundColor="@color/fondo_card"
-        app:cardCornerRadius="@dimen/radio_card"
-        app:cardElevation="@dimen/elevacion_card"
-        app:cardUseCompatPadding="false"
-        app:strokeWidth="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/texto_titulo_comprador">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
-            android:id="@+id/fila_busqueda"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="@dimen/espacio_sm"
-            android:paddingVertical="@dimen/espacio_xs">
+            android:orientation="horizontal">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/contenedor_busqueda"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_ubicacion"
+                android:contentDescription="Ubicación" />
+
+            <TextView
+                android:id="@+id/texto_ubicacion"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/espacio_xs"
                 android:layout_weight="1"
-                android:hint="Nombre del producto"
-                app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/campo_busqueda_producto"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:imeOptions="actionSearch"
-                    android:inputType="textCapWords" />
-            </com.google.android.material.textfield.TextInputLayout>
+                android:text="Tu ubicación"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/texto_cuerpo_md"
+                android:textStyle="bold" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/boton_info_alertas"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="@dimen/alto_boton_pequeno"
-                android:layout_height="@dimen/alto_boton_pequeno"
-                android:layout_marginStart="@dimen/espacio_sm"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
                 android:minWidth="0dp"
-                android:text="?"
-                app:cornerRadius="@dimen/radio_boton" />
+                android:minHeight="0dp"
+                android:padding="0dp"
+                android:text="!"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:rippleColor="#33FFFFFF" />
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/boton_buscar_producto"
+        <LinearLayout
+            android:id="@+id/contenedor_busqueda_pill"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="@dimen/espacio_md"
+            android:background="@drawable/bg_search_pill"
+            android:elevation="2dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/espacio_md">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/campo_busqueda_producto"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:hint="Busca almacenes, productos..."
+                android:imeOptions="actionSearch"
+                android:inputType="textCapWords"
+                android:maxLines="1"
+                android:textColor="@color/texto_principal"
+                android:textColorHint="@color/texto_terciario"
+                android:textSize="@dimen/texto_cuerpo_lg" />
+
+            <ImageView
+                android:id="@+id/icono_busqueda"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="@dimen/espacio_sm"
+                android:contentDescription="Buscar"
+                android:src="@drawable/ic_search"
+                android:tint="@color/colorPrimary" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_contenido"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/espacio_sm"
-        android:text="Buscar"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/contenedor_busqueda_card" />
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/contenedor_filtros"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/espacio_sm"
-        app:cardBackgroundColor="@color/fondo_card"
-        app:cardCornerRadius="@dimen/radio_card"
-        app:cardElevation="@dimen/elevacion_card"
-        app:cardUseCompatPadding="false"
-        app:strokeWidth="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/boton_buscar_producto">
+        app:layout_constraintTop_toBottomOf="@id/header_home">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="@dimen/espacio_sm"
-            android:paddingVertical="@dimen/espacio_xs">
+            android:paddingHorizontal="@dimen/margen_pantalla"
+            android:paddingTop="@dimen/espacio_md"
+            android:paddingBottom="@dimen/espacio_md">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/contenedor_categoria"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Categoría"
-                app:endIconMode="dropdown_menu"
-                app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium">
+                android:orientation="horizontal">
 
-                <AutoCompleteTextView
-                    android:id="@+id/campo_categoria"
-                    android:layout_width="match_parent"
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_almacenes"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_marginEnd="@dimen/espacio_sm"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/fondo_card"
+                    app:cardCornerRadius="@dimen/radio_card"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="@dimen/espacio_lg">
+
+                        <ImageView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:contentDescription="Almacenes"
+                            android:src="@drawable/ic_almacen" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/espacio_sm"
+                            android:text="Almacenes"
+                            android:textColor="@color/texto_principal"
+                            android:textSize="@dimen/texto_titulo_sm"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_productos"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/espacio_sm"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/fondo_card"
+                    app:cardCornerRadius="@dimen/radio_card"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="@dimen/espacio_lg">
+
+                        <ImageView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:contentDescription="Productos"
+                            android:src="@drawable/ic_productos" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/espacio_sm"
+                            android:text="Productos"
+                            android:textColor="@color/texto_principal"
+                            android:textSize="@dimen/texto_titulo_sm"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_xl"
+                android:text="Categorías"
+                android:textColor="@color/texto_principal"
+                android:textSize="@dimen/texto_titulo_md"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_categorias"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_sm"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:orientation="horizontal"
+                android:overScrollMode="never" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_xl"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Almacenes cercanos"
+                    android:textColor="@color/texto_principal"
+                    android:textSize="@dimen/texto_titulo_md"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/contenedor_categoria_almacenes"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="140dp"
+                    app:boxCornerRadiusBottomEnd="@dimen/radio_chip"
+                    app:boxCornerRadiusBottomStart="@dimen/radio_chip"
+                    app:boxCornerRadiusTopEnd="@dimen/radio_chip"
+                    app:boxCornerRadiusTopStart="@dimen/radio_chip"
+                    app:endIconMode="dropdown_menu"
+                    app:hintEnabled="false">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/campo_categoria_almacenes"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:inputType="none"
+                        android:paddingHorizontal="@dimen/espacio_sm"
+                        android:paddingVertical="0dp"
+                        android:textSize="@dimen/texto_cuerpo_md" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/texto_sin_almacenes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_md"
+                android:gravity="center"
+                android:text="No se encontraron almacenes"
+                android:textColor="@color/texto_terciario"
+                android:textSize="@dimen/texto_cuerpo_md"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_almacenes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_sm"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
+
+            <TextView
+                android:id="@+id/texto_resultados_productos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_xl"
+                android:text="Productos"
+                android:textColor="@color/texto_principal"
+                android:textSize="@dimen/texto_titulo_md"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_resultados"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_sm"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never"
+                android:visibility="gone" />
+
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/ad_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_lg"
+                app:adSize="BANNER"
+                app:adUnitId="ca-app-pub-3940256099942544/6300978111" />
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <TextView
-        android:id="@+id/texto_resultados"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/espacio_sm"
-        android:text="Resultados"
-        android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleMedium"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/contenedor_filtros" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_resultados"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="@dimen/espacio_xs"
-        android:clipToPadding="false"
-        android:paddingBottom="@dimen/espacio_lg"
-        app:layout_constraintBottom_toTopOf="@id/nav_comprador"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/texto_resultados"
-        tools:listitem="@layout/item_resultado_producto" />
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/nav_comprador"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/fondo_card"
-        app:itemIconSize="@dimen/ancho_icono_grande"
-        app:itemIconTint="@color/colorPrimary"
-        app:itemTextAppearanceActive="@style/TextAppearance.RutaAlmacen.Comprador.Nav"
-        app:itemTextAppearanceInactive="@style/TextAppearance.RutaAlmacen.Comprador.Nav"
-        app:itemTextColor="@color/colorPrimary"
-        app:labelVisibilityMode="labeled"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/menu_comprador" />
+    </androidx.core.widget.NestedScrollView>
 
     <LinearLayout
         android:id="@+id/contenedor_carga_comprador"

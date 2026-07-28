@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/espacio_xs"
     android:layout_marginVertical="@dimen/espacio_xs"
     app:cardBackgroundColor="@color/fondo_card"
     app:cardCornerRadius="@dimen/radio_card"
-    app:cardElevation="@dimen/elevacion_card"
-    app:cardUseCompatPadding="true"
+    app:cardElevation="2dp"
     app:strokeWidth="0dp">
 
     <LinearLayout
@@ -17,70 +16,81 @@
         android:orientation="vertical"
         android:padding="@dimen/padding_card">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/texto_nombre_almacen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="@color/texto_principal"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            tools:text="Almacén Don Juan" />
+
+        <LinearLayout
+            android:id="@+id/contenedor_chips"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_sm"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/texto_nombre_almacen"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleMedium"
-                android:text="Almacén" />
-
-            <TextView
-                android:id="@+id/texto_estado_almacen"
+                android:id="@+id/chip_distancia"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-                android:textColor="@color/estado_abierto"
+                android:background="@drawable/bg_chip_distancia"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:textColor="@color/texto_secundario"
+                android:textSize="@dimen/texto_etiqueta"
                 android:textStyle="bold"
-                android:text="Abierto" />
+                tools:text="28,7 km" />
+
+            <TextView
+                android:id="@+id/chip_estado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/espacio_xs"
+                android:background="@drawable/bg_chip_abierto"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:textColor="@color/estado_abierto"
+                android:textSize="@dimen/texto_etiqueta"
+                android:textStyle="bold"
+                tools:text="Abierto" />
+
+            <TextView
+                android:id="@+id/chip_caja_vecina"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/espacio_xs"
+                android:background="@drawable/bg_chip_caja_vecina"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="Caja Vecina"
+                android:textColor="@color/colorSecondaryDark"
+                android:textSize="@dimen/texto_etiqueta"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/texto_distancia_almacen"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/espacio_sm"
-            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-            android:text="Distancia: 0 m" />
-
-        <TextView
-            android:id="@+id/texto_categoria_almacen"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/espacio_xs"
-            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-            android:text="Categoría: Almacén" />
 
         <TextView
             android:id="@+id/texto_horario_almacen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/espacio_xs"
-            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-            android:text="Horario: 09:00 - 13:00 / 15:00 - 19:00" />
+            android:layout_marginTop="@dimen/espacio_sm"
+            android:textColor="@color/texto_terciario"
+            android:textSize="@dimen/texto_cuerpo_sm"
+            tools:text="09:00 - 13:00 / 15:00 - 19:00" />
 
         <TextView
-            android:id="@+id/texto_pagos_almacen"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/espacio_xs"
-            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-            android:text="Pagos: " />
-
-        <TextView
-            android:id="@+id/texto_caja_vecina_almacen"
+            android:id="@+id/texto_categoria_almacen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/espacio_xxs"
-            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-            android:textStyle="bold"
-            android:text="Caja Vecina: " />
+            android:textColor="@color/texto_terciario"
+            android:textSize="@dimen/texto_cuerpo_sm"
+            tools:text="Almacén" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -91,19 +101,26 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/boton_ver_stock_almacen"
-                style="@style/Widget.Material3.Button.TonalButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:layout_weight="1"
-                android:text="Ver stock" />
+                android:text="Ver stock"
+                android:textSize="@dimen/texto_cuerpo_md"
+                app:cornerRadius="@dimen/radio_boton"
+                app:strokeColor="@color/colorPrimary" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/boton_llegar_almacen"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:layout_marginStart="@dimen/espacio_sm"
                 android:layout_weight="1"
-                android:text="Llegar" />
+                android:text="Llegar"
+                android:textSize="@dimen/texto_cuerpo_md"
+                app:cornerRadius="@dimen/radio_boton"
+                app:icon="@drawable/ic_navigation"
+                app:iconGravity="textStart" />
         </LinearLayout>
     </LinearLayout>
 

@@ -42,7 +42,11 @@ object PalabrasBloqueadasStore {
     fun iniciar() {
         if (listener != null) return
         listener = baseDatos.collection(Constantes.COLECCION_PALABRAS_BLOQUEADAS)
-            .addSnapshotListener { snapshot, _ ->
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    android.util.Log.w("PalabrasBloqueadasStore", "Error en listener: ${error.message}")
+                    return@addSnapshotListener
+                }
                 if (snapshot == null) return@addSnapshotListener
                 val nuevasPalabras = mutableSetOf<String>()
                 val nuevasFrases = mutableSetOf<String>()
