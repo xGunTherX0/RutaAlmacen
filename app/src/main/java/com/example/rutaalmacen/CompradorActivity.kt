@@ -64,7 +64,7 @@ class CompradorActivity : AppCompatActivity() {
                 }
             }
         )
-        recyclerCategorias.layoutManager = GridLayoutManager(this, 5)
+        recyclerCategorias.layoutManager = GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)
         recyclerCategorias.adapter = adaptadorCategorias
 
         configurarAccesosDirectos()
