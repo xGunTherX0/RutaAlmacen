@@ -72,6 +72,9 @@ class PalabrasBloqueadasActivity : AppCompatActivity() {
             insets
         }
 
+        findViewById<androidx.appcompat.widget.AppCompatImageButton>(R.id.boton_volver_palabras)
+            .setOnClickListener { finish() }
+
         val campoPalabra = findViewById<TextInputEditText>(R.id.campo_palabra_bloqueada)
         val campoBusqueda = findViewById<TextInputEditText>(R.id.campo_busqueda_palabras)
         val botonAgregar = findViewById<com.google.android.material.button.MaterialButton>(R.id.boton_agregar_palabra)

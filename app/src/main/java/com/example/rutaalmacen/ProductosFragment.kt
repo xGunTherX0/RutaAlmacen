@@ -75,9 +75,11 @@ class ProductosFragment : Fragment(R.layout.fragment_productos) {
     /** Categorías disponibles para la clasificación de productos. */
     private val categorias = listOf(
         "Despensa",
-        "Lácteos y Huevos",
-        "Cecinas y Quesos",
+        "Lácteos y Quesos",
+        "Huevos",
+        "Cecinas y Embutidos",
         "Bebidas y Jugos",
+        "Alcohol",
         "Pan y Pastelería",
         "Frutas y Verduras",
         "Snacks y Dulces",
@@ -171,7 +173,6 @@ class ProductosFragment : Fragment(R.layout.fragment_productos) {
         val contenedorNuevoProducto = view.findViewById<View>(R.id.contenedor_nuevo_producto)
         val textoLista = view.findViewById<TextView>(R.id.texto_lista_productos)
         val recyclerProductos = view.findViewById<RecyclerView>(R.id.recycler_productos)
-        val titulo = view.findViewById<TextView>(R.id.texto_titulo_productos)
         val botonMenuAgregar = view.findViewById<MaterialButton>(R.id.boton_menu_agregar)
         val textoLimiteProductos = view.findViewById<TextView>(R.id.texto_limite_productos)
 
@@ -179,7 +180,6 @@ class ProductosFragment : Fragment(R.layout.fragment_productos) {
             contenedorNuevoProducto.visibility = View.GONE
             view.findViewById<View>(R.id.boton_ver_planes).visibility = View.GONE
             botonMenuAgregar.visibility = View.GONE
-            titulo.text = "Lista de productos"
             textoLista.visibility = View.GONE
             val contenedorBusqueda = view.findViewById<com.google.android.material.textfield.TextInputLayout>(
                 R.id.contenedor_busqueda_lista_productos,
@@ -202,7 +202,6 @@ class ProductosFragment : Fragment(R.layout.fragment_productos) {
         } else {
             textoLista.visibility = View.GONE
             recyclerProductos.visibility = View.GONE
-            titulo.text = "Agregar productos"
             textoLimiteProductos.visibility = View.VISIBLE
 
             campoNombre = view.findViewById(R.id.campo_nombre_producto)

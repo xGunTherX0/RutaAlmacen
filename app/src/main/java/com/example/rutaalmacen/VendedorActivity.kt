@@ -1,6 +1,7 @@
 package com.example.rutaalmacen
 
 import android.os.Bundle
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -41,6 +42,9 @@ class VendedorActivity : AppCompatActivity() {
     /** Barra de navegación inferior utilizada para cambiar entre fragmentos. */
     private lateinit var navegacion: BottomNavigationView
 
+    /** TextView del título en el header verde. */
+    private lateinit var textoTituloHeader: TextView
+
     /**
      * Crea la actividad del vendedor, inicializa los fragmentos y configura
      * la navegación inferior.
@@ -56,18 +60,28 @@ class VendedorActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_vendedor)
 
+        val header = findViewById<android.view.View>(R.id.header_vendedor)
+        val paddingHeaderBase = header.paddingTop
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.contenedor_vendedor)) { vista, insets ->
             val barrasDelSistema = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             vista.setPadding(
                 barrasDelSistema.left,
-                barrasDelSistema.top,
+                0,
                 barrasDelSistema.right,
                 barrasDelSistema.bottom,
+            )
+            header.setPadding(
+                header.paddingLeft,
+                paddingHeaderBase + barrasDelSistema.top,
+                header.paddingRight,
+                header.paddingBottom,
             )
             insets
         }
 
         navegacion = findViewById(R.id.nav_vendedor)
+        textoTituloHeader = findViewById(R.id.texto_titulo_header_vendedor)
         val gestorFragmentos = supportFragmentManager
 
         fragmentInicio = gestorFragmentos.findFragmentByTag(TAG_INICIO) as? InicioFragment ?: InicioFragment()
@@ -93,6 +107,7 @@ class VendedorActivity : AppCompatActivity() {
                 .commit()
             fragmentActivo = fragmentInicio
             navegacion.selectedItemId = R.id.nav_inicio
+            actualizarTituloHeader(fragmentInicio)
         } else {
             fragmentActivo = listOf(
                 fragmentInicio,
@@ -109,6 +124,7 @@ class VendedorActivity : AppCompatActivity() {
                 fragmentAlertas -> R.id.nav_alertas
                 else -> R.id.nav_inicio
             }
+            actualizarTituloHeader(fragmentActivo!!)
         }
 
         navegacion.setOnItemSelectedListener { item ->
@@ -150,6 +166,7 @@ class VendedorActivity : AppCompatActivity() {
         val actual = fragmentActivo
         if (actual == null || actual == fragmento) {
             fragmentActivo = fragmento
+            actualizarTituloHeader(fragmento)
             return
         }
         supportFragmentManager.beginTransaction()
@@ -157,6 +174,26 @@ class VendedorActivity : AppCompatActivity() {
             .show(fragmento)
             .commit()
         fragmentActivo = fragmento
+        actualizarTituloHeader(fragmento)
+    }
+
+    /**
+     * Actualiza el título del header verde según el fragmento activo.
+     *
+     * @param fragmento Fragmento actualmente visible.
+     */
+    private fun actualizarTituloHeader(fragmento: Fragment) {
+        val titulo = when (fragmento) {
+            is InicioFragment -> "RUTA ALMACÉN"
+            is AlmacenFragment -> "Almacén"
+            is AgregarProductosFragment -> "Agregar producto"
+            is ListaProductosFragment -> "Lista de productos"
+            is AlertasIAFragment -> "Alertas de IA"
+            else -> "RUTA ALMACÉN"
+        }
+        if (::textoTituloHeader.isInitialized) {
+            textoTituloHeader.text = titulo
+        }
     }
 
     /** Constantes utilizadas como etiquetas para la gestión de fragmentos. */

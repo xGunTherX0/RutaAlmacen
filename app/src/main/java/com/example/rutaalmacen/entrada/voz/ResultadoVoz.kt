@@ -1,4 +1,4 @@
-﻿package com.example.rutaalmacen.entrada.voz
+package com.example.rutaalmacen.entrada.voz
 
 /**
  * Resultado del análisis sintáctico de texto dictado por voz.
@@ -48,10 +48,12 @@ data class ProductoDetectado(
         /** Lista de categorías comerciales disponibles para clasificación de productos. */
         val CATEGORIAS: List<String> = listOf(
             "Despensa",
-            "LÃ¡cteos y Huevos",
-            "Cecinas y Quesos",
+            "Lácteos y Quesos",
+            "Huevos",
+            "Cecinas y Embutidos",
             "Bebidas y Jugos",
-            "Pan y PastelerÃ­a",
+        "Alcohol",
+            "Pan y Pastelería",
             "Frutas y Verduras",
             "Snacks y Dulces",
             "Congelados",

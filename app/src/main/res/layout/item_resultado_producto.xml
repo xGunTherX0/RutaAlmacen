@@ -5,13 +5,13 @@
     android:id="@+id/tarjeta_resultado"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/espacio_xs"
-    android:layout_marginVertical="@dimen/espacio_xs"
+    android:layout_marginBottom="8dp"
     app:cardBackgroundColor="@color/fondo_card"
-    app:cardCornerRadius="@dimen/radio_card"
-    app:cardElevation="@dimen/elevacion_card"
-    app:cardUseCompatPadding="true"
-    app:strokeWidth="0dp">
+    app:cardCornerRadius="14dp"
+    app:cardElevation="1dp"
+    app:cardUseCompatPadding="false"
+    app:strokeColor="@color/borde_sutil"
+    app:strokeWidth="1dp">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -21,65 +21,103 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/padding_card">
-
-            <TextView
-                android:id="@+id/texto_nombre_producto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="60dp"
-                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleMedium"
-                android:text="Nombre del producto" />
+            android:paddingHorizontal="12dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
 
             <LinearLayout
-                android:id="@+id/contenedor_precio_oferta"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espacio_sm"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="gone"
-                tools:visibility="visible">
+                android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/texto_precio_oferta"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/texto_nombre_producto"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/oferta_precio"
-                    android:textSize="@dimen/texto_titulo_lg"
-                    android:textStyle="bold"
-                    tools:text="$2400" />
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:text="Nombre del producto"
+                    android:textColor="@color/texto_principal"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/texto_unidad_oferta"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/espacio_xs"
-                    android:textColor="@color/texto_secundario"
-                    android:textSize="@dimen/texto_cuerpo_md"
-                    tools:text="/ unidad" />
+                    android:gravity="end"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/contenedor_precio_oferta"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="end|center_vertical"
+                        android:orientation="horizontal"
+                        android:visibility="gone"
+                        tools:visibility="visible">
+
+                        <TextView
+                            android:id="@+id/texto_precio_oferta"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/oferta_precio"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            tools:text="$2400" />
+
+                        <TextView
+                            android:id="@+id/texto_unidad_oferta"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="2dp"
+                            android:textColor="@color/texto_secundario"
+                            android:textSize="11sp"
+                            tools:text="/ u" />
+
+                        <TextView
+                            android:id="@+id/badge_descuento"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:background="@drawable/bg_descuento_badge"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="2dp"
+                            android:textColor="@color/oferta_descuento_texto"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:visibility="gone"
+                            tools:text="-50% OFF"
+                            tools:visibility="visible" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/texto_precio_producto"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="$0"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/texto_precio_producto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espacio_xxs"
-                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-                android:text="Precio: $0" />
 
             <TextView
                 android:id="@+id/texto_tiempo_restante"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espacio_xs"
+                android:layout_marginTop="4dp"
                 android:background="@drawable/bg_tiempo_oferta"
                 android:drawableStart="@drawable/ic_clock"
-                android:drawablePadding="6dp"
+                android:drawablePadding="4dp"
                 android:drawableTint="@color/oferta_tiempo_texto"
                 android:gravity="center_vertical"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp"
                 android:textColor="@color/oferta_tiempo_texto"
-                android:textSize="@dimen/texto_cuerpo_sm"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 android:visibility="gone"
                 tools:text="¡Quedan 4 horas!"
@@ -89,90 +127,129 @@
                 android:id="@+id/texto_descripcion_producto"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espacio_xs"
-                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-                android:text="Descripción: -" />
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="@color/texto_secundario"
+                android:textSize="12sp"
+                android:visibility="gone"
+                tools:text="Descripción"
+                tools:visibility="visible" />
 
             <TextView
                 android:id="@+id/texto_almacen_producto"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espacio_xs"
-                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-                android:text="Almacén: Sin nombre" />
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Almacén"
+                android:textColor="@color/texto_principal"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/texto_horario_almacen"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espacio_xs"
-                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-                android:text="Horario: 09:00 - 13:00 / 16:00 - 22:00" />
-
-            <TextView
-                android:id="@+id/texto_estado_horario"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espacio_xs"
-                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-                android:text="Atención: Abierto" />
-
-            <TextView
-                android:id="@+id/texto_distancia_producto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espacio_xs"
-                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-                android:text="Distancia: --" />
-
-            <TextView
-                android:id="@+id/texto_estado_producto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espacio_xs"
-                android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
-                android:text="Estado: Disponible" />
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Horario"
+                android:textColor="@color/texto_secundario"
+                android:textSize="12sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espacio_md"
-                android:gravity="end"
+                android:layout_marginTop="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/texto_estado_horario"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_chip_estado_ok"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:text="Abierto"
+                    android:textColor="@color/stock_verde"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/texto_estado_producto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/bg_chip_estado_ok"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:text="Disponible"
+                    android:textColor="@color/stock_verde"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/texto_distancia_producto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/bg_chip_info"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:text="--"
+                    android:textColor="@color/texto_secundario"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/boton_ver_stock"
                     style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Ver stock" />
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingTop="0dp"
+                    android:paddingBottom="0dp"
+                    android:text="Ver stock"
+                    android:textAllCaps="false"
+                    android:textSize="13sp"
+                    app:cornerRadius="12dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/boton_llegar_almacen"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/espacio_sm"
-                    android:text="Llegar" />
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingTop="0dp"
+                    android:paddingBottom="0dp"
+                    android:text="Llegar"
+                    android:textAllCaps="false"
+                    android:textSize="13sp"
+                    app:cornerRadius="12dp" />
             </LinearLayout>
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/badge_descuento"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:layout_marginTop="@dimen/espacio_sm"
-            android:layout_marginEnd="@dimen/espacio_sm"
-            android:background="@drawable/bg_descuento_badge"
-            android:elevation="2dp"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="6dp"
-            android:textColor="@color/oferta_descuento_texto"
-            android:textSize="@dimen/texto_cuerpo_md"
-            android:textStyle="bold"
-            android:visibility="gone"
-            tools:text="-20% OFF"
-            tools:visibility="visible" />
     </FrameLayout>
 
 </com.google.android.material.card.MaterialCardView>

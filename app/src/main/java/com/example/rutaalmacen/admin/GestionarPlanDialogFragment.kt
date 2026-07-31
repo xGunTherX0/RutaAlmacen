@@ -228,7 +228,7 @@ class GestionarPlanDialogFragment : BottomSheetDialogFragment() {
                 }
             } catch (excepcion: Exception) {
                 CoroutineScope(Dispatchers.Main).launch {
-                    Toast.makeText(requireContext(), "Error al actualizar el plan", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Error: ${excepcion.message}", Toast.LENGTH_LONG).show()
                     botonConfirmar.isEnabled = true
                     botonConfirmar.text = "Confirmar Plan"
                 }

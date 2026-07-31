@@ -8,59 +8,150 @@
     android:background="@color/fondo_app"
     tools:context=".CompradorActivity">
 
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/header_home"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_header_gradient"
-        android:orientation="vertical"
-        android:paddingHorizontal="@dimen/margen_pantalla"
-        android:paddingTop="@dimen/espacio_xl"
-        android:paddingBottom="@dimen/espacio_lg"
+        android:elevation="8dp"
+        android:fitsSystemWindows="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <View
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_gravity="end|top"
+            android:layout_marginTop="-40dp"
+            android:layout_marginEnd="-30dp"
+            android:background="@drawable/bg_header_circulo" />
+
+        <View
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_gravity="start|bottom"
+            android:layout_marginStart="-24dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_header_circulo" />
+
+        <View
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="72dp"
+            android:background="@drawable/bg_header_circulo"
+            android:alpha="0.7" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_ubicacion"
-                android:contentDescription="Ubicación" />
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/margen_pantalla"
+            android:paddingTop="@dimen/espacio_xl"
+            android:paddingBottom="@dimen/espacio_xl">
 
             <TextView
-                android:id="@+id/texto_ubicacion"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/espacio_xs"
-                android:layout_weight="1"
-                android:text="Tu ubicación"
-                android:textColor="@android:color/white"
-                android:textSize="@dimen/texto_cuerpo_md"
+                android:letterSpacing="0.08"
+                android:text="RUTA ALMACÉN"
+                android:textAllCaps="true"
+                android:textColor="#CCFFFFFF"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/boton_info_alertas"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:padding="0dp"
-                android:text="!"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="¿Qué buscas hoy?"
                 android:textColor="@android:color/white"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:rippleColor="#33FFFFFF" />
+                android:textSize="@dimen/texto_titulo_lg"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_md"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/chip_ubicacion"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_chip_ubicacion"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/espacio_md"
+                    android:paddingVertical="@dimen/espacio_sm">
+
+                    <ImageView
+                        android:id="@+id/icono_ubicacion"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:contentDescription="Ubicación"
+                        android:src="@drawable/ic_ubicacion"
+                        app:tint="@android:color/white" />
+
+                    <TextView
+                        android:id="@+id/texto_ubicacion"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/espacio_sm"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="Detectando tu zona..."
+                        android:textColor="@android:color/white"
+                        android:textSize="@dimen/texto_cuerpo_md"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/boton_volver_vendedor"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="@dimen/espacio_sm"
+                    android:background="@drawable/bg_boton_alerta_header"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:visibility="gone"
+                    app:backgroundTint="@null"
+                    app:icon="@android:drawable/ic_menu_revert"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconSize="20dp"
+                    app:iconTint="@android:color/white"
+                    app:rippleColor="#40FFFFFF" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/boton_info_alertas"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="@dimen/espacio_sm"
+                    android:background="@drawable/bg_boton_alerta_header"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:text="!"
+                    android:textColor="@android:color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="@null"
+                    app:rippleColor="#40FFFFFF" />
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </FrameLayout>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_contenido"
@@ -102,23 +193,28 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="@dimen/espacio_lg">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <ImageView
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:contentDescription="Almacenes"
-                            android:src="@drawable/ic_almacen" />
+                            android:layout_width="match_parent"
+                            android:layout_height="88dp"
+                            android:contentDescription="Almacenes cercanos"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/img_acceso_almacenes" />
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/espacio_sm"
-                            android:text="Almacenes"
+                            android:background="@color/fondo_card"
+                            android:gravity="center"
+                            android:minHeight="40dp"
+                            android:paddingHorizontal="@dimen/espacio_sm"
+                            android:paddingTop="@dimen/espacio_sm"
+                            android:paddingBottom="@dimen/espacio_sm"
+                            android:text="Almacenes cercanos"
                             android:textColor="@color/texto_principal"
-                            android:textSize="@dimen/texto_titulo_sm"
+                            android:textSize="@dimen/texto_cuerpo_md"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -139,23 +235,29 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="@dimen/espacio_lg">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <ImageView
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:contentDescription="Productos"
-                            android:src="@drawable/ic_productos" />
+                            android:layout_width="230dp"
+                            android:layout_height="88dp"
+                            android:contentDescription="Buscar productos"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/img_acceso_productos"
+                            android:translationX="-36dp" />
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/espacio_sm"
-                            android:text="Productos"
+                            android:background="@color/fondo_card"
+                            android:gravity="center"
+                            android:minHeight="40dp"
+                            android:paddingHorizontal="@dimen/espacio_sm"
+                            android:paddingTop="@dimen/espacio_sm"
+                            android:paddingBottom="@dimen/espacio_sm"
+                            android:text="Buscar productos"
                             android:textColor="@color/texto_principal"
-                            android:textSize="@dimen/texto_titulo_sm"
+                            android:textSize="@dimen/texto_cuerpo_md"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -170,41 +272,85 @@
                 android:textSize="@dimen/texto_titulo_md"
                 android:textStyle="bold" />
 
-            <LinearLayout
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espacio_sm"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:alpha="0.3"
-                    android:contentDescription="Deslizar"
-                    android:src="@drawable/ic_chevron_right"
-                    android:tint="@color/texto_secundario"
-                    android:rotation="180" />
+                android:layout_marginTop="@dimen/espacio_sm">
 
                 <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler_categorias"
-                    android:layout_width="0dp"
+                    android:id="@+id/recycler_categorias_fila1"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="@dimen/espacio_xs"
-                    android:layout_weight="1"
                     android:clipToPadding="false"
                     android:nestedScrollingEnabled="false"
                     android:orientation="horizontal"
                     android:overScrollMode="never" />
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:alpha="0.3"
-                    android:contentDescription="Deslizar"
+                    android:id="@+id/flecha_cat_fila1_izq"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="start|center_vertical"
+                    android:background="@drawable/bg_flecha_categoria"
+                    android:contentDescription="Anterior"
+                    android:elevation="4dp"
+                    android:padding="4dp"
+                    android:rotation="180"
                     android:src="@drawable/ic_chevron_right"
-                    android:tint="@color/texto_secundario" />
-            </LinearLayout>
+                    android:tint="@android:color/white" />
+
+                <ImageView
+                    android:id="@+id/flecha_cat_fila1_der"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="end|center_vertical"
+                    android:background="@drawable/bg_flecha_categoria"
+                    android:contentDescription="Siguiente"
+                    android:elevation="4dp"
+                    android:padding="4dp"
+                    android:src="@drawable/ic_chevron_right"
+                    android:tint="@android:color/white" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_xs">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_categorias_fila2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:nestedScrollingEnabled="false"
+                    android:orientation="horizontal"
+                    android:overScrollMode="never" />
+
+                <ImageView
+                    android:id="@+id/flecha_cat_fila2_izq"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="start|center_vertical"
+                    android:background="@drawable/bg_flecha_categoria"
+                    android:contentDescription="Anterior"
+                    android:elevation="4dp"
+                    android:padding="4dp"
+                    android:rotation="180"
+                    android:src="@drawable/ic_chevron_right"
+                    android:tint="@android:color/white" />
+
+                <ImageView
+                    android:id="@+id/flecha_cat_fila2_der"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="end|center_vertical"
+                    android:background="@drawable/bg_flecha_categoria"
+                    android:contentDescription="Siguiente"
+                    android:elevation="4dp"
+                    android:padding="4dp"
+                    android:src="@drawable/ic_chevron_right"
+                    android:tint="@android:color/white" />
+            </FrameLayout>
 
             <com.google.android.gms.ads.AdView
                 android:id="@+id/ad_view"

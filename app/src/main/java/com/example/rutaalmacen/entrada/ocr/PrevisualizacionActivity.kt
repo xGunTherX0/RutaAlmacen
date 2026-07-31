@@ -56,9 +56,11 @@ class PrevisualizacionActivity : AppCompatActivity() {
 
     private val categorias = listOf(
         "Despensa",
-        "Lácteos y Huevos",
-        "Cecinas y Quesos",
+        "Lácteos y Quesos",
+        "Huevos",
+        "Cecinas y Embutidos",
         "Bebidas y Jugos",
+        "Alcohol",
         "Pan y Pastelería",
         "Frutas y Verduras",
         "Snacks y Dulces",

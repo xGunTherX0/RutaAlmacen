@@ -11,7 +11,7 @@ package com.example.rutaalmacen.entrada.ocr
  * @property id Identificador numérico único, generado a partir de la marca de tiempo
  *              y un valor aleatorio para evitar colisiones en memoria.
  * @property nombre Nombre legible del producto, potencialmente corregido post-OCR.
- * @property categoria Categoría comercial asignada (ej. "Despensa", "Lácteos y Huevos").
+ * @property categoria Categoría comercial asignada (ej. "Despensa", "Lácteos y Quesos").
  * @property precio Precio unitario del producto en pesos chilenos. Cero si no se ha ingresado.
  * @property existeEnCatalogo Indica si el producto ya se encuentra registrado en el catálogo
  *                            del vendedor (local o remoto).

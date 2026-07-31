@@ -29,7 +29,7 @@ service cloud.firestore {
     }
 
     match /Usuarios/{userId} {
-      allow read: if (estaAutenticado() && request.auth.uid == userId && noEstaBloqueado()) || esAdministrador();
+      allow read: if estaAutenticado() && (exists(/databases/$(database)/documents/Usuarios/$(request.auth.uid)) ? noEstaBloqueado() : request.auth.uid == userId);
       allow list: if estaAutenticado();
       allow create: if request.auth != null
         && request.auth.uid == userId
@@ -66,10 +66,16 @@ service cloud.firestore {
         allow create, update: if request.auth.uid == userId && noEstaBloqueado();
         allow delete: if request.auth.uid == userId || esAdministrador();
       }
+
+      match /HistorialPrivilegios/{historialId} {
+        allow read: if request.auth.uid == userId || esAdministrador();
+        allow create: if esAdministrador();
+        allow update, delete: if esAdministrador();
+      }
     }
 
     match /InventarioPublico/{docId} {
-      allow read: if estaAutenticado() && noEstaBloqueado();
+      allow read: if estaAutenticado();
       allow create, update: if esVendedor()
         && request.resource.data.vendedorId == request.auth.uid;
       allow delete: if esVendedor()
@@ -80,7 +86,8 @@ service cloud.firestore {
     match /Notificaciones_IA/{notifId} {
       allow read: if estaAutenticado()
         && (resource.data.vendedorId == request.auth.uid || esAdministrador());
-      allow create: if (esComprador() && request.resource.data.compradorId == request.auth.uid) || esAdministrador();
+      allow create: if estaAutenticado() && request.resource.data.compradorId == request.auth.uid
+        || esAdministrador();
       allow update: if esVendedor() && resource.data.vendedorId == request.auth.uid
         || esAdministrador();
       allow delete: if esVendedor() && resource.data.vendedorId == request.auth.uid
@@ -89,7 +96,7 @@ service cloud.firestore {
 
     match /Busquedas_Historicas/{busqId} {
       allow read: if esAdministrador();
-      allow create: if esComprador() && noEstaBloqueado();
+      allow create: if estaAutenticado() && noEstaBloqueado();
       allow update, delete: if esAdministrador();
     }
 

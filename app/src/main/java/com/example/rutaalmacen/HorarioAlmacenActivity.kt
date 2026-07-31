@@ -58,6 +58,9 @@ class HorarioAlmacenActivity : AppCompatActivity() {
             insets
         }
 
+        findViewById<androidx.appcompat.widget.AppCompatImageButton>(R.id.boton_volver_horario)
+            .setOnClickListener { finish() }
+
         textoHorario = findViewById(R.id.texto_horario_almacen)
         botonMananaInicio = findViewById(R.id.boton_horario_manana_inicio)
         botonMananaFin = findViewById(R.id.boton_horario_manana_fin)

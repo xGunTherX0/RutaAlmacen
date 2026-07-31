@@ -71,6 +71,9 @@ class StockVendedorAdminActivity : AppCompatActivity() {
         val correo = intent.getStringExtra(EXTRA_CORREO).orEmpty()
         val nombreAlmacen = intent.getStringExtra(EXTRA_NOMBRE_ALMACEN).orEmpty()
 
+        findViewById<androidx.appcompat.widget.AppCompatImageButton>(R.id.boton_volver_stock_admin)
+            .setOnClickListener { finish() }
+
         findViewById<android.widget.TextView>(R.id.texto_detalle_stock_admin).text =
             "Vendedor: $nombre ${if (correo.isNotBlank()) "($correo)" else ""}"
         findViewById<android.widget.TextView>(R.id.texto_nombre_almacen_admin).text =
@@ -107,9 +110,11 @@ class StockVendedorAdminActivity : AppCompatActivity() {
         val opciones = listOf(
             FILTRO_TODAS,
             "Despensa",
-            "Lácteos y Huevos",
-            "Cecinas y Quesos",
+            "Lácteos y Quesos",
+            "Huevos",
+            "Cecinas y Embutidos",
             "Bebidas y Jugos",
+        "Alcohol",
             "Pan y Pastelería",
             "Frutas y Verduras",
             "Snacks y Dulces",
@@ -210,9 +215,11 @@ class StockVendedorAdminActivity : AppCompatActivity() {
 
         val categorias = listOf(
             "Despensa",
-            "Lácteos y Huevos",
-            "Cecinas y Quesos",
+            "Lácteos y Quesos",
+            "Huevos",
+            "Cecinas y Embutidos",
             "Bebidas y Jugos",
+        "Alcohol",
             "Pan y Pastelería",
             "Frutas y Verduras",
             "Snacks y Dulces",

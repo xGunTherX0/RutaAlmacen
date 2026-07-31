@@ -61,6 +61,11 @@ class AlmacenFragment : Fragment(R.layout.fragment_almacen) {
         view.findViewById<View>(R.id.opcion_block_notas).setOnClickListener {
             startActivity(Intent(requireContext(), com.example.rutaalmacen.notas.NotasActivity::class.java))
         }
+        view.findViewById<View>(R.id.opcion_ver_como_comprador).setOnClickListener {
+            val intent = Intent(requireContext(), CompradorActivity::class.java)
+            intent.putExtra("volver_a_vendedor", true)
+            startActivity(intent)
+        }
 
         viewLifecycleOwner.lifecycleScope.launch { cargarEstadosEnFila(view) }
     }

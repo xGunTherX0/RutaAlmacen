@@ -60,6 +60,9 @@ class CategoriaAlmacenActivity : AppCompatActivity() {
             insets
         }
 
+        findViewById<androidx.appcompat.widget.AppCompatImageButton>(R.id.boton_volver_categoria)
+            .setOnClickListener { finish() }
+
         val campoCategoria = findViewById<AutoCompleteTextView>(R.id.campo_categoria_almacen)
         val botonGuardar = findViewById<MaterialButton>(R.id.boton_guardar_categoria)
 

@@ -42,21 +42,28 @@ object BoletaParser {
             "polenta", "avena", "cereal", "cafe", "café", "te", "té", "yerba",
             "yerba mate", "mate", "cocina", "comida",
         ),
-        "Lácteos y Huevos" to listOf(
-            "leche", "leches", "queso", "quesos", "yogurt", "yoghurt", "huevo",
-            "huevos", "mantequilla", "manjar", "crema", "ricotta", "mascarpone",
+        "Lácteos y Quesos" to listOf(
+            "leche", "leches", "queso", "quesos", "yogurt", "yoghurt",
+            "mantequilla", "manjar", "crema", "ricotta", "mascarpone",
             "leche condensada", "leche evaporada", "suero",
         ),
-        "Cecinas y Quesos" to listOf(
+        "Huevos" to listOf(
+            "huevo", "huevos",
+        ),
+        "Cecinas y Embutidos" to listOf(
             "cecina", "cecinas", "jamon", "jamón", "salchicha", "salchichas",
             "chorizo", "longaniza", "vienesa", "vienesas", "pepinillo",
-            "salame", "mortadela", "pate", "pate", "cecina", "cecinas",
+            "salame", "mortadela", "pate", "pate", "embutido", "embutidos",
         ),
         "Bebidas y Jugos" to listOf(
             "bebida", "bebidas", "jugo", "jugos", "agua", "coca", "pepsi",
-            "sprite", "fanta", "cerveza", "cervezas", "vino", "vinos",
-            "redbull", "monster", "energetica", "energética", "gaseosa",
-            "coca cola", "coca-cola", "coca-cola zero",
+            "sprite", "fanta", "redbull", "monster", "energetica", "energética",
+            "gaseosa", "coca cola", "coca-cola", "coca-cola zero",
+        ),
+        "Alcohol" to listOf(
+            "cerveza", "cervezas", "vino", "vinos", "pisco", "whisky", "whiskey",
+            "ron", "vodka", "tequila", "licor", "licores", "alcohol", "champagne",
+            "champaña", "espumante", "piscola", "pipeño",
         ),
         "Pan y Pastelería" to listOf(
             "pan", "panes", "marraqueta", "hallulla", "hallullas", "queque",
@@ -254,7 +261,7 @@ object BoletaParser {
      * intenta una coincidencia parcial por los primeros 4 caracteres.
      *
      * @param nombre Nombre del producto a clasificar.
-     * @return Nombre de la categoría comercial (ej. "Despensa", "Lácteos y Huevos").
+     * @return Nombre de la categoría comercial (ej. "Despensa", "Lácteos y Quesos").
      *         Retorna "Despensa" como valor predeterminado si no hay coincidencia.
      */
     fun adivinarCategoria(nombre: String): String {

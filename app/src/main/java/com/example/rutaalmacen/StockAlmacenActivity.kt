@@ -9,7 +9,9 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import android.view.View
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -42,9 +44,11 @@ class StockAlmacenActivity : AppCompatActivity() {
     private val categorias = listOf(
         "Todas",
         "Despensa",
-        "Lácteos y Huevos",
-        "Cecinas y Quesos",
+        "Lácteos y Quesos",
+        "Huevos",
+        "Cecinas y Embutidos",
         "Bebidas y Jugos",
+        "Alcohol",
         "Pan y Pastelería",
         "Frutas y Verduras",
         "Snacks y Dulces",
@@ -64,13 +68,23 @@ class StockAlmacenActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_stock_almacen)
 
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
+
+        val header = findViewById<View>(R.id.header_stock)
+        val paddingHeaderBase = header.paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.contenedor_stock_almacen)) { vista, insets ->
             val barrasDelSistema = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             vista.setPadding(
                 barrasDelSistema.left,
-                barrasDelSistema.top,
+                0,
                 barrasDelSistema.right,
                 barrasDelSistema.bottom,
+            )
+            header.setPadding(
+                header.paddingLeft,
+                paddingHeaderBase + barrasDelSistema.top,
+                header.paddingRight,
+                header.paddingBottom,
             )
             insets
         }
@@ -100,6 +114,8 @@ class StockAlmacenActivity : AppCompatActivity() {
         }
         val metodosPago = intent.getStringArrayExtra(EXTRA_METODOS_PAGO)?.toList().orEmpty()
         val tieneCajaVecina = intent.getBooleanExtra(EXTRA_TIENE_CAJA_VECINA, false)
+
+        findViewById<MaterialButton>(R.id.boton_volver_stock).setOnClickListener { finish() }
 
         val textoNombre = findViewById<android.widget.TextView>(R.id.texto_nombre_almacen)
         val textoHorario = findViewById<android.widget.TextView>(R.id.texto_horario_almacen)
@@ -228,8 +244,8 @@ class StockAlmacenActivity : AppCompatActivity() {
     private fun pintarInfoPagos(metodos: List<String>, caja: Boolean) {
         val textoPagos = findViewById<android.widget.TextView>(R.id.texto_pagos_almacen_stock)
         val textoCaja = findViewById<android.widget.TextView>(R.id.texto_caja_vecina_stock)
-        textoPagos.text = if (metodos.isEmpty()) "💳 Pagos: No especificado" else "💳 Pagos: ${metodos.joinToString(", ")}"
-        textoCaja.text = if (caja) "🏪 Caja Vecina: ✓ Acepta" else "🏪 Caja Vecina: ✗ No acepta"
+        textoPagos.text = if (metodos.isEmpty()) "Pagos: No especificado" else "Pagos: ${metodos.joinToString(", ")}"
+        textoCaja.text = if (caja) "Caja Vecina ✓" else "Caja Vecina ✗"
         textoCaja.setTextColor(
             androidx.core.content.ContextCompat.getColor(
                 this,
@@ -366,24 +382,23 @@ private class AdaptadorStockAlmacen(
         val producto = productos[position]
         holder.textoNombre.text = producto.nombre
         holder.chipCategoria.text = producto.categoria
-        holder.textoPrecio.text = "Precio: $${String.format(Locale.forLanguageTag("es-CL"), "%.0f", producto.precio)} / " +
+        holder.textoPrecio.text = "$${String.format(Locale.forLanguageTag("es-CL"), "%.0f", producto.precio)} / " +
             etiquetaUnidadPrecio(producto.unidadPrecio)
         if (producto.descripcion.isBlank()) {
             holder.textoDescripcion.visibility = android.view.View.GONE
         } else {
             holder.textoDescripcion.visibility = android.view.View.VISIBLE
-            holder.textoDescripcion.text = "Descripción: ${producto.descripcion}"
+            holder.textoDescripcion.text = producto.descripcion
         }
-        holder.textoEstado.text = if (producto.disponible) {
-            "Estado: Disponible"
-        } else {
-            "Estado: Agotado"
-        }
+        holder.textoEstado.text = if (producto.disponible) "Disponible" else "Agotado"
         holder.textoEstado.setTextColor(
             androidx.core.content.ContextCompat.getColor(
                 holder.itemView.context,
                 if (producto.disponible) R.color.stock_verde else R.color.stock_rojo,
             ),
+        )
+        holder.textoEstado.setBackgroundResource(
+            if (producto.disponible) R.drawable.bg_chip_estado_ok else R.drawable.bg_chip_estado_mal,
         )
     }
 

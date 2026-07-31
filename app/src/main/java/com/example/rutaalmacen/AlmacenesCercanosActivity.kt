@@ -16,7 +16,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -50,7 +52,12 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
     private val almacenes: MutableList<AlmacenCercano> = mutableListOf()
     private lateinit var adaptador: AdaptadorAlmacenes
     private var categoriaSeleccionada = "Todas"
+    private var categoriaChipSeleccionada = "Todas"
     private var filtroCajaVecina = false
+    private var filtroAbiertoAhora = false
+    private var filtroDistanciaActiva = false
+    private var distanciaMaximaMetros: Double = 5000.0
+    private var textoBusqueda = ""
     private lateinit var contenedorCarga: View
     private var ubicacionCache: Location? = null
     private var ubicacionCacheTiempo = 0L
@@ -97,13 +104,23 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_almacenes_cercanos)
 
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
+
+        val header = findViewById<View>(R.id.header_almacenes)
+        val paddingHeaderBase = header.paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.contenedor_almacenes)) { vista, insets ->
             val barrasDelSistema = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             vista.setPadding(
                 barrasDelSistema.left,
-                barrasDelSistema.top,
+                0,
                 barrasDelSistema.right,
                 barrasDelSistema.bottom,
+            )
+            header.setPadding(
+                header.paddingLeft,
+                paddingHeaderBase + barrasDelSistema.top,
+                header.paddingRight,
+                header.paddingBottom,
             )
             insets
         }
@@ -122,6 +139,8 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
 
         configurarCategoria(campoCategoria)
         configurarBotonVolver()
+        configurarChipsFiltro()
+        configurarBusqueda()
 
         filtroCajaVecina = intent.getBooleanExtra("filtro_caja_vecina", false)
 
@@ -157,6 +176,170 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         campoCategoria.setText(categoriaSeleccionada, false)
         campoCategoria.setOnItemClickListener { _, _, posicion, _ ->
             categoriaSeleccionada = categoriasAlmacen.getOrNull(posicion) ?: "Todas"
+            aplicarFiltros()
+        }
+    }
+
+    private fun configurarChipsFiltro() {
+        val chipTodos = findViewById<MaterialButton>(R.id.chip_todos)
+        val chipAbierto = findViewById<MaterialButton>(R.id.chip_abierto)
+        val chipCategoria = findViewById<MaterialButton>(R.id.chip_categoria)
+        val chipDistancia = findViewById<MaterialButton>(R.id.chip_distancia)
+        val chipCajaVecina = findViewById<MaterialButton>(R.id.chip_caja_vecina)
+
+        chipTodos.setOnClickListener {
+            categoriaChipSeleccionada = "Todas"
+            filtroAbiertoAhora = false
+            filtroDistanciaActiva = false
+            filtroCajaVecina = false
+            actualizarEstadoChips(chipTodos, chipAbierto, chipCategoria, chipDistancia, chipCajaVecina)
+            aplicarFiltros()
+        }
+
+        chipAbierto.setOnClickListener {
+            filtroAbiertoAhora = !filtroAbiertoAhora
+            if (filtroAbiertoAhora) {
+                filtroDistanciaActiva = false
+                filtroCajaVecina = false
+            }
+            actualizarEstadoChips(chipTodos, chipAbierto, chipCategoria, chipDistancia, chipCajaVecina)
+            aplicarFiltros()
+        }
+
+        chipCategoria.setOnClickListener {
+            mostrarDialogoCategoria()
+        }
+
+        chipDistancia.setOnClickListener {
+            mostrarDialogoDistancia()
+        }
+
+        chipCajaVecina.setOnClickListener {
+            filtroCajaVecina = !filtroCajaVecina
+            if (filtroCajaVecina) {
+                filtroAbiertoAhora = false
+                filtroDistanciaActiva = false
+            }
+            actualizarEstadoChips(chipTodos, chipAbierto, chipCategoria, chipDistancia, chipCajaVecina)
+            aplicarFiltros()
+        }
+    }
+
+    private fun actualizarEstadoChips(
+        chipTodos: MaterialButton,
+        chipAbierto: MaterialButton,
+        chipCategoria: MaterialButton,
+        chipDistancia: MaterialButton,
+        chipCajaVecina: MaterialButton,
+    ) {
+        val colorPrimario = ContextCompat.getColor(this, R.color.colorPrimary)
+
+        chipTodos.setBackgroundColor(
+            if (categoriaChipSeleccionada == "Todas" && !filtroAbiertoAhora && !filtroDistanciaActiva && !filtroCajaVecina) colorPrimario else android.graphics.Color.TRANSPARENT
+        )
+        chipTodos.setTextColor(
+            if (categoriaChipSeleccionada == "Todas" && !filtroAbiertoAhora && !filtroDistanciaActiva && !filtroCajaVecina) android.graphics.Color.WHITE else colorPrimario
+        )
+
+        chipAbierto.setBackgroundColor(
+            if (filtroAbiertoAhora) colorPrimario else android.graphics.Color.TRANSPARENT
+        )
+        chipAbierto.setTextColor(
+            if (filtroAbiertoAhora) android.graphics.Color.WHITE else colorPrimario
+        )
+
+        val textoCategoria = if (categoriaChipSeleccionada == "Todas") "Categoría" else categoriaChipSeleccionada
+        chipCategoria.text = textoCategoria
+        chipCategoria.setBackgroundColor(
+            if (categoriaChipSeleccionada != "Todas") colorPrimario else android.graphics.Color.TRANSPARENT
+        )
+        chipCategoria.setTextColor(
+            if (categoriaChipSeleccionada != "Todas") android.graphics.Color.WHITE else colorPrimario
+        )
+
+        val textoDistancia = if (filtroDistanciaActiva) "Hasta ${distanciaMaximaMetros.toInt()} m" else "Distancia"
+        chipDistancia.text = textoDistancia
+        chipDistancia.setBackgroundColor(
+            if (filtroDistanciaActiva) colorPrimario else android.graphics.Color.TRANSPARENT
+        )
+        chipDistancia.setTextColor(
+            if (filtroDistanciaActiva) android.graphics.Color.WHITE else colorPrimario
+        )
+
+        chipCajaVecina.setBackgroundColor(
+            if (filtroCajaVecina) colorPrimario else android.graphics.Color.TRANSPARENT
+        )
+        chipCajaVecina.setTextColor(
+            if (filtroCajaVecina) android.graphics.Color.WHITE else colorPrimario
+        )
+    }
+
+    private fun mostrarDialogoCategoria() {
+        val categoriasParaMostrar = categoriasAlmacen.filter { it != "Todas" }
+        val seleccionActual = categoriasParaMostrar.indexOf(categoriaChipSeleccionada)
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle("Categoría del almacén")
+            .setSingleChoiceItems(categoriasParaMostrar.toTypedArray(), if (seleccionActual >= 0) seleccionActual else -1) { dialogo, posicion ->
+                categoriaChipSeleccionada = categoriasParaMostrar[posicion]
+                filtroAbiertoAhora = false
+                filtroDistanciaActiva = false
+                filtroCajaVecina = false
+                dialogo.dismiss()
+                val chipTodos = findViewById<MaterialButton>(R.id.chip_todos)
+                val chipAbierto = findViewById<MaterialButton>(R.id.chip_abierto)
+                val chipCategoria = findViewById<MaterialButton>(R.id.chip_categoria)
+                val chipDistancia = findViewById<MaterialButton>(R.id.chip_distancia)
+                val chipCajaVecina = findViewById<MaterialButton>(R.id.chip_caja_vecina)
+                actualizarEstadoChips(chipTodos, chipAbierto, chipCategoria, chipDistancia, chipCajaVecina)
+                aplicarFiltros()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun mostrarDialogoDistancia() {
+        val opciones = listOf("500 m", "1 km", "3 km", "5 km", "10 km", "Sin límite")
+        val seleccionActual = when {
+            distanciaMaximaMetros <= 500 -> 0
+            distanciaMaximaMetros <= 1000 -> 1
+            distanciaMaximaMetros <= 3000 -> 2
+            distanciaMaximaMetros <= 5000 -> 3
+            distanciaMaximaMetros <= 10000 -> 4
+            else -> 5
+        }
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle("Seleccionar rango de distancia")
+            .setSingleChoiceItems(opciones.toTypedArray(), seleccionActual) { dialogo, posicion ->
+                distanciaMaximaMetros = when (posicion) {
+                    0 -> 500.0
+                    1 -> 1000.0
+                    2 -> 3000.0
+                    3 -> 5000.0
+                    4 -> 10000.0
+                    else -> 50000.0
+                }
+                filtroDistanciaActiva = true
+                filtroAbiertoAhora = false
+                filtroCajaVecina = false
+                dialogo.dismiss()
+                val chipTodos = findViewById<MaterialButton>(R.id.chip_todos)
+                val chipAbierto = findViewById<MaterialButton>(R.id.chip_abierto)
+                val chipCategoria = findViewById<MaterialButton>(R.id.chip_categoria)
+                val chipDistancia = findViewById<MaterialButton>(R.id.chip_distancia)
+                val chipCajaVecina = findViewById<MaterialButton>(R.id.chip_caja_vecina)
+                actualizarEstadoChips(chipTodos, chipAbierto, chipCategoria, chipDistancia, chipCajaVecina)
+                aplicarFiltros()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun configurarBusqueda() {
+        val campoBusqueda = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.campo_busqueda_almacen)
+        campoBusqueda?.doOnTextChanged { texto, _, _, _ ->
+            textoBusqueda = texto?.toString().orEmpty()
             aplicarFiltros()
         }
     }
@@ -443,10 +626,17 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
      * de apertura (abiertos primero) y luego por distancia ascendente.
      */
     private fun aplicarFiltros() {
+        val textoBusquedaNormalizado = FiltroContenido.normalizar(textoBusqueda)
+        val categoriaActiva = if (categoriaChipSeleccionada != "Todas") categoriaChipSeleccionada else categoriaSeleccionada
         val filtrados = almacenesBase.filter { almacen ->
-            val coincideCategoria = categoriaSeleccionada == "Todas" || almacen.categoriaAlmacen == categoriaSeleccionada
+            val coincideCategoria = categoriaActiva == "Todas" || almacen.categoriaAlmacen == categoriaActiva
             val coincideCajaVecina = !filtroCajaVecina || almacen.tieneCajaVecina
-            coincideCategoria && coincideCajaVecina
+            val coincideAbierto = !filtroAbiertoAhora || almacen.abiertoAhora
+            val coincideDistancia = !filtroDistanciaActiva ||
+                (almacen.distanciaMetros != null && almacen.distanciaMetros <= distanciaMaximaMetros)
+            val coincideBusqueda = textoBusquedaNormalizado.isBlank() ||
+                FiltroContenido.normalizar(almacen.nombreAlmacen).contains(textoBusquedaNormalizado)
+            coincideCategoria && coincideCajaVecina && coincideAbierto && coincideDistancia && coincideBusqueda
         }
 
         val ordenados = filtrados.sortedWith(
@@ -457,6 +647,13 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         almacenes.clear()
         almacenes.addAll(ordenados)
         adaptador.notifyDataSetChanged()
+
+        val textoContador = findViewById<TextView>(R.id.texto_contador_resultados)
+        val texto = if (almacenes.size == 1) "1 almacén cerca de ti" else "${almacenes.size} almacenes cerca de ti"
+        textoContador.text = texto
+
+        val textoSinAlmacenes = findViewById<TextView>(R.id.texto_sin_almacenes)
+        textoSinAlmacenes.visibility = if (almacenes.isEmpty()) View.VISIBLE else View.GONE
     }
 
     /**

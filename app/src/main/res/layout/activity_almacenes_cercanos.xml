@@ -6,15 +6,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/fondo_app"
-    android:padding="@dimen/margen_pantalla"
     tools:context=".AlmacenesCercanosActivity">
 
     <LinearLayout
         android:id="@+id/header_almacenes"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_header_gradient"
+        android:elevation="4dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/espacio_md"
+        android:paddingTop="@dimen/espacio_sm"
+        android:paddingBottom="@dimen/espacio_sm"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -22,57 +26,230 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/boton_volver_home"
             style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_boton_alerta_header"
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:minWidth="0dp"
             android:minHeight="0dp"
             android:padding="0dp"
-            android:text="←"
-            android:textSize="20sp"
-            app:cornerRadius="24dp" />
+            android:text=""
+            app:backgroundTint="@null"
+            app:icon="@drawable/ic_volver"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="20dp"
+            app:iconTint="@android:color/white"
+            app:rippleColor="#40FFFFFF" />
 
-        <TextView
-            android:id="@+id/texto_titulo_almacenes"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/contenedor_busqueda_card"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="44dp"
             android:layout_weight="1"
-            android:gravity="center"
-            android:text="Buscar almacenes"
-            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleLarge" />
+            android:layout_marginHorizontal="@dimen/espacio_sm"
+            app:cardBackgroundColor="@android:color/white"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
 
-        <View
-            android:layout_width="48dp"
-            android:layout_height="48dp" />
+            <LinearLayout
+                android:id="@+id/fila_busqueda"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/espacio_sm">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_search"
+                    app:tint="#6B7280" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/contenedor_busqueda"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:hint="Buscar almacén"
+                    app:boxBackgroundColor="@android:color/transparent"
+                    app:boxStrokeWidth="0dp"
+                    app:boxStrokeWidthFocused="0dp"
+                    app:hintEnabled="false">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/campo_busqueda_almacen"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:imeOptions="actionSearch"
+                        android:inputType="textCapWords"
+                        android:maxLines="1"
+                        android:textSize="@dimen/texto_cuerpo_md"
+                        android:padding="0dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/contenedor_filtro_distancia_almacenes"
+    <HorizontalScrollView
+        android:id="@+id/scroll_filtros"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/espacio_lg"
-        app:cardBackgroundColor="@color/fondo_card"
-        app:cardCornerRadius="@dimen/radio_card"
-        app:cardElevation="@dimen/elevacion_card"
-        app:cardUseCompatPadding="true"
-        app:strokeWidth="0dp"
+        android:scrollbars="none"
+        android:paddingVertical="@dimen/espacio_sm"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/header_almacenes">
 
         <LinearLayout
+            android:id="@+id/contenedor_filtros"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/espacio_md"
+            android:visibility="visible">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_todos"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginEnd="@dimen/espacio_xs"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="@dimen/espacio_md"
+                android:text="Todos"
+                android:textSize="@dimen/texto_cuerpo_sm"
+                app:cornerRadius="18dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_abierto"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginEnd="@dimen/espacio_xs"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="@dimen/espacio_md"
+                android:text="Abierto ahora"
+                android:textSize="@dimen/texto_cuerpo_sm"
+                app:cornerRadius="18dp"
+                app:strokeColor="@color/colorPrimary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_categoria"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginEnd="@dimen/espacio_xs"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="@dimen/espacio_md"
+                android:text="Categoría"
+                android:textSize="@dimen/texto_cuerpo_sm"
+                app:cornerRadius="18dp"
+                app:strokeColor="@color/colorPrimary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_distancia"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginEnd="@dimen/espacio_xs"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="@dimen/espacio_md"
+                android:text="Distancia"
+                android:textSize="@dimen/texto_cuerpo_sm"
+                app:cornerRadius="18dp"
+                app:strokeColor="@color/colorPrimary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_caja_vecina"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginEnd="@dimen/espacio_xs"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="@dimen/espacio_md"
+                android:text="Caja Vecina"
+                android:textSize="@dimen/texto_cuerpo_sm"
+                app:cornerRadius="18dp"
+                app:strokeColor="@color/colorPrimary" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <LinearLayout
+        android:id="@+id/barra_resultados"
+        android:layout_width="0dp"
+        android:layout_height="36dp"
+        android:background="#1F2937"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/espacio_md"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scroll_filtros">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@android:drawable/ic_media_previous"
+            app:tint="@android:color/white" />
+
+        <TextView
+            android:id="@+id/texto_contador_resultados"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="0 almacenes cerca de ti"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/texto_cuerpo_sm" />
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@android:drawable/ic_media_next"
+            app:tint="@android:color/white" />
+    </LinearLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/contenedor_busqueda_avanzada"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/espacio_md"
+        android:layout_marginTop="@dimen/espacio_sm"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/fondo_card"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:strokeWidth="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/barra_resultados">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/padding_card">
+            android:padding="@dimen/espacio_sm">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/contenedor_categoria_almacenes"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                style="@style/Widget.RutaAlmacen.TextInputLayout.Dropdown"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Categoría del almacén"
+                app:boxBackgroundColor="@color/fondo_card_alt"
                 app:endIconMode="dropdown_menu"
                 app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium">
 
@@ -80,10 +257,39 @@
                     android:id="@+id/campo_categoria_almacenes"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="none" />
+                    android:inputType="none"
+                    android:textSize="@dimen/texto_cuerpo_md" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/texto_resultados_almacenes"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/espacio_sm"
+        android:paddingHorizontal="@dimen/espacio_md"
+        android:text="Resultados"
+        android:textColor="@color/texto_principal"
+        android:textSize="@dimen/texto_cuerpo_lg"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contenedor_busqueda_avanzada" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_almacenes"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingHorizontal="@dimen/espacio_md"
+        android:paddingTop="@dimen/espacio_xs"
+        android:paddingBottom="@dimen/espacio_md"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/texto_resultados_almacenes"
+        tools:listitem="@layout/item_almacen_cercano" />
 
     <TextView
         android:id="@+id/texto_sin_almacenes"
@@ -96,36 +302,13 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/contenedor_filtro_distancia_almacenes" />
-
-    <TextView
-        android:id="@+id/texto_resultados_almacenes"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/espacio_lg"
-        android:text="Resultados"
-        android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleMedium"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/contenedor_filtro_distancia_almacenes" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_almacenes"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="@dimen/espacio_sm"
-        android:clipToPadding="false"
-        android:paddingBottom="@dimen/espacio_lg"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/texto_resultados_almacenes"
-        tools:listitem="@layout/item_almacen_cercano" />
+        app:layout_constraintTop_toBottomOf="@id/texto_resultados_almacenes" />
 
     <LinearLayout
         android:id="@+id/contenedor_carga_almacenes"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="#66000000"
         android:clickable="true"
         android:focusable="true"
         android:gravity="center"
@@ -167,5 +350,11 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/texto_titulo_almacenes"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

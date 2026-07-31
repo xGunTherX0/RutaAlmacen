@@ -79,14 +79,18 @@ object ParsingVoz {
     )
 
     private val mapaCategorias: List<Pair<List<String>, String>> = listOf(
-        listOf("leche", "leches", "queso", "quesos", "yogurt", "huevo", "huevos",
-            "mantequilla", "crema", "manjar", "ricotta") to "Lácteos y Huevos",
+        listOf("leche", "leches", "queso", "quesos", "yogurt",
+            "mantequilla", "crema", "manjar", "ricotta") to "Lácteos y Quesos",
+        listOf("huevo", "huevos") to "Huevos",
         listOf("pollo", "carne", "carnes", "cerdo", "res", "salchicha", "salchichas",
             "chorizo", "jamon", "jamón", "pescado", "atun", "atún", "longaniza",
-            "cecina", "cecinas", "vienesas") to "Cecinas y Quesos",
+            "cecina", "cecinas", "vienesas", "embutido", "embutidos") to "Cecinas y Embutidos",
         listOf("bebida", "bebidas", "jugo", "jugos", "agua", "aguas", "coca",
-            "pepsi", "sprite", "fanta", "cerveza", "cervezas", "vino", "vinos",
-            "energy", "energía", "redbull", "monster", "gaseosa") to "Bebidas y Jugos",
+            "pepsi", "sprite", "fanta", "energy", "energía", "redbull", "monster",
+            "gaseosa") to "Bebidas y Jugos",
+        listOf("cerveza", "cervezas", "vino", "vinos", "pisco", "whisky", "whiskey",
+            "ron", "vodka", "tequila", "licor", "licores", "alcohol", "champagne",
+            "champaña", "espumante", "traguito", "piscola") to "Alcohol",
         listOf("pan", "panes", "marraqueta", "hallulla", "queque", "torta", "galleta",
             "galletas", "croissant", "dona", "donas", "biscocho", "biscochos") to "Pan y Pastelería",
         listOf("manzana", "manzanas", "naranja", "naranjas", "platano", "plátano",

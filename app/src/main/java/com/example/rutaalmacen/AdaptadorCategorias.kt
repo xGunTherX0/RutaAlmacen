@@ -26,6 +26,15 @@ class AdaptadorCategorias(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VistaCategoria {
         val vista = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_categoria_home, parent, false)
+        val anchoPadre = when {
+            parent.measuredWidth > 0 -> parent.measuredWidth
+            parent.width > 0 -> parent.width
+            else -> (parent.resources.displayMetrics.widthPixels * 0.78f).toInt()
+        }
+        vista.layoutParams = RecyclerView.LayoutParams(
+            anchoPadre / 2,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
         return VistaCategoria(vista)
     }
 

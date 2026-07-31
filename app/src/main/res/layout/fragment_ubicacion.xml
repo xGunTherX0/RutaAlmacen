@@ -7,15 +7,28 @@
     android:background="@color/fondo_app"
     android:padding="@dimen/margen_pantalla">
 
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/boton_volver_ubicacion"
+        android:layout_width="@dimen/ancho_icono_grande"
+        android:layout_height="@dimen/ancho_icono_grande"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Volver"
+        android:src="@drawable/ic_volver"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/texto_principal" />
+
     <TextView
         android:id="@+id/texto_titulo_ubicacion"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/espacio_sm"
         android:text="Ubicación del almacén"
         android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge"
+        app:layout_constraintBottom_toBottomOf="@id/boton_volver_ubicacion"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@id/boton_volver_ubicacion"
+        app:layout_constraintTop_toTopOf="@id/boton_volver_ubicacion" />
 
     <TextView
         android:id="@+id/texto_detalle_ubicacion"
@@ -26,7 +39,7 @@
         android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/texto_titulo_ubicacion" />
+        app:layout_constraintTop_toBottomOf="@id/boton_volver_ubicacion" />
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="0dp"

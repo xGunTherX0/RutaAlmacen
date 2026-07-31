@@ -24,6 +24,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * Fragmento principal que muestra la pantalla de inicio del vendedor.
@@ -46,6 +49,7 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
     private val planManager = PlanManager()
 
     private lateinit var imagenPerfil: ShapeableImageView
+    private lateinit var textoFecha: TextView
     private lateinit var textoSaludo: TextView
     private lateinit var textoNombreUsuario: TextView
     private lateinit var iconoNotificaciones: ImageView
@@ -60,6 +64,7 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
     private lateinit var adView: AdView
     private lateinit var tarjetaNuevaVenta: MaterialCardView
     private lateinit var tarjetaBlocNotas: MaterialCardView
+    private lateinit var textoActualizarPlan: TextView
 
     /** Objeto compañero que define la etiqueta de registro del fragmento. */
     companion object {
@@ -80,6 +85,7 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
         super.onViewCreated(view, savedInstanceState)
 
         imagenPerfil = view.findViewById(R.id.imagen_perfil)
+        textoFecha = view.findViewById(R.id.texto_fecha)
         textoSaludo = view.findViewById(R.id.texto_saludo)
         textoNombreUsuario = view.findViewById(R.id.texto_nombre_usuario)
         iconoNotificaciones = view.findViewById(R.id.icono_notificaciones)
@@ -94,6 +100,7 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
         adView = view.findViewById(R.id.ad_view_inicio)
         tarjetaNuevaVenta = view.findViewById(R.id.tarjeta_nueva_venta)
         tarjetaBlocNotas = view.findViewById(R.id.tarjeta_bloc_notas)
+        textoActualizarPlan = view.findViewById(R.id.texto_actualizar_plan)
 
         Log.d(TAG, "onViewCreated: vistas inicializadas")
 
@@ -102,6 +109,7 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
         textoNombreUsuario.text = "Cargando..."
         imagenPerfil.setImageResource(android.R.drawable.sym_def_app_icon)
 
+        actualizarFecha()
         configurarAccesosRapidos()
         cargarDatosUsuario()
         cargarFotoPerfil()
@@ -114,6 +122,7 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
     override fun onResume() {
         super.onResume()
         adView.resume()
+        actualizarFecha()
     }
 
     /**
@@ -184,6 +193,19 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
         tarjetaBlocNotas.setOnClickListener {
             startActivity(Intent(requireContext(), NotasActivity::class.java))
         }
+        textoActualizarPlan.setOnClickListener {
+            startActivity(Intent(requireContext(), com.example.rutaalmacen.pagos.PlanSuscripcionActivity::class.java))
+        }
+    }
+
+    /**
+     * Actualiza el texto de la fecha con la fecha actual formateada en español.
+     *
+     * Muestra el día de la semana y la fecha en formato "Lunes, 28 julio".
+     */
+    private fun actualizarFecha() {
+        val formato = SimpleDateFormat("EEEE, dd 'de' MMMM", Locale.forLanguageTag("es-CL"))
+        textoFecha.text = formato.format(Date()).replaceFirstChar { it.uppercase() }
     }
 
     /**

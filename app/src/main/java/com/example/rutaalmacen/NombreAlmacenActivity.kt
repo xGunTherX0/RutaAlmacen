@@ -46,6 +46,9 @@ class NombreAlmacenActivity : AppCompatActivity() {
             insets
         }
 
+        findViewById<androidx.appcompat.widget.AppCompatImageButton>(R.id.boton_volver_nombre)
+            .setOnClickListener { finish() }
+
         val campoNombre = findViewById<TextInputEditText>(R.id.campo_nombre_almacen)
         val botonGuardar = findViewById<MaterialButton>(R.id.boton_guardar_nombre_almacen)
 

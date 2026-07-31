@@ -12,6 +12,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -47,6 +48,10 @@ class ProductosActivity : AppCompatActivity() {
     private var categoriaPendiente: String? = null
     private var avisoSinUbicacionMostrado = false
     private var categoriaSeleccionada = "Todas"
+    private var filtroAbiertoAhora = false
+    private var filtroDistanciaActiva = false
+    private var distanciaMaximaMetros: Double = 5000.0
+    private var filtroOfertas = false
     private lateinit var contenedorCarga: View
     private val cacheUsuarios: MutableMap<String, DocumentSnapshot> = mutableMapOf()
     private var inventarioPublicoCache: List<DocumentSnapshot>? = null
@@ -57,9 +62,11 @@ class ProductosActivity : AppCompatActivity() {
     private val categorias = listOf(
         "Todas",
         "Despensa",
-        "Lácteos y Huevos",
-        "Cecinas y Quesos",
+        "Lácteos y Quesos",
+        "Huevos",
+        "Cecinas y Embutidos",
         "Bebidas y Jugos",
+        "Alcohol",
         "Pan y Pastelería",
         "Frutas y Verduras",
         "Snacks y Dulces",
@@ -93,13 +100,23 @@ class ProductosActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_productos)
 
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
+
+        val header = findViewById<View>(R.id.header_productos)
+        val paddingHeaderBase = header.paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.contenedor_comprador)) { vista, insets ->
             val barrasDelSistema = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             vista.setPadding(
                 barrasDelSistema.left,
-                barrasDelSistema.top,
+                0,
                 barrasDelSistema.right,
                 barrasDelSistema.bottom,
+            )
+            header.setPadding(
+                header.paddingLeft,
+                paddingHeaderBase + barrasDelSistema.top,
+                header.paddingRight,
+                header.paddingBottom,
             )
             insets
         }
@@ -120,6 +137,7 @@ class ProductosActivity : AppCompatActivity() {
 
         configurarFiltros(campoCategoria)
         configurarBotonVolver()
+        configurarChipsFiltro()
 
         botonBuscar.setOnClickListener {
             ejecutarBusquedaManual(campoBusqueda.text?.toString().orEmpty())
@@ -337,6 +355,121 @@ class ProductosActivity : AppCompatActivity() {
         }
     }
 
+    private fun configurarChipsFiltro() {
+        val chipTodos = findViewById<MaterialButton>(R.id.chip_todos)
+        val chipAbierto = findViewById<MaterialButton>(R.id.chip_abierto)
+        val chipDistancia = findViewById<MaterialButton>(R.id.chip_distancia)
+        val chipOfertas = findViewById<MaterialButton>(R.id.chip_ofertas)
+
+        chipTodos.setOnClickListener {
+            filtroAbiertoAhora = false
+            filtroDistanciaActiva = false
+            filtroOfertas = false
+            actualizarEstadoChips(chipTodos, chipAbierto, chipDistancia, chipOfertas)
+            aplicarFiltros()
+        }
+
+        chipAbierto.setOnClickListener {
+            filtroAbiertoAhora = !filtroAbiertoAhora
+            if (filtroAbiertoAhora) {
+                filtroDistanciaActiva = false
+                filtroOfertas = false
+            }
+            actualizarEstadoChips(chipTodos, chipAbierto, chipDistancia, chipOfertas)
+            aplicarFiltros()
+        }
+
+        chipDistancia.setOnClickListener {
+            mostrarDialogoDistancia()
+        }
+
+        chipOfertas.setOnClickListener {
+            filtroOfertas = !filtroOfertas
+            if (filtroOfertas) {
+                filtroAbiertoAhora = false
+                filtroDistanciaActiva = false
+            }
+            actualizarEstadoChips(chipTodos, chipAbierto, chipDistancia, chipOfertas)
+            aplicarFiltros()
+        }
+    }
+
+    private fun actualizarEstadoChips(
+        chipTodos: MaterialButton,
+        chipAbierto: MaterialButton,
+        chipDistancia: MaterialButton,
+        chipOfertas: MaterialButton,
+    ) {
+        val colorPrimario = androidx.core.content.ContextCompat.getColor(this, R.color.colorPrimary)
+
+        chipTodos.setBackgroundColor(
+            if (!filtroAbiertoAhora && !filtroDistanciaActiva && !filtroOfertas) colorPrimario else android.graphics.Color.TRANSPARENT
+        )
+        chipTodos.setTextColor(
+            if (!filtroAbiertoAhora && !filtroDistanciaActiva && !filtroOfertas) android.graphics.Color.WHITE else colorPrimario
+        )
+
+        chipAbierto.setBackgroundColor(
+            if (filtroAbiertoAhora) colorPrimario else android.graphics.Color.TRANSPARENT
+        )
+        chipAbierto.setTextColor(
+            if (filtroAbiertoAhora) android.graphics.Color.WHITE else colorPrimario
+        )
+
+        val textoDistancia = if (filtroDistanciaActiva) "Hasta ${distanciaMaximaMetros.toInt()} m" else "Distancia"
+        chipDistancia.text = textoDistancia
+        chipDistancia.setBackgroundColor(
+            if (filtroDistanciaActiva) colorPrimario else android.graphics.Color.TRANSPARENT
+        )
+        chipDistancia.setTextColor(
+            if (filtroDistanciaActiva) android.graphics.Color.WHITE else colorPrimario
+        )
+
+        chipOfertas.setBackgroundColor(
+            if (filtroOfertas) colorPrimario else android.graphics.Color.TRANSPARENT
+        )
+        chipOfertas.setTextColor(
+            if (filtroOfertas) android.graphics.Color.WHITE else colorPrimario
+        )
+    }
+
+    private fun mostrarDialogoDistancia() {
+        val opciones = listOf("500 m", "1 km", "3 km", "5 km", "10 km", "Sin límite")
+        val seleccionActual = when {
+            distanciaMaximaMetros <= 500 -> 0
+            distanciaMaximaMetros <= 1000 -> 1
+            distanciaMaximaMetros <= 3000 -> 2
+            distanciaMaximaMetros <= 5000 -> 3
+            distanciaMaximaMetros <= 10000 -> 4
+            else -> 5
+        }
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle("Seleccionar rango de distancia")
+            .setSingleChoiceItems(opciones.toTypedArray(), seleccionActual) { dialogo, posicion ->
+                distanciaMaximaMetros = when (posicion) {
+                    0 -> 500.0
+                    1 -> 1000.0
+                    2 -> 3000.0
+                    3 -> 5000.0
+                    4 -> 10000.0
+                    else -> 50000.0
+                }
+                filtroDistanciaActiva = true
+                filtroAbiertoAhora = false
+                filtroOfertas = false
+                dialogo.dismiss()
+                val chipTodos = findViewById<MaterialButton>(R.id.chip_todos)
+                val chipAbierto = findViewById<MaterialButton>(R.id.chip_abierto)
+                val chipDistancia = findViewById<MaterialButton>(R.id.chip_distancia)
+                val chipOfertas = findViewById<MaterialButton>(R.id.chip_ofertas)
+                actualizarEstadoChips(chipTodos, chipAbierto, chipDistancia, chipOfertas)
+                aplicarFiltros()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
     private fun ejecutarBusquedaManual(consulta: String) {
         ocultarTeclado()
         lifecycleScope.launch {
@@ -516,7 +649,13 @@ class ProductosActivity : AppCompatActivity() {
     private fun aplicarFiltros() {
         val categoria = categoriaSeleccionada
         val filtrados = resultadosBase.filter { resultado ->
-            categoria == "Todas" || resultado.categoria == categoria
+            val cumpleCategoria = categoria == "Todas" || resultado.categoria == categoria
+            val cumpleAbierto = !filtroAbiertoAhora || resultado.abiertoAhora
+            val cumpleDistancia = !filtroDistanciaActiva || 
+                (resultado.distanciaMetros != null && resultado.distanciaMetros <= distanciaMaximaMetros)
+            val cumpleOferta = !filtroOfertas || resultado.enOferta
+            
+            cumpleCategoria && cumpleAbierto && cumpleDistancia && cumpleOferta
         }
 
         val ordenados = filtrados.sortedWith(
@@ -527,6 +666,10 @@ class ProductosActivity : AppCompatActivity() {
         resultados.clear()
         resultados.addAll(ordenados)
         adaptadorResultados.notifyDataSetChanged()
+        
+        val textoContador = findViewById<android.widget.TextView>(R.id.texto_contador_resultados)
+        val texto = if (resultados.size == 1) "1 resultado cerca de ti" else "${resultados.size} resultados cerca de ti"
+        textoContador.text = texto
     }
 
     private suspend fun registrarBusquedaFallida(consulta: String, ubicacion: Location?) {
@@ -838,9 +981,9 @@ class ProductosActivity : AppCompatActivity() {
                 holder.textoTiempoRestante.text = OfertaUtil.tiempoRestanteTexto(r.fechaFinOferta)
             } else {
                 holder.tarjeta.setCardBackgroundColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.fondo_card))
-                holder.textoPrecio.text = "Precio: $precioTxt"
+                holder.textoPrecio.text = precioTxt
                 holder.textoPrecio.paintFlags = holder.textoPrecio.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                holder.textoPrecio.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.texto_secundario))
+                holder.textoPrecio.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.colorPrimary))
                 holder.textoPrecio.textSize = 14f
                 holder.contenedorPrecioOferta.visibility = View.GONE
                 holder.badgeDescuento.visibility = View.GONE
@@ -848,14 +991,30 @@ class ProductosActivity : AppCompatActivity() {
             }
 
             holder.textoDescripcion.visibility = if (r.descripcion.isBlank()) View.GONE else View.VISIBLE
-            if (r.descripcion.isNotBlank()) holder.textoDescripcion.text = "Descripción: ${r.descripcion}"
-            holder.textoAlmacen.text = "Almacén: ${r.nombreAlmacen}"
-            holder.textoHorario.text = "Horario: ${r.horarioAtencion}"
-            holder.textoEstadoHorario.text = if (r.abiertoAhora) "Atención: Abierto" else "Atención: Cerrado"
-            holder.textoEstadoHorario.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, if (r.abiertoAhora) R.color.stock_verde else R.color.stock_rojo))
-            holder.textoDistancia.text = "Distancia: ${formatearDistancia(r.distanciaMetros)}"
-            holder.textoEstado.text = if (r.disponible) "Estado: Disponible" else "Estado: Agotado"
-            holder.textoEstado.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, if (r.disponible) R.color.stock_verde else R.color.stock_rojo))
+            if (r.descripcion.isNotBlank()) holder.textoDescripcion.text = r.descripcion
+            holder.textoAlmacen.text = r.nombreAlmacen
+            holder.textoHorario.text = r.horarioAtencion
+            holder.textoEstadoHorario.text = if (r.abiertoAhora) "Abierto" else "Cerrado"
+            holder.textoEstadoHorario.setTextColor(
+                androidx.core.content.ContextCompat.getColor(
+                    ctx,
+                    if (r.abiertoAhora) R.color.stock_verde else R.color.stock_rojo,
+                ),
+            )
+            holder.textoEstadoHorario.setBackgroundResource(
+                if (r.abiertoAhora) R.drawable.bg_chip_estado_ok else R.drawable.bg_chip_estado_mal,
+            )
+            holder.textoDistancia.text = formatearDistancia(r.distanciaMetros)
+            holder.textoEstado.text = if (r.disponible) "Disponible" else "Agotado"
+            holder.textoEstado.setTextColor(
+                androidx.core.content.ContextCompat.getColor(
+                    ctx,
+                    if (r.disponible) R.color.stock_verde else R.color.stock_rojo,
+                ),
+            )
+            holder.textoEstado.setBackgroundResource(
+                if (r.disponible) R.drawable.bg_chip_estado_ok else R.drawable.bg_chip_estado_mal,
+            )
 
             holder.botonLlegar.setOnClickListener { onLlegar(r) }
             holder.botonVerStock.isEnabled = r.vendedorId.isNotBlank()

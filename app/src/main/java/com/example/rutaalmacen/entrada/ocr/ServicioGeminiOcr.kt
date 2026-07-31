@@ -68,8 +68,8 @@ class ServicioGeminiOcr(private val contextoApp: Context) {
         """.trimIndent()
 
         val categorias = listOf(
-            "Despensa", "Lácteos y Huevos", "Cecinas y Quesos", "Bebidas y Jugos",
-            "Pan y Pastelería", "Frutas y Verduras", "Snacks y Dulces", "Congelados",
+            "Despensa", "Lácteos y Quesos", "Huevos", "Cecinas y Embutidos", "Bebidas y Jugos",
+            "Alcohol", "Pan y Pastelería", "Frutas y Verduras", "Snacks y Dulces", "Congelados",
             "Aseo Hogar", "Higiene Personal",
         )
 

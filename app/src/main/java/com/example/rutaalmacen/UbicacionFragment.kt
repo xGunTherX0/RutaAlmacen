@@ -68,6 +68,9 @@ class UbicacionFragment : Fragment(R.layout.fragment_ubicacion) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        view.findViewById<androidx.appcompat.widget.AppCompatImageButton>(R.id.boton_volver_ubicacion)
+            .setOnClickListener { requireActivity().finish() }
+
         val botonActualizarUbicacion = view.findViewById<MaterialButton>(R.id.boton_actualizar_ubicacion)
         botonActualizarUbicacion.setOnClickListener { iniciarActualizacionUbicacion() }
     }

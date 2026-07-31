@@ -9,16 +9,29 @@
     android:padding="@dimen/margen_pantalla"
     tools:context=".CategoriaAlmacenActivity">
 
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/boton_volver_categoria"
+        android:layout_width="@dimen/ancho_icono_grande"
+        android:layout_height="@dimen/ancho_icono_grande"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Volver"
+        android:src="@drawable/ic_volver"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/texto_principal" />
+
     <TextView
         android:id="@+id/texto_titulo_categoria_almacen"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center"
+        android:layout_marginStart="@dimen/espacio_sm"
+        android:gravity="start"
         android:text="Categoría del almacén"
         android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleLarge"
+        app:layout_constraintBottom_toBottomOf="@id/boton_volver_categoria"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@id/boton_volver_categoria"
+        app:layout_constraintTop_toTopOf="@id/boton_volver_categoria" />
 
     <TextView
         android:id="@+id/texto_descripcion_categoria_almacen"

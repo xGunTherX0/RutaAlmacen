@@ -59,6 +59,9 @@ class EstadisticasActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_estadisticas)
 
+        findViewById<androidx.appcompat.widget.AppCompatImageButton>(R.id.boton_volver_estadisticas)
+            .setOnClickListener { finish() }
+
         textoUsuariosGratis = findViewById(R.id.texto_usuarios_gratis)
         textoUsuariosVendedor = findViewById(R.id.texto_usuarios_vendedor)
         textoUsuariosComercio = findViewById(R.id.texto_usuarios_comercio)
