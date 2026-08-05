@@ -5,8 +5,6 @@ import android.content.Intent
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,7 +22,6 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Source
@@ -59,22 +56,6 @@ class ProductosActivity : AppCompatActivity() {
     private var ubicacionCache: Location? = null
     private var ubicacionCacheTiempo = 0L
 
-    private val categorias = listOf(
-        "Todas",
-        "Despensa",
-        "Lácteos y Quesos",
-        "Huevos",
-        "Cecinas y Embutidos",
-        "Bebidas y Jugos",
-        "Alcohol",
-        "Pan y Pastelería",
-        "Frutas y Verduras",
-        "Snacks y Dulces",
-        "Congelados",
-        "Aseo Hogar",
-        "Higiene Personal",
-    )
-
     private val solicitudPermisoUbicacion = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { resultados ->
@@ -102,9 +83,9 @@ class ProductosActivity : AppCompatActivity() {
 
         WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
 
-        val header = findViewById<View>(R.id.header_productos)
+        val header = findViewById<View>(R.id.header_resultados)
         val paddingHeaderBase = header.paddingTop
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.contenedor_comprador)) { vista, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.contenedor_resultados)) { vista, insets ->
             val barrasDelSistema = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             vista.setPadding(
                 barrasDelSistema.left,
@@ -121,47 +102,76 @@ class ProductosActivity : AppCompatActivity() {
             insets
         }
 
-        val campoBusqueda = findViewById<TextInputEditText>(R.id.campo_busqueda_producto)
         val recyclerResultados = findViewById<RecyclerView>(R.id.recycler_resultados)
-        val campoCategoria = findViewById<AutoCompleteTextView>(R.id.campo_categoria)
         contenedorCarga = findViewById(R.id.contenedor_carga_comprador)
-        val botonBuscar = findViewById<MaterialButton>(R.id.boton_buscar_producto)
+        val campoBusqueda = findViewById<TextInputEditText>(R.id.campo_busqueda_producto)
 
         adaptadorResultados = AdaptadorResultados(
             resultados = resultados,
             onLlegar = { resultado -> abrirNavegacion(resultado) },
             onVerStock = { resultado -> abrirStockAlmacen(resultado) },
+            onReportar = { resultado -> confirmarReportarProducto(resultado) },
         )
         recyclerResultados.layoutManager = LinearLayoutManager(this)
         recyclerResultados.adapter = adaptadorResultados
 
-        configurarFiltros(campoCategoria)
         configurarBotonVolver()
         configurarChipsFiltro()
+        configurarCampoBusqueda(campoBusqueda)
 
-        botonBuscar.setOnClickListener {
-            ejecutarBusquedaManual(campoBusqueda.text?.toString().orEmpty())
-        }
         findViewById<MaterialButton>(R.id.boton_info_alertas).setOnClickListener {
             startActivity(Intent(this, InfoAlertasActivity::class.java))
         }
 
+        filtroAbiertoAhora = intent.getBooleanExtra("filtro_abierto", false)
+        filtroDistanciaActiva = intent.getBooleanExtra("filtro_distancia", false)
+        distanciaMaximaMetros = intent.getDoubleExtra("distancia_maxima", 5000.0)
+        filtroOfertas = intent.getBooleanExtra("filtro_ofertas", false)
+
+        val consultaIntent = intent.getStringExtra("consulta_inicial")
         val categoriaIntent = intent.getStringExtra("categoria")
+
+        actualizarEstadoChips(
+            findViewById(R.id.chip_todos),
+            findViewById(R.id.chip_abierto),
+            findViewById(R.id.chip_distancia),
+            findViewById(R.id.chip_ofertas),
+        )
+
         if (!categoriaIntent.isNullOrBlank()) {
             categoriaSeleccionada = categoriaIntent
-            campoCategoria.setText(categoriaIntent, false)
+            campoBusqueda.setText(categoriaIntent)
             lifecycleScope.launch { buscarProductosPorCategoria(categoriaIntent) }
+        } else if (!consultaIntent.isNullOrBlank()) {
+            campoBusqueda.setText(consultaIntent)
+            lifecycleScope.launch { buscarProductos(consultaIntent) }
         } else {
+            campoBusqueda.setHint("Todos los productos")
             lifecycleScope.launch { cargarProductosIniciales() }
         }
     }
 
     private fun configurarBotonVolver() {
-        findViewById<MaterialButton>(R.id.boton_volver_home).setOnClickListener {
-            val intent = Intent(this, CompradorActivity::class.java)
+        findViewById<MaterialButton>(R.id.boton_volver_buscar).setOnClickListener {
+            val intent = Intent(this, ListaComprasActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             startActivity(intent)
             finish()
+        }
+    }
+
+    private fun configurarCampoBusqueda(campoBusqueda: TextInputEditText) {
+        campoBusqueda.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
+                val texto = campoBusqueda.text?.toString().orEmpty().trim()
+                if (texto.isNotBlank()) {
+                    ocultarTeclado()
+                    lifecycleScope.launch { buscarProductos(texto) }
+                }
+                true
+            } else {
+                false
+            }
         }
     }
 
@@ -341,20 +351,6 @@ class ProductosActivity : AppCompatActivity() {
         }
     }
 
-    private fun configurarFiltros(campoCategoria: AutoCompleteTextView) {
-        val adaptadorCategorias = ArrayAdapter(
-            this,
-            android.R.layout.simple_dropdown_item_1line,
-            categorias,
-        )
-        campoCategoria.setAdapter(adaptadorCategorias)
-        campoCategoria.setText(categoriaSeleccionada, false)
-        campoCategoria.setOnItemClickListener { _, _, posicion, _ ->
-            categoriaSeleccionada = categorias.getOrNull(posicion) ?: "Todas"
-            aplicarFiltros()
-        }
-    }
-
     private fun configurarChipsFiltro() {
         val chipTodos = findViewById<MaterialButton>(R.id.chip_todos)
         val chipAbierto = findViewById<MaterialButton>(R.id.chip_abierto)
@@ -470,22 +466,6 @@ class ProductosActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun ejecutarBusquedaManual(consulta: String) {
-        ocultarTeclado()
-        lifecycleScope.launch {
-            val texto = consulta.trim()
-            if (texto.isBlank()) {
-                if (categoriaSeleccionada == "Todas") {
-                    cargarProductosIniciales()
-                    return@launch
-                }
-                buscarProductosPorCategoria(categoriaSeleccionada)
-                return@launch
-            }
-            buscarProductos(texto)
-        }
-    }
-
     private fun ocultarTeclado() {
         val vista = currentFocus ?: View(this)
         val gestor = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
@@ -587,6 +567,7 @@ class ProductosActivity : AppCompatActivity() {
                     precioOferta = if (ofertaVigente) datosOferta.precioOferta else null,
                     descuentoPorcentaje = if (ofertaVigente) datosOferta.descuentoPorcentaje else null,
                     fechaFinOferta = if (ofertaVigente) datosOferta.fechaFinOferta else null,
+                    motivoOferta = if (ofertaVigente) datosOferta.motivoOferta else "",
                 ),
             )
         }
@@ -605,6 +586,7 @@ class ProductosActivity : AppCompatActivity() {
             "precioOferta" to null,
             "descuentoPorcentaje" to null,
             "fechaFinOferta" to null,
+            "motivoOferta" to "",
             "fechaActualizacion" to ahora,
         )
         val uidActual = autenticacion.currentUser?.uid
@@ -848,6 +830,46 @@ class ProductosActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    private fun confirmarReportarProducto(resultado: ResultadoBusqueda) {
+        if (resultado.vendedorId.isBlank()) {
+            mostrarMensaje("No se puede reportar este producto")
+            return
+        }
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle("Reportar producto")
+            .setMessage("¿Deseas reportar \"${resultado.nombreProducto}\" como inapropiado? El administrador revisará este reporte y podrá eliminar el producto o bloquear al vendedor.")
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Reportar") { _, _ ->
+                lifecycleScope.launch { reportarProducto(resultado) }
+            }
+            .show()
+    }
+
+    private suspend fun reportarProducto(resultado: ResultadoBusqueda) {
+        try {
+            val compradorId = autenticacion.currentUser?.uid.orEmpty()
+            val fechaReporte = System.currentTimeMillis()
+            val idReporte = "prod_${resultado.vendedorId}_${resultado.productoId}_$fechaReporte"
+            val datos = mapOf(
+                "producto" to resultado.nombreProducto,
+                "productoId" to resultado.productoId,
+                "vendedorId" to resultado.vendedorId,
+                "compradorId" to compradorId,
+                "mensaje" to "Producto reportado como inapropiado por comprador",
+                "fechaReporte" to fechaReporte,
+                "estado" to "pendiente",
+                "tipoReporte" to "producto",
+            )
+            baseDatos.collection(Constantes.COLECCION_ALERTAS_REPORTADAS)
+                .document(idReporte)
+                .set(datos)
+                .await()
+            mostrarMensaje("Producto reportado. El administrador lo revisará.")
+        } catch (_: Exception) {
+            mostrarMensaje("No se pudo enviar el reporte")
+        }
+    }
+
     private suspend fun buscarInventarioLocalPublico(consulta: String): List<DocumentSnapshot> {
         if (consulta.isBlank()) return emptyList()
         return obtenerInventarioPublicoCache().filter {
@@ -925,12 +947,14 @@ class ProductosActivity : AppCompatActivity() {
         val precioOferta: Double? = null,
         val descuentoPorcentaje: Int? = null,
         val fechaFinOferta: Long? = null,
+        val motivoOferta: String = "",
     )
 
     private class AdaptadorResultados(
         private val resultados: List<ResultadoBusqueda>,
         private val onLlegar: (ResultadoBusqueda) -> Unit,
         private val onVerStock: (ResultadoBusqueda) -> Unit,
+        private val onReportar: (ResultadoBusqueda) -> Unit,
     ) : RecyclerView.Adapter<AdaptadorResultados.VistaResultado>() {
 
         class VistaResultado(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -942,14 +966,16 @@ class ProductosActivity : AppCompatActivity() {
             val textoUnidadOferta: android.widget.TextView = itemView.findViewById(R.id.texto_unidad_oferta)
             val badgeDescuento: android.widget.TextView = itemView.findViewById(R.id.badge_descuento)
             val textoTiempoRestante: android.widget.TextView = itemView.findViewById(R.id.texto_tiempo_restante)
+            val textoMotivoOferta: android.widget.TextView = itemView.findViewById(R.id.texto_motivo_oferta)
             val textoDescripcion: android.widget.TextView = itemView.findViewById(R.id.texto_descripcion_producto)
             val textoAlmacen: android.widget.TextView = itemView.findViewById(R.id.texto_almacen_producto)
             val textoHorario: android.widget.TextView = itemView.findViewById(R.id.texto_horario_almacen)
             val textoEstadoHorario: android.widget.TextView = itemView.findViewById(R.id.texto_estado_horario)
             val textoDistancia: android.widget.TextView = itemView.findViewById(R.id.texto_distancia_producto)
             val textoEstado: android.widget.TextView = itemView.findViewById(R.id.texto_estado_producto)
-            val botonVerStock: MaterialButton = itemView.findViewById(R.id.boton_ver_stock)
-            val botonLlegar: MaterialButton = itemView.findViewById(R.id.boton_llegar_almacen)
+            val botonVerStock: android.widget.TextView = itemView.findViewById(R.id.boton_ver_stock)
+            val botonLlegar: android.widget.TextView = itemView.findViewById(R.id.boton_llegar_almacen)
+            val botonReportar: com.google.android.material.button.MaterialButton = itemView.findViewById(R.id.boton_reportar_producto)
         }
 
         override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): VistaResultado {
@@ -979,6 +1005,12 @@ class ProductosActivity : AppCompatActivity() {
                 holder.badgeDescuento.text = "-${r.descuentoPorcentaje ?: 0}% OFF"
                 holder.textoTiempoRestante.visibility = View.VISIBLE
                 holder.textoTiempoRestante.text = OfertaUtil.tiempoRestanteTexto(r.fechaFinOferta)
+                if (r.motivoOferta.isNotBlank()) {
+                    holder.textoMotivoOferta.visibility = View.VISIBLE
+                    holder.textoMotivoOferta.text = r.motivoOferta
+                } else {
+                    holder.textoMotivoOferta.visibility = View.GONE
+                }
             } else {
                 holder.tarjeta.setCardBackgroundColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.fondo_card))
                 holder.textoPrecio.text = precioTxt
@@ -988,6 +1020,7 @@ class ProductosActivity : AppCompatActivity() {
                 holder.contenedorPrecioOferta.visibility = View.GONE
                 holder.badgeDescuento.visibility = View.GONE
                 holder.textoTiempoRestante.visibility = View.GONE
+                holder.textoMotivoOferta.visibility = View.GONE
             }
 
             holder.textoDescripcion.visibility = if (r.descripcion.isBlank()) View.GONE else View.VISIBLE
@@ -1020,6 +1053,7 @@ class ProductosActivity : AppCompatActivity() {
             holder.botonVerStock.isEnabled = r.vendedorId.isNotBlank()
             holder.botonVerStock.alpha = if (r.vendedorId.isNotBlank()) 1f else 0.5f
             holder.botonVerStock.setOnClickListener { onVerStock(r) }
+            holder.botonReportar.setOnClickListener { onReportar(r) }
         }
 
         override fun getItemCount(): Int = resultados.size

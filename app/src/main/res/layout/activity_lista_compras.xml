@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/contenedor_lista_compras"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/fondo_app"
+    tools:context=".ListaComprasActivity">
+
+    <!-- Header verde -->
+    <LinearLayout
+        android:id="@+id/header_lista_compras"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_header_gradient"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/espacio_md"
+        android:paddingTop="@dimen/espacio_sm"
+        android:paddingBottom="@dimen/espacio_sm"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/boton_volver_lista"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_boton_alerta_header"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:text=""
+            app:backgroundTint="@null"
+            app:icon="@drawable/ic_volver"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="20dp"
+            app:iconTint="@android:color/white"
+            app:rippleColor="#40FFFFFF" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/espacio_sm"
+            android:layout_weight="1"
+            android:text="Lista de Compras Inteligente"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/texto_cuerpo_lg"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Contenido principal -->
+    <LinearLayout
+        android:id="@+id/contenedor_contenido"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/espacio_lg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header_lista_compras">
+
+        <!-- Titulo e instruccion -->
+        <TextView
+            android:id="@+id/texto_titulo_lista"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_lg"
+            android:gravity="center"
+            android:text="Arma tu lista de compras"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleLarge"
+            android:textColor="@color/texto_principal" />
+
+        <TextView
+            android:id="@+id/texto_subtitulo_lista"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:gravity="center"
+            android:text="Escribe los productos que necesitas y encuentra el almacén ideal"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+            android:textColor="@color/texto_secundario" />
+
+        <!-- Campo de entrada + boton agregar -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/contenedor_entrada_card"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="@dimen/espacio_lg"
+            app:cardBackgroundColor="@android:color/white"
+            app:cardCornerRadius="26dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/espacio_md">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_search"
+                    app:tint="#6B7280" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="@dimen/espacio_sm"
+                    android:layout_weight="1"
+                    android:hint="Escribe un producto..."
+                    app:boxBackgroundColor="@android:color/transparent"
+                    app:boxStrokeWidth="0dp"
+                    app:boxStrokeWidthFocused="0dp"
+                    app:hintEnabled="false">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/campo_producto"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:imeOptions="actionDone"
+                        android:inputType="textCapWords"
+                        android:maxLines="1"
+                        android:textSize="@dimen/texto_cuerpo_lg"
+                        android:padding="0dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/boton_voz_producto"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:text=""
+                    app:icon="@drawable/ic_mic"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconSize="22dp"
+                    app:iconTint="@color/colorPrimary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/boton_agregar_producto"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:text=""
+                    app:icon="@drawable/ic_add"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconSize="22dp"
+                    app:iconTint="@color/colorPrimary" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Contador de productos -->
+        <TextView
+            android:id="@+id/texto_contador_productos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_md"
+            android:text="0 productos en tu lista"
+            android:textColor="@color/texto_secundario"
+            android:textSize="@dimen/texto_cuerpo_sm" />
+
+        <!-- Lista de productos agregados -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_lista_productos"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:layout_weight="1"
+            android:overScrollMode="never"
+            android:nestedScrollingEnabled="false" />
+
+        <!-- Estado vacio de la lista -->
+        <LinearLayout
+            android:id="@+id/contenedor_lista_vacia"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:alpha="0.4"
+                android:src="@drawable/ic_add"
+                app:tint="@color/texto_terciario" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_sm"
+                android:text="Tu lista está vacía"
+                android:textColor="@color/texto_terciario"
+                android:textSize="@dimen/texto_cuerpo_md" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/espacio_xs"
+                android:text="Agrega productos usando el campo de arriba"
+                android:textColor="@color/texto_terciario"
+                android:textSize="@dimen/texto_cuerpo_sm" />
+        </LinearLayout>
+
+        <!-- Contenedor de carga -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/contenedor_carga_lista"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_sm"
+            android:visibility="gone"
+            app:cardBackgroundColor="@android:color/white"
+            app:cardCornerRadius="@dimen/radio_card"
+            app:cardElevation="@dimen/elevacion_card"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/espacio_md">
+
+                <ProgressBar
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:indeterminateTint="@color/colorPrimary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espacio_xs"
+                    android:text="Buscando almacenes..."
+                    android:textColor="@color/texto_secundario"
+                    android:textSize="@dimen/texto_cuerpo_sm" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Boton buscar almacen ideal -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/boton_buscar_almacen"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/alto_boton"
+            android:layout_marginTop="@dimen/espacio_md"
+            android:layout_marginBottom="@dimen/espacio_sm"
+            android:enabled="false"
+            android:text="Buscar Almacén Ideal"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/texto_cuerpo_lg"
+            app:backgroundTint="@color/colorPrimary"
+            app:cornerRadius="@dimen/radio_boton"
+            app:elevation="@dimen/elevacion_boton" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

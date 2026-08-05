@@ -152,6 +152,7 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
                     precioOferta = datosOferta.precioOferta,
                     descuentoPorcentaje = datosOferta.descuentoPorcentaje,
                     fechaFinOferta = datosOferta.fechaFinOferta,
+                    motivoOferta = datosOferta.motivoOferta,
                 )
             }
 
@@ -431,8 +432,9 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
                 precioOferta: Double,
                 descuentoPorcentaje: Int,
                 fechaFinOferta: Long,
+                motivo: String,
             ) {
-                aplicarOferta(producto, precioOferta, descuentoPorcentaje, fechaFinOferta)
+                aplicarOferta(producto, precioOferta, descuentoPorcentaje, fechaFinOferta, motivo)
             }
 
             override fun onOfertaCancelada(producto: Producto) {
@@ -447,6 +449,7 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
         precioOferta: Double,
         descuentoPorcentaje: Int,
         fechaFinOferta: Long,
+        motivo: String,
     ) {
         val usuario = autenticacion.currentUser
         if (usuario == null) {
@@ -464,6 +467,7 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
             "precioOferta" to precioOferta,
             "descuentoPorcentaje" to descuentoPorcentaje,
             "fechaFinOferta" to fechaFinOferta,
+            "motivoOferta" to motivo,
             "fechaActualizacion" to ahora,
         )
 
@@ -481,6 +485,7 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
                     precioOferta = precioOferta,
                     descuentoPorcentaje = descuentoPorcentaje,
                     fechaFinOferta = fechaFinOferta,
+                    motivoOferta = motivo,
                     fechaActualizacion = ahora,
                 )
                 val indiceBase = productosBase.indexOfFirst { it.id == producto.id }
@@ -517,6 +522,7 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
             "precioOferta" to null,
             "descuentoPorcentaje" to null,
             "fechaFinOferta" to null,
+            "motivoOferta" to "",
             "fechaActualizacion" to ahora,
         )
 
@@ -534,6 +540,7 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
                     precioOferta = null,
                     descuentoPorcentaje = null,
                     fechaFinOferta = null,
+                    motivoOferta = "",
                     fechaActualizacion = ahora,
                 )
                 val indiceBase = productosBase.indexOfFirst { it.id == producto.id }
@@ -728,6 +735,9 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
         producto.precioOferta?.let { datos["precioOferta"] = it }
         producto.descuentoPorcentaje?.let { datos["descuentoPorcentaje"] = it }
         producto.fechaFinOferta?.let { datos["fechaFinOferta"] = it }
+        if (producto.motivoOferta.isNotBlank()) {
+            datos["motivoOferta"] = producto.motivoOferta
+        }
         datosAlmacen.forEach { (clave, valor) ->
             if (valor != null) {
                 datos[clave] = valor
@@ -765,6 +775,7 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
             val textoPrecio: TextView = itemView.findViewById(R.id.texto_precio_producto)
             val badgeOferta: TextView = itemView.findViewById(R.id.badge_oferta_activa)
             val textoResumenOferta: TextView = itemView.findViewById(R.id.texto_oferta_resumen)
+            val textoMotivoOferta: TextView = itemView.findViewById(R.id.texto_motivo_oferta)
             val botonEditar: MaterialButton = itemView.findViewById(R.id.boton_editar_producto)
             val botonOferta: MaterialButton = itemView.findViewById(R.id.boton_oferta_producto)
             val botonEliminar: MaterialButton = itemView.findViewById(R.id.boton_eliminar_producto)
@@ -794,6 +805,12 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
                 holder.badgeOferta.visibility = View.VISIBLE
                 holder.textoResumenOferta.visibility = View.VISIBLE
                 holder.textoResumenOferta.text = OfertaUtil.resumenVendedor(producto)
+                if (producto.motivoOferta.isNotBlank()) {
+                    holder.textoMotivoOferta.visibility = View.VISIBLE
+                    holder.textoMotivoOferta.text = producto.motivoOferta
+                } else {
+                    holder.textoMotivoOferta.visibility = View.GONE
+                }
                 holder.botonOferta.text = "Editar oferta"
             } else {
                 holder.tarjeta.setCardBackgroundColor(
@@ -801,6 +818,7 @@ class ListaProductosFragment : Fragment(R.layout.fragment_lista_productos) {
                 )
                 holder.badgeOferta.visibility = View.GONE
                 holder.textoResumenOferta.visibility = View.GONE
+                holder.textoMotivoOferta.visibility = View.GONE
                 holder.botonOferta.text = "Oferta"
             }
 

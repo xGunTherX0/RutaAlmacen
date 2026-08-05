@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <!-- Pin de ubicación verde -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M60,10 C40,10 25,25 25,45 C25,70 60,110 60,110 C60,110 95,70 95,45 C95,25 80,10 60,10 Z M60,60 C51.72,60 45,53.28 45,45 C45,36.72 51.72,30 60,30 C68.28,30 75,36.72 75,45 C75,53.28 68.28,60 60,60 Z"/>
+    <!-- Punto interior -->
+    <path
+        android:fillColor="#059669"
+        android:pathData="M60,35 C54.48,35 50,39.48 50,45 C50,50.52 54.48,55 60,55 C65.52,55 70,50.52 70,45 C70,39.48 65.52,35 60,35 Z"/>
+</vector>

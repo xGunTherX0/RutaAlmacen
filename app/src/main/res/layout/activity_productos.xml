@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/contenedor_comprador"
+    android:id="@+id/contenedor_resultados"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/fondo_app"
@@ -10,7 +10,7 @@
 
     <!-- Header verde con búsqueda -->
     <LinearLayout
-        android:id="@+id/header_productos"
+        android:id="@+id/header_resultados"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_header_gradient"
@@ -25,7 +25,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/boton_volver_home"
+            android:id="@+id/boton_volver_buscar"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -94,7 +94,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Botón de filtros/menú -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/boton_info_alertas"
             style="@style/Widget.Material3.Button.TextButton"
@@ -125,15 +124,14 @@
         android:paddingVertical="@dimen/espacio_sm"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/header_productos">
+        app:layout_constraintTop_toBottomOf="@id/header_resultados">
 
         <LinearLayout
             android:id="@+id/contenedor_filtros"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingHorizontal="@dimen/espacio_md"
-            android:visibility="visible">
+            android:paddingHorizontal="@dimen/espacio_md">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/chip_todos"
@@ -232,72 +230,6 @@
             app:tint="@android:color/white" />
     </LinearLayout>
 
-    <!-- Contenedor de búsqueda avanzada (oculto por defecto) -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/contenedor_busqueda_avanzada"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/espacio_md"
-        android:layout_marginTop="@dimen/espacio_sm"
-        android:visibility="gone"
-        app:cardBackgroundColor="@color/fondo_card"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="2dp"
-        app:strokeWidth="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/barra_resultados">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="@dimen/espacio_sm">
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/contenedor_categoria"
-                style="@style/Widget.RutaAlmacen.TextInputLayout.Dropdown"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Categoría"
-                app:boxBackgroundColor="@color/fondo_card_alt"
-                app:endIconMode="dropdown_menu"
-                app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium">
-
-                <AutoCompleteTextView
-                    android:id="@+id/campo_categoria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:textSize="@dimen/texto_cuerpo_md" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/boton_buscar_producto"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="@dimen/espacio_xs"
-                android:text="Buscar"
-                android:textSize="@dimen/texto_cuerpo_md"
-                app:cornerRadius="14dp" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- Título Resultados -->
-    <TextView
-        android:id="@+id/texto_resultados"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/espacio_sm"
-        android:paddingHorizontal="@dimen/espacio_md"
-        android:text="Resultados"
-        android:textColor="@color/texto_principal"
-        android:textSize="@dimen/texto_cuerpo_lg"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/contenedor_busqueda_avanzada" />
-
     <!-- Lista de resultados -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_resultados"
@@ -310,7 +242,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/texto_resultados"
+        app:layout_constraintTop_toBottomOf="@id/barra_resultados"
         tools:listitem="@layout/item_resultado_producto" />
 
     <!-- Overlay de carga -->
@@ -360,12 +292,5 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
-
-    <!-- Título oculto para compatibilidad -->
-    <TextView
-        android:id="@+id/texto_titulo_comprador"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

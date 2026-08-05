@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/contenedor_buscar_productos"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/fondo_app"
+    tools:context=".BuscarProductosActivity">
+
+    <!-- Header verde solo con botón volver -->
+    <LinearLayout
+        android:id="@+id/header_buscar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_header_gradient"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/espacio_md"
+        android:paddingTop="@dimen/espacio_sm"
+        android:paddingBottom="@dimen/espacio_sm"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/boton_volver_home_buscar"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_boton_alerta_header"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:text=""
+            app:backgroundTint="@null"
+            app:icon="@drawable/ic_volver"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="20dp"
+            app:iconTint="@android:color/white"
+            app:rippleColor="#40FFFFFF" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/espacio_sm"
+            android:layout_weight="1"
+            android:text="Buscar productos"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/texto_cuerpo_lg"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Contenido central: mensaje + barra + chips -->
+    <LinearLayout
+        android:id="@+id/contenedor_central"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/espacio_lg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header_buscar">
+
+        <TextView
+            android:id="@+id/texto_saludo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="¿Qué producto buscas hoy?"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleLarge"
+            android:textColor="@color/texto_principal" />
+
+        <TextView
+            android:id="@+id/texto_subtitulo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:gravity="center"
+            android:text="Escribe el nombre del producto que necesitas"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
+            android:textColor="@color/texto_secundario" />
+
+        <!-- Barra de búsqueda blanca -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/contenedor_busqueda_card"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="@dimen/espacio_lg"
+            android:layout_marginBottom="@dimen/espacio_md"
+            app:cardBackgroundColor="@android:color/white"
+            app:cardCornerRadius="26dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:id="@+id/fila_busqueda"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/espacio_md">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_search"
+                    app:tint="#6B7280" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/contenedor_busqueda"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="@dimen/espacio_sm"
+                    android:layout_weight="1"
+                    android:hint="Producto"
+                    app:boxBackgroundColor="@android:color/transparent"
+                    app:boxStrokeWidth="0dp"
+                    app:boxStrokeWidthFocused="0dp"
+                    app:hintEnabled="false">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/campo_busqueda_producto"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:imeOptions="actionSearch"
+                        android:inputType="textCapWords"
+                        android:maxLines="1"
+                        android:textSize="@dimen/texto_cuerpo_lg"
+                        android:padding="0dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/boton_busqueda_voz"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:text=""
+                    app:icon="@drawable/ic_mic"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconSize="22dp"
+                    app:iconTint="@color/colorPrimary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/boton_ejecutar_busqueda"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:text=""
+                    app:icon="@drawable/ic_enviar"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconSize="22dp"
+                    app:iconTint="@color/colorPrimary" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Chips de filtro -->
+        <HorizontalScrollView
+            android:id="@+id/scroll_filtros"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/contenedor_filtros"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chip_todos"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="@dimen/espacio_xs"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:paddingHorizontal="@dimen/espacio_md"
+                    android:text="Todos"
+                    android:textSize="@dimen/texto_cuerpo_sm"
+                    app:cornerRadius="18dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chip_abierto"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="@dimen/espacio_xs"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:paddingHorizontal="@dimen/espacio_md"
+                    android:text="Abierto ahora"
+                    android:textSize="@dimen/texto_cuerpo_sm"
+                    app:cornerRadius="18dp"
+                    app:strokeColor="@color/colorPrimary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chip_distancia"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="@dimen/espacio_xs"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:paddingHorizontal="@dimen/espacio_md"
+                    android:text="Distancia"
+                    android:textSize="@dimen/texto_cuerpo_sm"
+                    app:cornerRadius="18dp"
+                    app:strokeColor="@color/colorPrimary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chip_ofertas"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="@dimen/espacio_xs"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:paddingHorizontal="@dimen/espacio_md"
+                    android:text="En oferta"
+                    android:textSize="@dimen/texto_cuerpo_sm"
+                    app:cornerRadius="18dp"
+                    app:strokeColor="@color/colorPrimary" />
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

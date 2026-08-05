@@ -31,32 +31,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/separador_card"
-            android:text="Tipo de descuento"
+            android:text="Descuento"
             android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
             android:textStyle="bold" />
-
-        <RadioGroup
-            android:id="@+id/grupo_tipo_descuento"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/espacio_xs"
-            android:orientation="vertical">
-
-            <RadioButton
-                android:id="@+id/opcion_precio_final"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="Por precio final"
-                android:textColor="@color/texto_principal" />
-
-            <RadioButton
-                android:id="@+id/opcion_porcentaje"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Por porcentaje (%)"
-                android:textColor="@color/texto_principal" />
-        </RadioGroup>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/contenedor_valor_oferta"
@@ -64,14 +41,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/espacio_sm"
-            android:hint="Precio final con descuento"
-            app:prefixText="$">
+            android:hint="Porcentaje de descuento (1-99)"
+            app:suffixText="%">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/campo_valor_oferta"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="numberDecimal" />
+                android:inputType="number" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
@@ -83,8 +60,33 @@
             android:textSize="@dimen/texto_cuerpo_md"
             android:textStyle="bold"
             android:visibility="gone"
-            tools:text="Equivale a 20% de descuento"
+            tools:text="Precio final: $2400"
             tools:visibility="visible" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/separador_card"
+            android:text="Motivo de la oferta"
+            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+            android:textStyle="bold" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/contenedor_motivo_oferta"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_sm"
+            android:hint="Describe el motivo de esta oferta">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/campo_motivo_oferta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapSentences|textMultiLine"
+                android:maxLines="3"
+                android:minLines="2" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:layout_width="match_parent"

@@ -77,6 +77,14 @@ class CompradorActivity : AppCompatActivity() {
 
         WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
 
+        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        val yaVioAlertasIA = prefs.getBoolean("ya_vio_alertas_ia", false)
+
+        if (!yaVioAlertasIA) {
+            prefs.edit().putBoolean("ya_vio_alertas_ia", true).apply()
+            startActivity(Intent(this, InfoAlertasActivity::class.java))
+        }
+
         val header = findViewById<View>(R.id.header_home)
         val paddingHeaderBase = header.paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.contenedor_comprador)) { vista, insets ->
@@ -97,6 +105,16 @@ class CompradorActivity : AppCompatActivity() {
         }
 
         MobileAds.initialize(this) {}
+
+        val esVendedorVisitante = intent.getBooleanExtra("volver_a_vendedor", false)
+        val botonVolverVendedor = findViewById<MaterialButton>(R.id.boton_volver_vendedor)
+        if (esVendedorVisitante) {
+            botonVolverVendedor.visibility = View.VISIBLE
+            botonVolverVendedor.setOnClickListener {
+                startActivity(Intent(this, VendedorActivity::class.java))
+                finish()
+            }
+        }
 
         configurarChipUbicacion()
         configurarCategorias()
@@ -194,8 +212,7 @@ class CompradorActivity : AppCompatActivity() {
                 intent.putExtra("filtro_caja_vecina", true)
                 startActivity(intent)
             } else {
-                val intent = Intent(this, ProductosActivity::class.java)
-                intent.putExtra("categoria", categoria.categoriaBusqueda)
+                val intent = Intent(this, ListaComprasActivity::class.java)
                 startActivity(intent)
             }
         }
@@ -272,7 +289,7 @@ class CompradorActivity : AppCompatActivity() {
             startActivity(Intent(this, AlmacenesCercanosActivity::class.java))
         }
         findViewById<MaterialCardView>(R.id.card_productos).setOnClickListener {
-            startActivity(Intent(this, ProductosActivity::class.java))
+            startActivity(Intent(this, ListaComprasActivity::class.java))
         }
     }
 

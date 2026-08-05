@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/fondo_app"
-    android:padding="@dimen/margen_pantalla"
     tools:context=".AlertasReportadasActivity">
 
     <androidx.appcompat.widget.AppCompatImageButton
@@ -31,24 +30,71 @@
         app:layout_constraintStart_toEndOf="@id/boton_volver_reportadas"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/grupo_filtros_reportes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margen_pantalla"
+        android:layout_marginTop="@dimen/espacio_md"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/texto_titulo_reportadas"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/chip_todos_reportes"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Todos"
+            android:textAllCaps="false"
+            android:textSize="12sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/chip_productos_reportes"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Productos"
+            android:textAllCaps="false"
+            android:textSize="12sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/chip_alertas_reportes"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Alertas"
+            android:textAllCaps="false"
+            android:textSize="12sp" />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
     <TextView
         android:id="@+id/texto_sin_reportes"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/espacio_lg"
-        android:text="No hay alertas reportadas."
+        android:gravity="center"
+        android:text="No hay reportes para mostrar."
         android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+        android:textColor="@color/texto_secundario"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/boton_volver_reportadas" />
+        app:layout_constraintTop_toBottomOf="@id/grupo_filtros_reportes" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_alertas_reportadas"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="@dimen/espacio_lg"
+        android:layout_marginTop="@dimen/espacio_md"
         android:clipToPadding="false"
+        android:paddingHorizontal="@dimen/margen_pantalla"
         android:paddingBottom="@dimen/espacio_lg"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

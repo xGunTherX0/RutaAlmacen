@@ -1,0 +1,50 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="160dp"
+    android:viewportWidth="160"
+    android:viewportHeight="160">
+    <!-- Líneas de ruta curvas -->
+    <path
+        android:fillColor="#10B981"
+        android:strokeColor="#10B981"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M20,80 Q40,40 80,40 Q120,40 140,80"/>
+    <path
+        android:fillColor="#10B981"
+        android:strokeColor="#10B981"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M20,90 Q40,130 80,130 Q120,130 140,90"/>
+    <path
+        android:fillColor="#059669"
+        android:strokeColor="#059669"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M30,70 Q50,50 80,50 Q110,50 130,70"/>
+    <path
+        android:fillColor="#059669"
+        android:strokeColor="#059669"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M30,100 Q50,120 80,120 Q110,120 130,100"/>
+    <!-- Puntos de ubicación en las rutas -->
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M40,56 A4,4 0 1,1 40,64 A4,4 0 1,1 40,56"/>
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M120,56 A4,4 0 1,1 120,64 A4,4 0 1,1 120,56"/>
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M40,106 A4,4 0 1,1 40,114 A4,4 0 1,1 40,106"/>
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M120,106 A4,4 0 1,1 120,114 A4,4 0 1,1 120,106"/>
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M80,40 A5,5 0 1,1 80,50 A5,5 0 1,1 80,40"/>
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M80,120 A5,5 0 1,1 80,130 A5,5 0 1,1 80,120"/>
+</vector>

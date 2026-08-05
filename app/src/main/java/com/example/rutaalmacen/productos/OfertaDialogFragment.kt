@@ -6,7 +6,6 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.ArrayAdapter
-import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -24,10 +23,10 @@ import java.util.Locale
 /**
  * Fragmento de diálogo para la creación, edición y cancelación de ofertas sobre productos.
  *
- * Permite al vendedor definir un precio de oferta mediante dos modalidades:
- * precio final directo o porcentaje de descuento. Incluye cálculo en tiempo real
- * del descuento equivalente, estimación de fecha de vencimiento configurable por
- * horas, días o semanas, y opción de cancelar la oferta vigente.
+ * Permite al vendedor definir un descuento por porcentaje, agregar un motivo descriptivo
+ * para la oferta, y configurar la duración. Incluye cálculo en tiempo real del precio final,
+ * estimación de fecha de vencimiento configurable por horas, días o semanas, y opción de
+ * cancelar la oferta vigente.
  *
  * Los datos del producto se reciben como argumentos del fragmento y la comunicación
  * con el contenedor se realiza mediante la interfaz [Listener].
@@ -43,14 +42,16 @@ class OfertaDialogFragment : DialogFragment() {
          *
          * @param producto Producto al que se aplica la oferta.
          * @param precioOferta Precio final con descuento aplicado.
-         * @param descuentoPorcentaje Porcentaje de descuento calculado (1-99).
+         * @param descuentoPorcentaje Porcentaje de descuento (1-99).
          * @param fechaFinOferta Marca de tiempo en milisegundos que indica el vencimiento de la oferta.
+         * @param motivo Descripción del motivo de la oferta.
          */
         fun onOfertaConfirmada(
             producto: ProductosFragment.Producto,
             precioOferta: Double,
             descuentoPorcentaje: Int,
             fechaFinOferta: Long,
+            motivo: String,
         )
 
         /**
@@ -66,14 +67,14 @@ class OfertaDialogFragment : DialogFragment() {
     /** Producto sobre el cual se configura la oferta. */
     private lateinit var producto: ProductosFragment.Producto
 
-    /** Grupo de botones de radio para seleccionar el tipo de descuento. */
-    private lateinit var grupoTipo: RadioGroup
     /** Contenedor del campo de valor de la oferta. */
     private lateinit var contenedorValor: TextInputLayout
-    /** Campo de entrada para el valor del descuento o precio final. */
+    /** Campo de entrada para el porcentaje de descuento. */
     private lateinit var campoValor: TextInputEditText
-    /** Texto que muestra el cálculo en tiempo real del descuento o precio equivalente. */
+    /** Texto que muestra el cálculo en tiempo real del precio final. */
     private lateinit var textoCalculo: TextView
+    /** Campo de entrada para el motivo de la oferta. */
+    private lateinit var campoMotivo: TextInputEditText
     /** Campo de entrada para la cantidad de tiempo de vigencia. */
     private lateinit var campoCantidad: TextInputEditText
     /** Selector desplegable para la unidad de tiempo de vigencia. */
@@ -149,10 +150,10 @@ class OfertaDialogFragment : DialogFragment() {
      */
     private fun inicializarVistas(vista: View) {
         textoPrecioActual = vista.findViewById(R.id.texto_precio_actual)
-        grupoTipo = vista.findViewById(R.id.grupo_tipo_descuento)
         contenedorValor = vista.findViewById(R.id.contenedor_valor_oferta)
         campoValor = vista.findViewById(R.id.campo_valor_oferta)
         textoCalculo = vista.findViewById(R.id.texto_descuento_calculado)
+        campoMotivo = vista.findViewById(R.id.campo_motivo_oferta)
         campoCantidad = vista.findViewById(R.id.campo_cantidad_tiempo)
         spinnerUnidad = vista.findViewById(R.id.spinner_unidad_tiempo)
         textoVencimiento = vista.findViewById(R.id.texto_vencimiento_estimado)
@@ -178,11 +179,6 @@ class OfertaDialogFragment : DialogFragment() {
      * de la oferta y la fecha de vencimiento en tiempo real.
      */
     private fun configurarListeners() {
-        grupoTipo.setOnCheckedChangeListener { _, _ ->
-            actualizarHintValor()
-            actualizarCalculoYVencimiento()
-        }
-
         val observador = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -204,68 +200,26 @@ class OfertaDialogFragment : DialogFragment() {
     /**
      * Precarga los valores de la oferta existente si el producto ya tiene una oferta activa.
      *
-     * Selecciona la opción de precio final y completa el campo de valor con el precio
-     * de oferta actual. Si no hay oferta, selecciona precio final como opción por defecto.
+     * Completa el campo de porcentaje con el descuento actual y el motivo si existen.
      */
     private fun precargarValores() {
-        if (producto.enOferta && producto.precioOferta != null) {
-            grupoTipo.check(R.id.opcion_precio_final)
-            campoValor.setText(
-                String.format(Locale.forLanguageTag("es-CL"), "%.0f", producto.precioOferta),
-            )
-        } else {
-            grupoTipo.check(R.id.opcion_precio_final)
+        if (producto.enOferta && producto.descuentoPorcentaje != null) {
+            campoValor.setText(producto.descuentoPorcentaje.toString())
         }
-        actualizarHintValor()
-    }
-
-    /**
-     * Actualiza la pista (hint) y los sufijos del campo de valor según el tipo de descuento seleccionado.
-     *
-     * - Si es porcentaje: muestra "Porcentaje de descuento (1-99)" con sufijo "%".
-     * - Si es precio final: muestra "Precio final con descuento" con prefijo "$".
-     */
-    private fun actualizarHintValor() {
-        val esPorcentaje = grupoTipo.checkedRadioButtonId == R.id.opcion_porcentaje
-        if (esPorcentaje) {
-            contenedorValor.hint = "Porcentaje de descuento (1-99)"
-            contenedorValor.prefixText = null
-            contenedorValor.suffixText = "%"
-        } else {
-            contenedorValor.hint = "Precio final con descuento"
-            contenedorValor.prefixText = "$"
-            contenedorValor.suffixText = null
+        if (producto.motivoOferta.isNotBlank()) {
+            campoMotivo.setText(producto.motivoOferta)
         }
     }
 
     /**
-     * Determina el tipo de descuento seleccionado en el grupo de botones de radio.
-     *
-     * @return [OfertaUtil.TipoDescuento.PORCENTAJE] o [OfertaUtil.TipoDescuento.PRECIO_FINAL]
-     *         según la opción marcada.
-     */
-    private fun obtenerTipoSeleccionado(): OfertaUtil.TipoDescuento {
-        return if (grupoTipo.checkedRadioButtonId == R.id.opcion_porcentaje) {
-            OfertaUtil.TipoDescuento.PORCENTAJE
-        } else {
-            OfertaUtil.TipoDescuento.PRECIO_FINAL
-        }
-    }
-
-    /**
-     * Calcula el resultado de la oferta según el tipo de descuento y el valor ingresado.
+     * Calcula el resultado de la oferta según el porcentaje ingresado.
      *
      * @return [OfertaUtil.CalculoOferta] con el precio final y porcentaje de descuento,
      *         o `null` si el valor ingresado es inválido o no se puede calcular.
      */
     private fun calcularOferta(): OfertaUtil.CalculoOferta? {
-        val valor = campoValor.text?.toString()?.toDoubleOrNull() ?: return null
-        return when (obtenerTipoSeleccionado()) {
-            OfertaUtil.TipoDescuento.PRECIO_FINAL ->
-                OfertaUtil.calcularPorPrecioFinal(producto.precio, valor)
-            OfertaUtil.TipoDescuento.PORCENTAJE ->
-                OfertaUtil.calcularPorPorcentaje(producto.precio, valor.toInt())
-        }
+        val porcentaje = campoValor.text?.toString()?.toIntOrNull() ?: return null
+        return OfertaUtil.calcularPorPorcentaje(producto.precio, porcentaje)
     }
 
     /**
@@ -282,20 +236,14 @@ class OfertaDialogFragment : DialogFragment() {
     /**
      * Actualiza los textos de cálculo de descuento y fecha de vencimiento en la interfaz.
      *
-     * Muestra el precio final o el porcentaje equivalente según el tipo de descuento
-     * seleccionado. Si el cálculo no es válido, oculta el texto de cálculo.
+     * Muestra el precio final calculado. Si el cálculo no es válido, oculta el texto de cálculo.
      */
     private fun actualizarCalculoYVencimiento() {
         val calculo = calcularOferta()
         if (calculo != null) {
             val precioFmt = String.format(Locale.forLanguageTag("es-CL"), "%.0f", calculo.precioOferta)
             textoCalculo.visibility = View.VISIBLE
-            textoCalculo.text = when (obtenerTipoSeleccionado()) {
-                OfertaUtil.TipoDescuento.PRECIO_FINAL ->
-                    "Equivale a ${calculo.descuentoPorcentaje}% de descuento"
-                OfertaUtil.TipoDescuento.PORCENTAJE ->
-                    "Precio final: $$precioFmt"
-            }
+            textoCalculo.text = "Precio final: $$precioFmt"
         } else {
             textoCalculo.visibility = View.GONE
         }
@@ -313,20 +261,17 @@ class OfertaDialogFragment : DialogFragment() {
     private fun intentarGuardar(dialogo: AlertDialog) {
         val calculo = calcularOferta()
         if (calculo == null) {
-            contenedorValor.error = when (obtenerTipoSeleccionado()) {
-                OfertaUtil.TipoDescuento.PRECIO_FINAL ->
-                    "Ingresa un precio menor a $${producto.precio.toInt()}"
-                OfertaUtil.TipoDescuento.PORCENTAJE ->
-                    "Ingresa un porcentaje entre 1 y 99"
-            }
+            contenedorValor.error = "Ingresa un porcentaje entre 1 y 99"
             return
         }
         contenedorValor.error = null
+        val motivo = campoMotivo.text?.toString()?.trim().orEmpty()
         listener?.onOfertaConfirmada(
             producto = producto,
             precioOferta = calculo.precioOferta,
             descuentoPorcentaje = calculo.descuentoPorcentaje,
             fechaFinOferta = obtenerFechaFin(),
+            motivo = motivo,
         )
         dialogo.dismiss()
     }
@@ -356,6 +301,7 @@ class OfertaDialogFragment : DialogFragment() {
             precioOferta = if (args.containsKey(ARG_PRECIO_OFERTA)) args.getDouble(ARG_PRECIO_OFERTA) else null,
             descuentoPorcentaje = if (args.containsKey(ARG_DESCUENTO)) args.getInt(ARG_DESCUENTO) else null,
             fechaFinOferta = if (args.containsKey(ARG_FECHA_FIN)) args.getLong(ARG_FECHA_FIN) else null,
+            motivoOferta = args.getString(ARG_MOTIVO).orEmpty(),
             enOferta = args.getBoolean(ARG_EN_OFERTA, false),
         )
     }
@@ -396,6 +342,8 @@ class OfertaDialogFragment : DialogFragment() {
         private const val ARG_FECHA_FIN = "fechaFinOferta"
         /** Clave de argumento para el indicador de oferta activa del producto. */
         private const val ARG_EN_OFERTA = "enOferta"
+        /** Clave de argumento para el motivo de la oferta. */
+        private const val ARG_MOTIVO = "motivoOferta"
 
         /**
          * Crea una nueva instancia del diálogo precargada con los datos del producto.
@@ -419,6 +367,9 @@ class OfertaDialogFragment : DialogFragment() {
                 producto.precioOferta?.let { putDouble(ARG_PRECIO_OFERTA, it) }
                 producto.descuentoPorcentaje?.let { putInt(ARG_DESCUENTO, it) }
                 producto.fechaFinOferta?.let { putLong(ARG_FECHA_FIN, it) }
+                if (producto.motivoOferta.isNotBlank()) {
+                    putString(ARG_MOTIVO, producto.motivoOferta)
+                }
                 putBoolean(ARG_EN_OFERTA, producto.enOferta)
             }
             fragment.arguments = args

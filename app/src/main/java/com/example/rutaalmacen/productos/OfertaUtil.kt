@@ -172,7 +172,8 @@ object OfertaUtil {
             ?: documento.getLong("precioOferta")?.toDouble()
         val descuento = documento.getLong("descuentoPorcentaje")?.toInt()
         val fechaFin = documento.getLong("fechaFinOferta")
-        return DatosOferta(enOferta, precioOferta, descuento, fechaFin)
+        val motivo = documento.getString("motivoOferta").orEmpty()
+        return DatosOferta(enOferta, precioOferta, descuento, fechaFin, motivo)
     }
 
     /**
@@ -182,12 +183,14 @@ object OfertaUtil {
      * @property precioOferta Precio con descuento, o `null` si no hay oferta.
      * @property descuentoPorcentaje Porcentaje de descuento, o `null` si no hay oferta.
      * @property fechaFinOferta Marca de tiempo de vencimiento, o `null` si no hay oferta.
+     * @property motivoOferta Descripción del motivo de la oferta.
      */
     data class DatosOferta(
         val enOferta: Boolean,
         val precioOferta: Double?,
         val descuentoPorcentaje: Int?,
         val fechaFinOferta: Long?,
+        val motivoOferta: String = "",
     )
 
     /**
@@ -205,10 +208,11 @@ object OfertaUtil {
         val tiempo = tiempoRestanteTexto(producto.fechaFinOferta).removePrefix("¡").removeSuffix("!")
         val precio = "$${String.format(java.util.Locale.forLanguageTag("es-CL"), "%.0f", producto.precioOferta)}"
         val descuento = producto.descuentoPorcentaje?.let { " (-$it%)" }.orEmpty()
+        val motivo = producto.motivoOferta.takeIf { it.isNotBlank() }?.let { " · $it" }.orEmpty()
         return if (tiempo.isNotBlank() && tiempo != "Vencida") {
-            "Oferta: $precio$descuento · $tiempo"
+            "Oferta: $precio$descuento$motivo · $tiempo"
         } else {
-            "Oferta: $precio$descuento"
+            "Oferta: $precio$descuento$motivo"
         }
     }
 }

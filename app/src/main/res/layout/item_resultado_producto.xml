@@ -17,6 +17,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/boton_reportar_producto"
+            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="48dp"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="Reportar producto"
+            app:icon="@drawable/ic_alerta"
+            app:iconSize="18dp"
+            app:iconTint="@color/stock_rojo" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -124,6 +137,19 @@
                 tools:visibility="visible" />
 
             <TextView
+                android:id="@+id/texto_motivo_oferta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="@color/texto_secundario"
+                android:textSize="12sp"
+                android:visibility="gone"
+                tools:text="Motivo: Por cambio de temporada"
+                tools:visibility="visible" />
+
+            <TextView
                 android:id="@+id/texto_descripcion_producto"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -210,43 +236,41 @@
                 android:layout_marginTop="8dp"
                 android:orientation="horizontal">
 
-                <com.google.android.material.button.MaterialButton
+                <TextView
                     android:id="@+id/boton_ver_stock"
-                    style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="0dp"
-                    android:layout_height="40dp"
+                    android:layout_height="44dp"
+                    android:layout_marginEnd="6dp"
                     android:layout_weight="1"
+                    android:background="@drawable/boton_outline_verde"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:drawableStart="@drawable/ic_productos"
+                    android:drawablePadding="6dp"
+                    android:drawableTint="@color/colorPrimary"
                     android:gravity="center"
-                    android:includeFontPadding="false"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"
-                    android:paddingTop="0dp"
-                    android:paddingBottom="0dp"
-                    android:text="Ver stock"
+                    android:text="Ver Stock"
                     android:textAllCaps="false"
-                    android:textSize="13sp"
-                    app:cornerRadius="12dp" />
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="13sp" />
 
-                <com.google.android.material.button.MaterialButton
+                <TextView
                     android:id="@+id/boton_llegar_almacen"
                     android:layout_width="0dp"
-                    android:layout_height="40dp"
-                    android:layout_marginStart="8dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="6dp"
                     android:layout_weight="1"
+                    android:background="@drawable/boton_verde_redondo"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:drawableStart="@drawable/ic_ubicacion"
+                    android:drawablePadding="6dp"
+                    android:drawableTint="@android:color/white"
                     android:gravity="center"
-                    android:includeFontPadding="false"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"
-                    android:paddingTop="0dp"
-                    android:paddingBottom="0dp"
                     android:text="Llegar"
                     android:textAllCaps="false"
-                    android:textSize="13sp"
-                    app:cornerRadius="12dp" />
+                    android:textColor="@android:color/white"
+                    android:textSize="13sp" />
             </LinearLayout>
         </LinearLayout>
 

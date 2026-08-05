@@ -1,0 +1,30 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="50dp"
+    android:height="50dp"
+    android:viewportWidth="50"
+    android:viewportHeight="50">
+    <!-- Canasta -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M10,20 L40,20 L35,40 L15,40 Z"/>
+    <!-- Asa de la canasta -->
+    <path
+        android:fillColor="#F59E0B"
+        android:strokeColor="#D97706"
+        android:strokeWidth="2"
+        android:pathData="M15,20 Q25,10 35,20"/>
+    <!-- Líneas decorativas -->
+    <path
+        android:fillColor="#D97706"
+        android:pathData="M15,25 L35,25 M17,30 L33,30 M19,35 L31,35"/>
+    <!-- Productos dentro (círculos como paths) -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M20,25 A3,3 0 1,1 20,31 A3,3 0 1,1 20,25"/>
+    <path
+        android:fillColor="#EF4444"
+        android:pathData="M30,25 A3,3 0 1,1 30,31 A3,3 0 1,1 30,25"/>
+    <path
+        android:fillColor="#6366F1"
+        android:pathData="M25,30 A3,3 0 1,1 25,36 A3,3 0 1,1 25,30"/>
+</vector>

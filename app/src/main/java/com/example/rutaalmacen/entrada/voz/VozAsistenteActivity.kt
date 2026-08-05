@@ -10,10 +10,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rutaalmacen.databinding.ActivityVozAsistenteBinding
-import com.example.rutaalmacen.productos.ProductoRepository
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
 
 /**
@@ -26,12 +25,14 @@ import kotlinx.coroutines.launch
  */
 class VozAsistenteActivity : AppCompatActivity(), SpeechRecognizerHelper.Listener {
 
+    companion object {
+        const val EXTRA_PRODUCTOS_JSON = "extra_productos_json_voz"
+    }
+
     private lateinit var binding: ActivityVozAsistenteBinding
     private val viewModel: VozAsistenteViewModel by viewModels()
-    private val repositorio = ProductoRepository()
     private lateinit var adaptador: ProductoVozAdapter
     private var speechHelper: SpeechRecognizerHelper? = null
-    private var guardando: Boolean = false
     private var ultimoTextoValido: String = ""
     private var detenerPorUsuario: Boolean = false
 
@@ -130,8 +131,6 @@ class VozAsistenteActivity : AppCompatActivity(), SpeechRecognizerHelper.Listene
     }
 
     private fun onMicrofonoClick() {
-        if (guardando) return
-
         val grabando = viewModel.grabando.value == true
         if (grabando) {
             detenerPorUsuario = true
@@ -258,14 +257,12 @@ class VozAsistenteActivity : AppCompatActivity(), SpeechRecognizerHelper.Listene
     }
 
     private fun guardarTodos() {
-        if (guardando) return
         val productos = adaptador.obtenerProductos()
         if (productos.isEmpty()) {
             Toast.makeText(this, "No hay productos para guardar. Toca 🎤 y dicta.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Validación en tres pasos: lista vacía, precios faltantes y nombres faltantes
         val sinPrecio = productos.filter { it.precio <= 0 }
         if (sinPrecio.isNotEmpty()) {
             val nombres = sinPrecio.joinToString(", ") { it.nombre }
@@ -283,40 +280,10 @@ class VozAsistenteActivity : AppCompatActivity(), SpeechRecognizerHelper.Listene
             return
         }
 
-        guardando = true
-        binding.botonGuardarTodos.isEnabled = false
-        binding.progresoVoz.visibility = View.VISIBLE
-        binding.textoContadorProductos.text = "Guardando ${productos.size} producto(s)..."
-
-        lifecycleScope.launch {
-            var exitosos = 0
-            var fallidos = 0
-            // Guarda secuencialmente para evitar saturar el repositorio concurrentemente
-            for (producto in productos) {
-                val resultado = repositorio.guardar(
-                    nombre = producto.nombre,
-                    categoria = producto.categoria,
-                    precio = producto.precio,
-                    unidadPrecio = producto.tipoPrecio,
-                )
-                if (resultado.exitoso) exitosos++ else fallidos++
-            }
-            guardando = false
-            binding.botonGuardarTodos.isEnabled = true
-            binding.progresoVoz.visibility = View.GONE
-
-            val mensaje = when {
-                fallidos == 0 -> "✓ $exitosos producto(s) guardado(s)"
-                exitosos == 0 -> "No se pudo guardar ninguno"
-                else -> "$exitosos guardados, $fallidos fallaron"
-            }
-            Toast.makeText(this@VozAsistenteActivity, mensaje, Toast.LENGTH_LONG).show()
-
-            if (fallidos == 0) {
-                setResult(RESULT_OK)
-                finish()
-            }
-        }
+        val json = Gson().toJson(productos)
+        val intent = Intent().putExtra(EXTRA_PRODUCTOS_JSON, json)
+        setResult(RESULT_OK, intent)
+        finish()
     }
 
     /**

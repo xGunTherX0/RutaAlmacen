@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/contenedor_splash"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- Círculos decorativos en esquinas -->
+    <View
+        android:id="@+id/circulo_esquina_superior"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:background="@drawable/bg_circulo_esquina"
+        android:alpha="0"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <View
+        android:id="@+id/circulo_esquina_inferior"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:background="@drawable/bg_circulo_esquina"
+        android:alpha="0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Líneas decorativas animadas -->
+    <View
+        android:id="@+id/linea_superior"
+        android:layout_width="100dp"
+        android:layout_height="2dp"
+        android:background="@color/colorPrimary"
+        android:alpha="0"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <View
+        android:id="@+id/linea_inferior"
+        android:layout_width="100dp"
+        android:layout_height="2dp"
+        android:background="@color/colorPrimary"
+        android:alpha="0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Círculo verde de fondo animado -->
+    <View
+        android:id="@+id/circulo_verde"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:background="@drawable/bg_circulo_verde_splash"
+        android:alpha="0"
+        android:scaleX="0"
+        android:scaleY="0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Anillos concéntricos decorativos -->
+    <View
+        android:id="@+id/anillo_1"
+        android:layout_width="350dp"
+        android:layout_height="350dp"
+        android:background="@drawable/bg_anillo_concentrico"
+        android:alpha="0"
+        android:scaleX="0"
+        android:scaleY="0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/anillo_2"
+        android:layout_width="420dp"
+        android:layout_height="420dp"
+        android:background="@drawable/bg_anillo_concentrico"
+        android:alpha="0"
+        android:scaleX="0"
+        android:scaleY="0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Contenedor de partículas -->
+    <FrameLayout
+        android:id="@+id/contenedor_particulas"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Logo con efecto -->
+    <FrameLayout
+        android:id="@+id/contenedor_logo"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:alpha="0"
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Sombra del logo -->
+        <View
+            android:id="@+id/sombra_logo"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_sombra_logo"
+            android:alpha="0" />
+
+        <!-- Logo principal -->
+        <ImageView
+            android:id="@+id/logo_splash"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_launcher_foreground"
+            android:contentDescription="Logo RutaAlmacén" />
+
+    </FrameLayout>
+
+    <!-- Texto de la marca -->
+    <LinearLayout
+        android:id="@+id/contenedor_texto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="120dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:alpha="0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contenedor_logo">
+
+        <TextView
+            android:id="@+id/texto_ruta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ruta"
+            android:textColor="@color/colorPrimary"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:id="@+id/texto_almacen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Almacén"
+            android:textColor="@color/colorPrimary"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium" />
+
+        <!-- Línea verde decorativa -->
+        <View
+            android:id="@+id/linea_verde"
+            android:layout_width="0dp"
+            android:layout_height="4dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="@color/colorPrimary" />
+
+        <TextView
+            android:id="@+id/texto_lema"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tu almacén más cercano"
+            android:textColor="@color/texto_secundario"
+            android:textSize="18sp"
+            android:letterSpacing="0.02" />
+
+    </LinearLayout>
+
+    <!-- Indicador de carga minimalista -->
+    <ProgressBar
+        android:id="@+id/progress_carga"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="80dp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/colorPrimary"
+        android:alpha="0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

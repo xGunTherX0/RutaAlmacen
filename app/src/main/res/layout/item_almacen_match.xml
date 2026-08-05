@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/espacio_sm"
+    app:cardBackgroundColor="@android:color/white"
+    app:cardCornerRadius="@dimen/radio_card"
+    app:cardElevation="@dimen/elevacion_card"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_card">
+
+        <!-- Fila superior: nombre almacen + badge coincidencia -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/texto_nombre_almacen_match"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/texto_principal"
+                android:textSize="@dimen/texto_titulo_sm"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/texto_badge_coincidencia"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_chip_estado_ok"
+                android:paddingHorizontal="@dimen/espacio_sm"
+                android:paddingVertical="@dimen/espacio_xxs"
+                android:textColor="@color/stock_verde"
+                android:textSize="@dimen/texto_etiqueta"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Fila: horario + estado -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/texto_horario_almacen_match"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/texto_secundario"
+                android:textSize="@dimen/texto_cuerpo_sm" />
+
+            <TextView
+                android:id="@+id/texto_estado_horario_match"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/espacio_sm"
+                android:paddingVertical="@dimen/espacio_xxs"
+                android:textSize="@dimen/texto_etiqueta"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Fila: distancia -->
+        <TextView
+            android:id="@+id/texto_distancia_match"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            android:textColor="@color/texto_secundario"
+            android:textSize="@dimen/texto_cuerpo_sm" />
+
+        <!-- Productos encontrados -->
+        <TextView
+            android:id="@+id/texto_productos_encontrados"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_sm"
+            android:textColor="@color/stock_verde"
+            android:textSize="@dimen/texto_cuerpo_sm"
+            android:textStyle="bold" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipgroup_encontrados"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            app:chipSpacingHorizontal="@dimen/espacio_xs"
+            app:chipSpacingVertical="@dimen/espacio_xxs" />
+
+        <!-- Productos faltantes -->
+        <TextView
+            android:id="@+id/texto_productos_faltantes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_sm"
+            android:textColor="@color/stock_rojo"
+            android:textSize="@dimen/texto_cuerpo_sm"
+            android:textStyle="bold" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipgroup_faltantes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_xs"
+            app:chipSpacingHorizontal="@dimen/espacio_xs"
+            app:chipSpacingVertical="@dimen/espacio_xxs" />
+
+        <!-- Botones de accion -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espacio_md"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/boton_ver_stock_almacen"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/boton_outline_verde"
+                android:clickable="true"
+                android:focusable="true"
+                android:drawableStart="@drawable/ic_productos"
+                android:drawablePadding="6dp"
+                android:drawableTint="@color/colorPrimary"
+                android:gravity="center"
+                android:text="Ver Stock"
+                android:textAllCaps="false"
+                android:textColor="@color/colorPrimary"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/boton_llegar_almacen_match"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/boton_verde_redondo"
+                android:clickable="true"
+                android:focusable="true"
+                android:drawableStart="@drawable/ic_ubicacion"
+                android:drawablePadding="6dp"
+                android:drawableTint="@android:color/white"
+                android:gravity="center"
+                android:text="Llegar"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

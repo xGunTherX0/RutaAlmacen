@@ -1,31 +1,41 @@
 package com.example.rutaalmacen
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import com.example.rutaalmacen.notas.HomeFragment
+import androidx.lifecycle.lifecycleScope
+import com.example.rutaalmacen.notas.NotasActivity
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 /**
  * Actividad principal del módulo de vendedor.
  *
  * Gestiona la navegación por fragmentos dentro de la interfaz del vendedor,
- * incluyendo el inicio, la configuración del almacén, la gestión de productos,
- * la lista de productos y las alertas de inteligencia artificial.
+ * incluyendo el inicio, la gestión de productos, la lista de productos y las
+ * alertas de inteligencia artificial.
  * Utiliza un [BottomNavigationView] para alternar entre los distintos fragmentos
  * y maneja tanto la creación inicial como la restauración de estado.
+ * Incluye un [DrawerLayout] lateral para la configuración del almacén,
+ * accesible desde cualquier pantalla mediante el botón hamburguesa del header.
  */
 class VendedorActivity : AppCompatActivity() {
 
     /** Fragmento de inicio (panel principal del vendedor). */
     private lateinit var fragmentInicio: InicioFragment
-
-    /** Fragmento de configuración del almacén. */
-    private lateinit var fragmentAlmacen: AlmacenFragment
 
     /** Fragmento para registrar productos nuevos. */
     private lateinit var fragmentProductos: AgregarProductosFragment
@@ -45,22 +55,24 @@ class VendedorActivity : AppCompatActivity() {
     /** TextView del título en el header verde. */
     private lateinit var textoTituloHeader: TextView
 
-    /**
-     * Crea la actividad del vendedor, inicializa los fragmentos y configura
-     * la navegación inferior.
-     *
-     * En la primera creación ([savedInstanceState] es `null`) se añaden todos los
-     * fragmentos al contenedor y se ocultan excepto el de inicio. Si se restaura
-     * el estado, se detecta cuál fragmento está visible y se sincroniza la navegación.
-     *
-     * @param savedInstanceState Estado guardado previamente, o `null` si es la primera creación.
-     */
+    /** Botón hamburguesa para abrir el drawer de configuración. Siempre visible. */
+    private lateinit var botonMenuDrawer: ImageButton
+
+    /** Drawer lateral de configuración del almacén. */
+    private lateinit var drawerLayout: DrawerLayout
+
+    /** Instancia de Firebase Authentication. */
+    private val autenticacion: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+
+    /** Instancia de Firestore. */
+    private val baseDatos: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_vendedor)
 
-        val header = findViewById<android.view.View>(R.id.header_vendedor)
+        val header = findViewById<View>(R.id.header_vendedor)
         val paddingHeaderBase = header.paddingTop
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.contenedor_vendedor)) { vista, insets ->
@@ -80,12 +92,13 @@ class VendedorActivity : AppCompatActivity() {
             insets
         }
 
+        drawerLayout = findViewById(R.id.drawer_layout)
         navegacion = findViewById(R.id.nav_vendedor)
         textoTituloHeader = findViewById(R.id.texto_titulo_header_vendedor)
+        botonMenuDrawer = findViewById(R.id.boton_menu_drawer)
         val gestorFragmentos = supportFragmentManager
 
         fragmentInicio = gestorFragmentos.findFragmentByTag(TAG_INICIO) as? InicioFragment ?: InicioFragment()
-        fragmentAlmacen = gestorFragmentos.findFragmentByTag(TAG_ALMACEN) as? AlmacenFragment ?: AlmacenFragment()
         fragmentProductos = gestorFragmentos.findFragmentByTag(TAG_PRODUCTOS) as? AgregarProductosFragment
             ?: AgregarProductosFragment()
         fragmentLista = gestorFragmentos.findFragmentByTag(TAG_LISTA) as? ListaProductosFragment
@@ -101,8 +114,6 @@ class VendedorActivity : AppCompatActivity() {
                 .hide(fragmentLista)
                 .add(R.id.contenedor_fragmentos, fragmentProductos, TAG_PRODUCTOS)
                 .hide(fragmentProductos)
-                .add(R.id.contenedor_fragmentos, fragmentAlmacen, TAG_ALMACEN)
-                .hide(fragmentAlmacen)
                 .add(R.id.contenedor_fragmentos, fragmentInicio, TAG_INICIO)
                 .commit()
             fragmentActivo = fragmentInicio
@@ -111,14 +122,12 @@ class VendedorActivity : AppCompatActivity() {
         } else {
             fragmentActivo = listOf(
                 fragmentInicio,
-                fragmentAlmacen,
                 fragmentProductos,
                 fragmentLista,
                 fragmentAlertas,
             )
                 .firstOrNull { it.isVisible } ?: fragmentInicio
             navegacion.selectedItemId = when (fragmentActivo) {
-                fragmentAlmacen -> R.id.nav_almacen
                 fragmentProductos -> R.id.nav_productos
                 fragmentLista -> R.id.nav_lista
                 fragmentAlertas -> R.id.nav_alertas
@@ -127,10 +136,15 @@ class VendedorActivity : AppCompatActivity() {
             actualizarTituloHeader(fragmentActivo!!)
         }
 
+        botonMenuDrawer.setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        configurarDrawer()
+
         navegacion.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_inicio -> mostrarFragmento(fragmentInicio)
-                R.id.nav_almacen -> mostrarFragmento(fragmentAlmacen)
                 R.id.nav_productos -> mostrarFragmento(fragmentProductos)
                 R.id.nav_lista -> mostrarFragmento(fragmentLista)
                 R.id.nav_alertas -> mostrarFragmento(fragmentAlertas)
@@ -140,13 +154,147 @@ class VendedorActivity : AppCompatActivity() {
     }
 
     /**
+     * Configura los listeners de navegación y switches dentro del drawer.
+     */
+    private fun configurarDrawer() {
+        val drawerView = findViewById<View>(R.id.drawer_almacen)
+
+        drawerView.findViewById<View>(R.id.drawer_nombre_almacen).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            startActivity(Intent(this, NombreAlmacenActivity::class.java))
+        }
+        drawerView.findViewById<View>(R.id.drawer_horario_almacen).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            startActivity(Intent(this, HorarioAlmacenActivity::class.java))
+        }
+        drawerView.findViewById<View>(R.id.drawer_ubicacion_almacen).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            startActivity(Intent(this, UbicacionActivity::class.java))
+        }
+        drawerView.findViewById<View>(R.id.drawer_categoria_almacen).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            startActivity(Intent(this, CategoriaAlmacenActivity::class.java))
+        }
+        drawerView.findViewById<View>(R.id.drawer_metodos_pago).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            startActivity(Intent(this, MetodosPagoActivity::class.java))
+        }
+        drawerView.findViewById<View>(R.id.drawer_block_notas).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            startActivity(Intent(this, NotasActivity::class.java))
+        }
+        drawerView.findViewById<View>(R.id.drawer_ver_como_comprador).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            val intent = Intent(this, CompradorActivity::class.java)
+            intent.putExtra("volver_a_vendedor", true)
+            startActivity(intent)
+        }
+
+        val switchEstado = drawerView.findViewById<MaterialSwitch>(R.id.drawer_switch_estado_almacen)
+        drawerView.findViewById<View>(R.id.drawer_estado_almacen).setOnClickListener {
+            switchEstado.isChecked = !switchEstado.isChecked
+        }
+        switchEstado.setOnCheckedChangeListener { _, isChecked ->
+            actualizarEstadoAlmacen(isChecked)
+        }
+
+        val switchCaja = drawerView.findViewById<MaterialSwitch>(R.id.drawer_switch_caja_vecina)
+        drawerView.findViewById<View>(R.id.drawer_caja_vecina).setOnClickListener {
+            switchCaja.isChecked = !switchCaja.isChecked
+        }
+        switchCaja.setOnCheckedChangeListener { _, isChecked ->
+            actualizarCajaVecina(isChecked)
+        }
+
+        drawerView.findViewById<View>(R.id.drawer_saldo_caja_vecina).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            startActivity(Intent(this, CajaVecinaActivity::class.java))
+        }
+
+        drawerLayout.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
+            override fun onDrawerOpened(drawerView: View) {
+                cargarEstadosDrawer()
+            }
+        })
+    }
+
+    /**
+     * Carga los estados actuales desde Firestore y los refleja en los switches del drawer.
+     */
+    private fun cargarEstadosDrawer() {
+        val usuario = autenticacion.currentUser ?: return
+        lifecycleScope.launch {
+            try {
+                val documento = baseDatos.collection(Constantes.COLECCION_USUARIOS)
+                    .document(usuario.uid)
+                    .get()
+                    .await()
+                val cerradoManual = documento.getBoolean("cerradoManual") ?: false
+                val metodosPago = (documento.get("metodosPago") as? List<String>).orEmpty()
+                val tieneCaja = documento.getBoolean("tieneCajaVecina") ?: false
+                val saldoCaja = documento.getDouble("saldoCajaVecina") ?: 0.0
+
+                val drawerView = findViewById<View>(R.id.drawer_almacen)
+                drawerView.findViewById<MaterialSwitch>(R.id.drawer_switch_estado_almacen).isChecked = cerradoManual
+                drawerView.findViewById<MaterialSwitch>(R.id.drawer_switch_caja_vecina).isChecked = tieneCaja
+
+                val saldoTexto = if (saldoCaja > 0) {
+                    "$${saldoCaja.toInt()}"
+                } else {
+                    "$0"
+                }
+                drawerView.findViewById<TextView>(R.id.drawer_texto_saldo_caja_vecina).text = saldoTexto
+
+                val textoPagos = if (metodosPago.isEmpty()) {
+                    "Pagos: Efectivo, Débito"
+                } else {
+                    "Pagos: ${metodosPago.joinToString(", ")}"
+                }
+                drawerView.findViewById<TextView>(R.id.drawer_texto_metodos_pago).text = textoPagos
+            } catch (_: Exception) {
+                // Silenciar
+            }
+        }
+    }
+
+    /**
+     * Actualiza el estado de apertura/cierre del almacén en Firestore.
+     */
+    private fun actualizarEstadoAlmacen(cerrado: Boolean) {
+        val usuario = autenticacion.currentUser ?: return
+        lifecycleScope.launch {
+            try {
+                baseDatos.collection(Constantes.COLECCION_USUARIOS)
+                    .document(usuario.uid)
+                    .update("cerradoManual", cerrado)
+                    .await()
+            } catch (_: Exception) {
+                // Silenciar
+            }
+        }
+    }
+
+    /**
+     * Actualiza el estado de Caja Vecina en Firestore.
+     */
+    private fun actualizarCajaVecina(activo: Boolean) {
+        val usuario = autenticacion.currentUser ?: return
+        lifecycleScope.launch {
+            try {
+                baseDatos.collection(Constantes.COLECCION_USUARIOS)
+                    .document(usuario.uid)
+                    .update("tieneCajaVecina", activo)
+                    .await()
+            } catch (_: Exception) {
+                // Silenciar
+            }
+        }
+    }
+
+    /**
      * Programa la selección de una pestaña de navegación de forma externa.
      *
-     * Permite que otros componentes (como los fragmentos hijos) soliciten
-     * la navegación hacia una sección específica del vendedor.
-     *
-     * @param itemId Identificador del elemento de menú a seleccionar
-     *               (por ejemplo, [R.id.nav_almacen]).
+     * @param itemId Identificador del elemento de menú a seleccionar.
      */
     fun seleccionarTab(itemId: Int) {
         if (::navegacion.isInitialized) {
@@ -155,10 +303,17 @@ class VendedorActivity : AppCompatActivity() {
     }
 
     /**
+     * Abre el drawer de configuración del almacén.
+     * Accesible desde cualquier fragmento.
+     */
+    fun abrirDrawerAlmacen() {
+        if (::drawerLayout.isInitialized) {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+    }
+
+    /**
      * Muestra el fragmento indicado y oculta el fragmento actualmente activo.
-     *
-     * Utiliza transacciones del [androidx.fragment.app.FragmentManager] para
-     * alternar la visibilidad sin destruir los fragmentos, conservando su estado interno.
      *
      * @param fragmento Fragmento que debe quedar visible tras la transacción.
      */
@@ -185,7 +340,6 @@ class VendedorActivity : AppCompatActivity() {
     private fun actualizarTituloHeader(fragmento: Fragment) {
         val titulo = when (fragmento) {
             is InicioFragment -> "RUTA ALMACÉN"
-            is AlmacenFragment -> "Almacén"
             is AgregarProductosFragment -> "Agregar producto"
             is ListaProductosFragment -> "Lista de productos"
             is AlertasIAFragment -> "Alertas de IA"
@@ -200,8 +354,6 @@ class VendedorActivity : AppCompatActivity() {
     private companion object {
         /** Etiqueta del fragmento de inicio. */
         private const val TAG_INICIO = "fragment_inicio"
-        /** Etiqueta del fragmento de configuración del almacén. */
-        private const val TAG_ALMACEN = "fragment_almacen"
         /** Etiqueta del fragmento de registro de productos. */
         private const val TAG_PRODUCTOS = "fragment_productos"
         /** Etiqueta del fragmento de lista de productos. */

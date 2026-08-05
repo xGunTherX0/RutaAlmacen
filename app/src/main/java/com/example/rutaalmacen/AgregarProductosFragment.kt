@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.rutaalmacen.entrada.archivo.ArchivoParser
 import com.example.rutaalmacen.entrada.ocr.OcrActivity
 import com.example.rutaalmacen.entrada.ocr.PrevisualizacionActivity
+import com.example.rutaalmacen.entrada.voz.ProductoDetectado
 import com.example.rutaalmacen.entrada.voz.VozAsistenteActivity
 import com.example.rutaalmacen.pagos.EstadoSuscripcion
 import com.example.rutaalmacen.pagos.PlanManager
@@ -22,10 +23,13 @@ import com.example.rutaalmacen.pagos.PlanSuscripcionActivity
 import com.example.rutaalmacen.pagos.ResultadoValidacion
 import com.example.rutaalmacen.productos.ProductoRepository
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
 
 class AgregarProductosFragment : Fragment(R.layout.fragment_agregar_productos) {
@@ -61,7 +65,10 @@ class AgregarProductosFragment : Fragment(R.layout.fragment_agregar_productos) {
         ActivityResultContracts.StartActivityForResult(),
     ) { resultado ->
         if (resultado.resultCode == Activity.RESULT_OK) {
-            Toast.makeText(requireContext(), "Productos guardados por voz", Toast.LENGTH_SHORT).show()
+            val json = resultado.data?.getStringExtra(VozAsistenteActivity.EXTRA_PRODUCTOS_JSON)
+            if (!json.isNullOrBlank()) {
+                procesarProductosVoz(json)
+            }
         }
     }
 
@@ -90,7 +97,6 @@ class AgregarProductosFragment : Fragment(R.layout.fragment_agregar_productos) {
         campoDescripcion = view.findViewById(R.id.campo_descripcion_producto)
         spinnerUnidadPrecio = view.findViewById(R.id.spinner_unidad_precio)
         val botonGuardar = view.findViewById<MaterialButton>(R.id.boton_guardar_producto)
-        val botonMenuAgregar = view.findViewById<MaterialButton>(R.id.boton_menu_agregar)
         val textoLimiteProductos = view.findViewById<TextView>(R.id.texto_limite_productos)
 
         val adaptadorCategorias = ArrayAdapter(
@@ -111,35 +117,7 @@ class AgregarProductosFragment : Fragment(R.layout.fragment_agregar_productos) {
 
         botonGuardar.setOnClickListener { guardarProducto() }
 
-        botonMenuAgregar.setOnClickListener { boton ->
-            boton.animate().rotationBy(180f).setDuration(300).start()
-
-            val popup = androidx.appcompat.widget.PopupMenu(requireContext(), boton)
-            popup.menuInflater.inflate(R.menu.menu_productos_agregar, popup.menu)
-            popup.setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.opcion_dictar_voz -> {
-                        lanzadorVoz.launch(Intent(requireContext(), VozAsistenteActivity::class.java))
-                        true
-                    }
-                    R.id.opcion_escanear_boleta -> {
-                        Toast.makeText(
-                            requireContext(),
-                            "Abriendo escáner de boleta...",
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                        startActivity(Intent(requireContext(), OcrActivity::class.java))
-                        true
-                    }
-                    R.id.opcion_importar_archivo -> {
-                        lanzadorArchivoMultiproposito.launch(tiposMimeArchivos)
-                        true
-                    }
-                    else -> false
-                }
-            }
-            popup.show()
-        }
+        configurarCardsSmart(view)
 
         view.findViewById<MaterialButton>(R.id.boton_ver_planes).setOnClickListener {
             startActivity(Intent(requireContext(), PlanSuscripcionActivity::class.java))
@@ -159,6 +137,75 @@ class AgregarProductosFragment : Fragment(R.layout.fragment_agregar_productos) {
             if (textoLimiteProductos != null) {
                 actualizarContadorProductos(textoLimiteProductos)
             }
+        }
+    }
+
+    private fun configurarCardsSmart(view: View) {
+        view.findViewById<MaterialCardView>(R.id.card_dictar_voz).setOnClickListener {
+            lanzadorVoz.launch(Intent(requireContext(), VozAsistenteActivity::class.java))
+        }
+
+        view.findViewById<MaterialCardView>(R.id.card_escanear_boleta).setOnClickListener {
+            Toast.makeText(requireContext(), "Abriendo escáner de boleta...", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(requireContext(), OcrActivity::class.java))
+        }
+
+        view.findViewById<MaterialCardView>(R.id.card_importar_excel).setOnClickListener {
+            lanzadorArchivoMultiproposito.launch(tiposMimeArchivos)
+        }
+    }
+
+    private fun procesarProductosVoz(json: String) {
+        val tipoLista = object : TypeToken<List<ProductoDetectado>>() {}.type
+        val productos: List<ProductoDetectado> = Gson().fromJson(json, tipoLista)
+
+        if (productos.isEmpty()) {
+            mostrarMensaje("No se detectaron productos")
+            return
+        }
+
+        if (productos.size == 1) {
+            rellenarFormulario(productos.first())
+            mostrarMensaje("Producto dictado. Revisa y guarda.")
+        } else {
+            rellenarFormulario(productos.first())
+            guardarProductosRestantes(productos.drop(1))
+            mostrarMensaje("1 producto en el formulario, ${productos.size - 1} guardado(s) automáticamente.")
+        }
+    }
+
+    private fun rellenarFormulario(producto: ProductoDetectado) {
+        campoNombre.setText(producto.nombre)
+        if (producto.precio > 0) {
+            campoPrecio.setText(producto.precio.toInt().toString())
+        }
+
+        val indiceCategoria = categorias.indexOf(producto.categoria)
+        if (indiceCategoria >= 0) {
+            spinnerCategoria.setSelection(indiceCategoria)
+        }
+
+        val indiceUnidad = if (producto.tipoPrecio == "kilo") 1 else 0
+        spinnerUnidadPrecio.setSelection(indiceUnidad)
+    }
+
+    private fun guardarProductosRestantes(productos: List<ProductoDetectado>) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val repositorio = ProductoRepository()
+            for (producto in productos) {
+                repositorio.guardar(
+                    nombre = producto.nombre,
+                    categoria = producto.categoria,
+                    precio = producto.precio,
+                    unidadPrecio = producto.tipoPrecio,
+                    descripcion = "",
+                )
+            }
+            estadoSuscripcion = estadoSuscripcion?.copy(
+                productosActuales = (estadoSuscripcion?.productosActuales ?: 0) + productos.size,
+            )
+            val textoLimite = view?.findViewById<TextView>(R.id.texto_limite_productos)
+            if (textoLimite != null) actualizarContadorProductos(textoLimite)
         }
     }
 

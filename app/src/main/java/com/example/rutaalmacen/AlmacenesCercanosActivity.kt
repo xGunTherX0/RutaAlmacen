@@ -523,6 +523,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
                 ?: "Sin definir"
             val metodosPago = (documento.get("metodosPago") as? List<String>).orEmpty()
             val tieneCajaVecina = documento.getBoolean("tieneCajaVecina") ?: false
+            val saldoCajaVecina = documento.getDouble("saldoCajaVecina") ?: 0.0
 
             AlmacenCercano(
                 vendedorId = documento.id,
@@ -535,6 +536,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
                 longitud = longitud,
                 metodosPago = metodosPago,
                 tieneCajaVecina = tieneCajaVecina,
+                saldoCajaVecina = saldoCajaVecina,
             )
         }
     }
@@ -728,6 +730,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
      * @property longitud Coordenada de longitud del almacén, o null si no está disponible.
      * @property metodosPago Lista de métodos de pago aceptados por el almacén.
      * @property tieneCajaVecina Indica si el almacén acepta Caja Vecina.
+     * @property saldoCajaVecina Saldo disponible en la Caja Vecina del almacén.
      */
     data class AlmacenCercano(
         val vendedorId: String,
@@ -740,6 +743,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         val longitud: Double?,
         val metodosPago: List<String> = emptyList(),
         val tieneCajaVecina: Boolean = false,
+        val saldoCajaVecina: Double = 0.0,
     )
 
     /**
@@ -770,6 +774,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
             val textoHorario: TextView = itemView.findViewById(R.id.texto_horario_almacen)
             val textoPagos: TextView = itemView.findViewById(R.id.texto_pagos_almacen)
             val textoCajaVecina: TextView = itemView.findViewById(R.id.texto_caja_vecina_almacen)
+            val textoSaldoCajaVecina: TextView = itemView.findViewById(R.id.texto_saldo_caja_vecina)
             val botonStock: MaterialButton = itemView.findViewById(R.id.boton_ver_stock_almacen)
             val botonLlegar: MaterialButton = itemView.findViewById(R.id.boton_llegar_almacen)
         }
@@ -803,12 +808,28 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
             holder.textoCajaVecina.text = if (almacen.tieneCajaVecina) {
                 "🏪 Caja Vecina: ✓ Acepta"
             } else {
-                "🏪 Caja Vecina: ✗ No acepta"
+                " Caja Vecina: ✗ No acepta"
             }
             val colorCaja = if (almacen.tieneCajaVecina) R.color.stock_verde else R.color.stock_rojo
             holder.textoCajaVecina.setTextColor(
                 ContextCompat.getColor(holder.itemView.context, colorCaja),
             )
+            if (almacen.tieneCajaVecina) {
+                holder.textoSaldoCajaVecina.visibility = android.view.View.VISIBLE
+                if (almacen.saldoCajaVecina > 0) {
+                    holder.textoSaldoCajaVecina.text = "💰 Saldo disponible: $${almacen.saldoCajaVecina.toInt()}"
+                    holder.textoSaldoCajaVecina.setTextColor(
+                        ContextCompat.getColor(holder.itemView.context, R.color.colorPrimary),
+                    )
+                } else {
+                    holder.textoSaldoCajaVecina.text = "💰 Saldo: $0 (sin saldo)"
+                    holder.textoSaldoCajaVecina.setTextColor(
+                        ContextCompat.getColor(holder.itemView.context, R.color.stock_rojo),
+                    )
+                }
+            } else {
+                holder.textoSaldoCajaVecina.visibility = android.view.View.GONE
+            }
             holder.botonStock.setOnClickListener { onVerStock(almacen) }
             holder.botonLlegar.setOnClickListener { onLlegar(almacen) }
         }
