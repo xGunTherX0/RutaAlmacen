@@ -17,17 +17,16 @@
         android:orientation="vertical"
         android:padding="@dimen/padding_card">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/texto_nombre_almacen"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
                 android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.TitleMedium"
                 android:text="Almacén" />
 
@@ -35,11 +34,26 @@
                 android:id="@+id/texto_estado_almacen"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
                 android:textAppearance="@style/TextAppearance.RutaAlmacen.Comprador.BodyMedium"
                 android:textColor="@color/estado_abierto"
                 android:textStyle="bold"
                 android:text="Abierto" />
-        </LinearLayout>
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/foto_vendedor_almacen"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_below="@id/texto_estado_almacen"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="4dp"
+                android:scaleType="centerCrop"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay_RutaAlmacen_Circle"
+                android:contentDescription="Foto del vendedor" />
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/texto_distancia_almacen"
@@ -105,6 +119,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:maxLines="1"
+                android:textSize="12sp"
+                app:icon="@drawable/ic_productos"
+                app:iconSize="16dp"
+                app:iconPadding="4dp"
                 android:text="Ver stock" />
 
             <com.google.android.material.button.MaterialButton
@@ -113,6 +132,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/espacio_sm"
                 android:layout_weight="1"
+                android:maxLines="1"
+                android:textSize="12sp"
+                app:icon="@drawable/ic_ubicacion"
+                app:iconSize="16dp"
+                app:iconPadding="4dp"
                 android:text="Llegar" />
         </LinearLayout>
     </LinearLayout>

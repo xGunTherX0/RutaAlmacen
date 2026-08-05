@@ -1,11 +1,19 @@
 package com.example.rutaalmacen
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -22,6 +30,7 @@ import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
@@ -65,6 +74,36 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
     private lateinit var tarjetaNuevaVenta: MaterialCardView
     private lateinit var tarjetaBlocNotas: MaterialCardView
     private lateinit var textoActualizarPlan: TextView
+    private lateinit var barraCargaFoto: ProgressBar
+
+    /** Selector moderno de imágenes (Photo Picker). */
+    private val selectorGaleria = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            subirFotoPerfil(uri)
+        }
+    }
+
+    /** Selector fallback para dispositivos sin Photo Picker. */
+    private val selectorGaleriaFallback = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            subirFotoPerfil(uri)
+        }
+    }
+
+    /** Solicitud de permiso de galería para Android 12 y anteriores. */
+    private val solicitudPermisoGaleria = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { concedido ->
+        if (concedido) {
+            abrirGaleria()
+        } else {
+            Toast.makeText(requireContext(), "Se necesita permiso para acceder a la galería", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     /** Objeto compañero que define la etiqueta de registro del fragmento. */
     companion object {
@@ -101,6 +140,7 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
         tarjetaNuevaVenta = view.findViewById(R.id.tarjeta_nueva_venta)
         tarjetaBlocNotas = view.findViewById(R.id.tarjeta_bloc_notas)
         textoActualizarPlan = view.findViewById(R.id.texto_actualizar_plan)
+        barraCargaFoto = view.findViewById(R.id.barra_carga_foto)
 
         Log.d(TAG, "onViewCreated: vistas inicializadas")
 
@@ -108,6 +148,10 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
         textoSaludo.text = "¡Hola,"
         textoNombreUsuario.text = "Cargando..."
         imagenPerfil.setImageResource(android.R.drawable.sym_def_app_icon)
+
+        imagenPerfil.setOnClickListener {
+            verificarPermisoYAbrirGaleria()
+        }
 
         actualizarFecha()
         configurarAccesosRapidos()
@@ -176,6 +220,89 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
                 }
             } catch (excepcion: Exception) {
                 Log.e(TAG, "Error al cargar foto de perfil", excepcion)
+            }
+        }
+    }
+
+    /**
+     * Verifica si se tiene permiso de galería y solicita o abre según corresponda.
+     */
+    private fun verificarPermisoYAbrirGaleria() {
+        val permiso = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
+        if (ContextCompat.checkSelfPermission(requireContext(), permiso) == PackageManager.PERMISSION_GRANTED) {
+            abrirGaleria()
+        } else {
+            solicitudPermisoGaleria.launch(permiso)
+        }
+    }
+
+    /**
+     * Abre el selector de imágenes del dispositivo.
+     * Usa Photo Picker si está disponible, fallback a GetContent.
+     */
+    private fun abrirGaleria() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            selectorGaleria.launch(
+                androidx.activity.result.PickVisualMediaRequest(
+                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                )
+            )
+        } else {
+            selectorGaleriaFallback.launch("image/*")
+        }
+    }
+
+    /**
+     * Sube la foto seleccionada a Firebase Storage y guarda la URL en Firestore.
+     *
+     * @param uri Uri de la imagen seleccionada.
+     */
+    private fun subirFotoPerfil(uri: Uri) {
+        val usuario = autenticacion.currentUser ?: return
+
+        barraCargaFoto.visibility = View.VISIBLE
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val rutaStorage = "fotos_perfil/${usuario.uid}/profile.jpg"
+                val referenciaStorage = FirebaseStorage.getInstance().reference.child(rutaStorage)
+
+                val inputStream = requireContext().contentResolver.openInputStream(uri)
+                    ?: throw Exception("No se pudo abrir la imagen")
+
+                val bytes = inputStream.readBytes()
+                inputStream.close()
+
+                val metadata = com.google.firebase.storage.StorageMetadata.Builder()
+                    .setContentType("image/jpeg")
+                    .build()
+
+                referenciaStorage.putBytes(bytes, metadata).await()
+                val urlDescarga = referenciaStorage.downloadUrl.await().toString()
+
+                baseDatos.collection(Constantes.COLECCION_USUARIOS)
+                    .document(usuario.uid)
+                    .set(mapOf("fotoUrl" to urlDescarga), com.google.firebase.firestore.SetOptions.merge())
+                    .await()
+
+                Glide.with(this@InicioFragment)
+                    .load(urlDescarga)
+                    .placeholder(android.R.drawable.sym_def_app_icon)
+                    .error(android.R.drawable.sym_def_app_icon)
+                    .circleCrop()
+                    .into(imagenPerfil)
+
+                barraCargaFoto.visibility = View.GONE
+                Log.d(TAG, "✓ Foto de perfil subida y guardada")
+            } catch (excepcion: Exception) {
+                barraCargaFoto.visibility = View.GONE
+                Log.e(TAG, "Error al subir foto de perfil", excepcion)
+                Toast.makeText(requireContext(), "Error al subir la foto: ${excepcion.message}", Toast.LENGTH_LONG).show()
             }
         }
     }

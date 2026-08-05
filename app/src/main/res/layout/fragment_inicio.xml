@@ -66,8 +66,20 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:scaleType="centerCrop"
+                android:clickable="true"
+                android:focusable="true"
                 app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay_RutaAlmacen_Circle"
                 tools:src="@android:drawable/sym_def_app_icon" />
+
+            <ProgressBar
+                android:id="@+id/barra_carga_foto"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="12dp"
+                android:visibility="gone"
+                android:indeterminateTint="#00B589" />
 
             <!-- Icono de notificaciones -->
             <ImageView

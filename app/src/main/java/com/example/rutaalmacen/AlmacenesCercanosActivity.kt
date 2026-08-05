@@ -8,11 +8,13 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -22,6 +24,7 @@ import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
@@ -524,6 +527,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
             val metodosPago = (documento.get("metodosPago") as? List<String>).orEmpty()
             val tieneCajaVecina = documento.getBoolean("tieneCajaVecina") ?: false
             val hayCupo = documento.getBoolean("hayCupo") ?: false
+            val fotoUrl = documento.getString("fotoUrl").orEmpty()
 
             AlmacenCercano(
                 vendedorId = documento.id,
@@ -537,6 +541,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
                 metodosPago = metodosPago,
                 tieneCajaVecina = tieneCajaVecina,
                 hayCupo = hayCupo,
+                fotoUrl = fotoUrl,
             )
         }
     }
@@ -717,6 +722,30 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
     }
 
     /**
+     * Muestra un diálogo con la foto del vendedor ampliada.
+     * El diálogo se cierra al tocar fuera de él o en el botón atrás.
+     *
+     * @param fotoUrl URL de la foto del vendedor.
+     * @param nombreVendedor Nombre del vendedor para el título del diálogo.
+     */
+    private fun mostrarFotoAmpliada(fotoUrl: String, nombreVendedor: String) {
+        val vistaDialogo = layoutInflater.inflate(R.layout.dialog_foto_vendedor, null)
+        val imagenAmpliada = vistaDialogo.findViewById<ImageView>(R.id.foto_vendedor_ampliada)
+
+        Glide.with(this)
+            .load(fotoUrl)
+            .placeholder(android.R.drawable.sym_def_app_icon)
+            .error(android.R.drawable.sym_def_app_icon)
+            .into(imagenAmpliada)
+
+        AlertDialog.Builder(this)
+            .setTitle(nombreVendedor)
+            .setView(vistaDialogo)
+            .setPositiveButton("Cerrar", null)
+            .show()
+    }
+
+    /**
      * Modelo de datos que representa un almacén cercano con toda su información
      * relevante para la visualización en la lista.
      *
@@ -744,6 +773,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
         val metodosPago: List<String> = emptyList(),
         val tieneCajaVecina: Boolean = false,
         val hayCupo: Boolean = false,
+        val fotoUrl: String = "",
     )
 
     /**
@@ -754,7 +784,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
      * @property onVerStock Acción a ejecutar cuando el usuario pulsa «Ver stock».
      * @property onLlegar Acción a ejecutar cuando el usuario pulsa «Llegar».
      */
-    private class AdaptadorAlmacenes(
+    private inner class AdaptadorAlmacenes(
         private val almacenes: List<AlmacenCercano>,
         private val onVerStock: (AlmacenCercano) -> Unit,
         private val onLlegar: (AlmacenCercano) -> Unit,
@@ -766,7 +796,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
          *
          * @param itemView Vista raíz del elemento de la lista.
          */
-        class VistaAlmacen(itemView: android.view.View) : RecyclerView.ViewHolder(itemView) {
+        inner class VistaAlmacen(itemView: android.view.View) : RecyclerView.ViewHolder(itemView) {
             val textoNombre: TextView = itemView.findViewById(R.id.texto_nombre_almacen)
             val textoEstado: TextView = itemView.findViewById(R.id.texto_estado_almacen)
             val textoDistancia: TextView = itemView.findViewById(R.id.texto_distancia_almacen)
@@ -777,6 +807,7 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
             val textoSaldoCajaVecina: TextView = itemView.findViewById(R.id.texto_saldo_caja_vecina)
             val botonStock: MaterialButton = itemView.findViewById(R.id.boton_ver_stock_almacen)
             val botonLlegar: MaterialButton = itemView.findViewById(R.id.boton_llegar_almacen)
+            val fotoVendedor: ImageView = itemView.findViewById(R.id.foto_vendedor_almacen)
         }
 
         override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): VistaAlmacen {
@@ -832,6 +863,22 @@ class AlmacenesCercanosActivity : AppCompatActivity() {
             }
             holder.botonStock.setOnClickListener { onVerStock(almacen) }
             holder.botonLlegar.setOnClickListener { onLlegar(almacen) }
+
+            if (almacen.fotoUrl.isNotBlank()) {
+                holder.fotoVendedor.visibility = android.view.View.VISIBLE
+                Glide.with(holder.itemView.context)
+                    .load(almacen.fotoUrl)
+                    .placeholder(android.R.drawable.sym_def_app_icon)
+                    .error(android.R.drawable.sym_def_app_icon)
+                    .circleCrop()
+                    .into(holder.fotoVendedor)
+
+                holder.fotoVendedor.setOnClickListener {
+                    mostrarFotoAmpliada(almacen.fotoUrl, almacen.nombreAlmacen)
+                }
+            } else {
+                holder.fotoVendedor.visibility = android.view.View.GONE
+            }
         }
 
         override fun getItemCount(): Int = almacenes.size
