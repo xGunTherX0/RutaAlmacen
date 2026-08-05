@@ -202,7 +202,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Estado del almacén"
+                        android:text="Cerrar manualmente"
                         android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
                         android:textColor="@color/texto_principal" />
 
@@ -283,9 +283,9 @@
                         android:focusable="false" />
                 </LinearLayout>
 
-                <!-- Saldo Caja Vecina -->
+                <!-- Cupo disponible (Switch) -->
                 <LinearLayout
-                    android:id="@+id/drawer_saldo_caja_vecina"
+                    android:id="@+id/drawer_cupo_disponible"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="?attr/selectableItemBackground"
@@ -293,37 +293,22 @@
                     android:focusable="true"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingHorizontal="@dimen/espacio_lg"
-                    android:paddingVertical="@dimen/espacio_md">
+                    android:padding="@dimen/espacio_lg">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:text="Cupo disponible"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+                        android:textColor="@color/texto_principal" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Saldo disponible"
-                            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodySmall" />
-
-                        <TextView
-                            android:id="@+id/drawer_texto_saldo_caja_vecina"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="$0"
-                            android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
-                            android:textColor="@color/colorPrimary"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <ImageView
-                        android:layout_width="@dimen/ancho_icono"
-                        android:layout_height="@dimen/ancho_icono"
-                        android:contentDescription="Editar saldo"
-                        android:src="@android:drawable/ic_menu_edit"
-                        app:tint="@color/texto_terciario" />
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/drawer_switch_cupo_disponible"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="false"
+                        android:focusable="false" />
                 </LinearLayout>
 
                 <View

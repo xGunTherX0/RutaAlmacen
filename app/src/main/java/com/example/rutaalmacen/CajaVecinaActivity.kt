@@ -10,7 +10,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.materialswitch.MaterialSwitch
-import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -19,7 +18,7 @@ import kotlinx.coroutines.tasks.await
 
 /**
  * Actividad que permite al vendedor indicar si su almacén acepta Caja Vecina
- * y establecer el saldo disponible para los clientes.
+ * y si hay cupo disponible para los clientes.
  * El estado se guarda en Firestore y se propaga al inventario público.
  */
 class CajaVecinaActivity : AppCompatActivity() {
@@ -28,7 +27,7 @@ class CajaVecinaActivity : AppCompatActivity() {
     private val baseDatos: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
 
     private lateinit var switchTieneCaja: MaterialSwitch
-    private lateinit var campoSaldo: TextInputEditText
+    private lateinit var switchHayCupo: MaterialSwitch
 
     /**
      * Ciclo de vida: inicializa la interfaz, configura el switch de Caja Vecina
@@ -49,7 +48,7 @@ class CajaVecinaActivity : AppCompatActivity() {
 
         findViewById<MaterialToolbar>(R.id.toolbar_caja_vecina).setNavigationOnClickListener { finish() }
         switchTieneCaja = findViewById(R.id.switch_tiene_caja_vecina)
-        campoSaldo = findViewById(R.id.campo_saldo_caja_vecina)
+        switchHayCupo = findViewById(R.id.switch_hay_cupo)
         findViewById<MaterialButton>(R.id.boton_guardar_caja_vecina).setOnClickListener { guardar() }
 
         lifecycleScope.launch { cargar() }
@@ -57,7 +56,7 @@ class CajaVecinaActivity : AppCompatActivity() {
 
     /**
      * Carga el estado actual de Caja Vecina del vendedor desde Firestore
-     * y actualiza el switch y el campo de saldo en la interfaz.
+     * y actualiza los switches en la interfaz.
      */
     private suspend fun cargar() {
         val usuario = autenticacion.currentUser ?: return
@@ -67,10 +66,7 @@ class CajaVecinaActivity : AppCompatActivity() {
                 .get()
                 .await()
             switchTieneCaja.isChecked = documento.getBoolean("tieneCajaVecina") ?: false
-            val saldo = documento.getDouble("saldoCajaVecina") ?: 0.0
-            if (saldo > 0) {
-                campoSaldo.setText(saldo.toInt().toString())
-            }
+            switchHayCupo.isChecked = documento.getBoolean("hayCupo") ?: false
         } catch (_: Exception) {
             mostrarMensaje("No se pudo cargar el estado de Caja Vecina")
         }
@@ -87,14 +83,13 @@ class CajaVecinaActivity : AppCompatActivity() {
             return
         }
         val tieneCaja = switchTieneCaja.isChecked
-        val saldoTexto = campoSaldo.text?.toString()?.trim().orEmpty()
-        val saldo = saldoTexto.toDoubleOrNull() ?: 0.0
+        val hayCupo = switchHayCupo.isChecked
 
         lifecycleScope.launch {
             try {
                 val datos = mapOf(
                     "tieneCajaVecina" to tieneCaja,
-                    "saldoCajaVecina" to saldo,
+                    "hayCupo" to hayCupo,
                 )
                 baseDatos.collection(Constantes.COLECCION_USUARIOS)
                     .document(usuario.uid)

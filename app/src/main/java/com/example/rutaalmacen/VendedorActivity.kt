@@ -206,9 +206,12 @@ class VendedorActivity : AppCompatActivity() {
             actualizarCajaVecina(isChecked)
         }
 
-        drawerView.findViewById<View>(R.id.drawer_saldo_caja_vecina).setOnClickListener {
-            drawerLayout.closeDrawer(GravityCompat.START)
-            startActivity(Intent(this, CajaVecinaActivity::class.java))
+        val switchCupo = drawerView.findViewById<MaterialSwitch>(R.id.drawer_switch_cupo_disponible)
+        drawerView.findViewById<View>(R.id.drawer_cupo_disponible).setOnClickListener {
+            switchCupo.isChecked = !switchCupo.isChecked
+        }
+        switchCupo.setOnCheckedChangeListener { _, isChecked ->
+            actualizarCupoDisponible(isChecked)
         }
 
         drawerLayout.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
@@ -232,18 +235,12 @@ class VendedorActivity : AppCompatActivity() {
                 val cerradoManual = documento.getBoolean("cerradoManual") ?: false
                 val metodosPago = (documento.get("metodosPago") as? List<String>).orEmpty()
                 val tieneCaja = documento.getBoolean("tieneCajaVecina") ?: false
-                val saldoCaja = documento.getDouble("saldoCajaVecina") ?: 0.0
+                val hayCupo = documento.getBoolean("hayCupo") ?: false
 
                 val drawerView = findViewById<View>(R.id.drawer_almacen)
                 drawerView.findViewById<MaterialSwitch>(R.id.drawer_switch_estado_almacen).isChecked = cerradoManual
                 drawerView.findViewById<MaterialSwitch>(R.id.drawer_switch_caja_vecina).isChecked = tieneCaja
-
-                val saldoTexto = if (saldoCaja > 0) {
-                    "$${saldoCaja.toInt()}"
-                } else {
-                    "$0"
-                }
-                drawerView.findViewById<TextView>(R.id.drawer_texto_saldo_caja_vecina).text = saldoTexto
+                drawerView.findViewById<MaterialSwitch>(R.id.drawer_switch_cupo_disponible).isChecked = hayCupo
 
                 val textoPagos = if (metodosPago.isEmpty()) {
                     "Pagos: Efectivo, Débito"
@@ -284,6 +281,23 @@ class VendedorActivity : AppCompatActivity() {
                 baseDatos.collection(Constantes.COLECCION_USUARIOS)
                     .document(usuario.uid)
                     .update("tieneCajaVecina", activo)
+                    .await()
+            } catch (_: Exception) {
+                // Silenciar
+            }
+        }
+    }
+
+    /**
+     * Actualiza el estado de Cupo Disponible en Firestore.
+     */
+    private fun actualizarCupoDisponible(hayCupo: Boolean) {
+        val usuario = autenticacion.currentUser ?: return
+        lifecycleScope.launch {
+            try {
+                baseDatos.collection(Constantes.COLECCION_USUARIOS)
+                    .document(usuario.uid)
+                    .update("hayCupo", hayCupo)
                     .await()
             } catch (_: Exception) {
                 // Silenciar

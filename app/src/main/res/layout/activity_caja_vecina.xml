@@ -83,36 +83,34 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
             android:padding="@dimen/padding_card">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Saldo disponible"
-                android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espacio_xs"
-                android:text="Monto que los clientes pueden usar para pagar a la vuelta."
-                android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodySmall" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/espacio_md"
-                android:hint="Saldo en pesos ($)"
-                app:hintTextAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/campo_saldo_caja_vecina"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:textSize="17sp" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:text="Cupo disponible"
+                    android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.TitleMedium" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espacio_xs"
+                    android:text="Indica si hay cupo disponible para tus clientes."
+                    android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodySmall" />
+            </LinearLayout>
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switch_hay_cupo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
