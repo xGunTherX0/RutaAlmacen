@@ -48,6 +48,47 @@
                 android:letterSpacing="0.05" />
         </LinearLayout>
 
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tarjeta_verificacion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/estado_pendiente"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/header_vendedor">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_verificacion"
+                    android:contentDescription="@null"
+                    app:tint="@color/colorSecondaryDark" />
+
+                <TextView
+                    android:id="@+id/texto_verificacion"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:text="Tu patente comercial está en proceso de verificación. No podrás publicar productos hasta que sea aprobada."
+                    android:textColor="@color/colorSecondaryDark"
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/contenedor_fragmentos"
             android:layout_width="0dp"
@@ -55,7 +96,7 @@
             app:layout_constraintBottom_toTopOf="@id/nav_vendedor"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/header_vendedor" />
+            app:layout_constraintTop_toBottomOf="@id/tarjeta_verificacion" />
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/nav_vendedor"

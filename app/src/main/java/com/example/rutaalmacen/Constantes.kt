@@ -41,4 +41,10 @@ object Constantes {
 
     /** Identificador de rol para usuarios que buscan productos en almacenes cercanos. */
     const val ROL_COMPRADOR = "comprador"
+
+    const val RutaPatentes = "patentes"
+
+    const val EstadoVerificacionPendiente = "PENDING"
+    const val EstadoVerificacionAprobada = "VERIFIED"
+    const val EstadoVerificacionRechazada = "REJECTED"
 }

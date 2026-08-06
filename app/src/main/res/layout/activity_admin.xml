@@ -150,6 +150,16 @@
                     android:layout_marginTop="@dimen/espacio_sm"
                     android:text="Promover a Administrador"
                     app:iconGravity="textStart" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/boton_verificar_vendedores"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/espacio_sm"
+                    android:text="Verificar Vendedores"
+                    android:backgroundTint="@color/estado_pendiente"
+                    app:icon="@drawable/ic_verificacion"
+                    app:iconGravity="textStart" />
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

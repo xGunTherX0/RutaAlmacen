@@ -125,6 +125,29 @@
         <activity
             android:name=".LoginActivity"
             android:exported="false" />
+        <activity
+            android:name=".SellerRegistrationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.AdminVerificacionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.DetalleVerificacionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.PatenteFullscreenActivity"
+            android:exported="false"
+            android:theme="@style/Theme.RutaAlmacen" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 

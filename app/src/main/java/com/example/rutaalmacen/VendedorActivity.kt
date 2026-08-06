@@ -2,11 +2,13 @@ package com.example.rutaalmacen
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -18,6 +20,7 @@ import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -61,6 +64,16 @@ class VendedorActivity : AppCompatActivity() {
     /** Drawer lateral de configuración del almacén. */
     private lateinit var drawerLayout: DrawerLayout
 
+    /** Tarjeta de banner de verificación de patente. */
+    private lateinit var tarjetaVerificacion: CardView
+
+    /** Estado de verificación actual del vendedor. */
+    var estadoVerificacion: String = Constantes.EstadoVerificacionPendiente
+        private set
+
+    /** Listener en tiempo real para cambios en el estado de verificación. */
+    private var listenerVerificacion: ListenerRegistration? = null
+
     /** Instancia de Firebase Authentication. */
     private val autenticacion: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
 
@@ -96,6 +109,7 @@ class VendedorActivity : AppCompatActivity() {
         navegacion = findViewById(R.id.nav_vendedor)
         textoTituloHeader = findViewById(R.id.texto_titulo_header_vendedor)
         botonMenuDrawer = findViewById(R.id.boton_menu_drawer)
+        tarjetaVerificacion = findViewById(R.id.tarjeta_verificacion)
         val gestorFragmentos = supportFragmentManager
 
         fragmentInicio = gestorFragmentos.findFragmentByTag(TAG_INICIO) as? InicioFragment ?: InicioFragment()
@@ -141,6 +155,8 @@ class VendedorActivity : AppCompatActivity() {
         }
 
         configurarDrawer()
+
+        cargarEstadoVerificacion()
 
         navegacion.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -252,6 +268,69 @@ class VendedorActivity : AppCompatActivity() {
                 // Silenciar
             }
         }
+    }
+
+    /**
+     * Configura un listener en tiempo real para el estado de verificación de patente.
+     * Se actualiza automáticamente cuando el admin cambia el estado.
+     */
+    private fun cargarEstadoVerificacion() {
+        val usuario = autenticacion.currentUser ?: return
+
+        listenerVerificacion?.remove()
+
+        listenerVerificacion = baseDatos.collection(Constantes.COLECCION_USUARIOS)
+            .document(usuario.uid)
+            .addSnapshotListener { documento, error ->
+                if (error != null) {
+                    Log.e("VendedorActivity", "Error en listener verificación: ${error.message}")
+                    return@addSnapshotListener
+                }
+
+                val sellerProfile = documento?.get("sellerProfile") as? Map<*, *>
+                val status = sellerProfile?.get("verificationStatus") as? String
+                    ?: Constantes.EstadoVerificacionPendiente
+
+                estadoVerificacion = status
+                actualizarBannerVerificacion(status)
+            }
+    }
+
+    /**
+     * Elimina el listener de verificación al destruir la actividad.
+     */
+    override fun onDestroy() {
+        super.onDestroy()
+        listenerVerificacion?.remove()
+        listenerVerificacion = null
+    }
+
+    /**
+     * Muestra u oculta el banner de verificación según el estado.
+     */
+    private fun actualizarBannerVerificacion(status: String) {
+        when (status) {
+            Constantes.EstadoVerificacionAprobada -> {
+                tarjetaVerificacion.visibility = View.GONE
+            }
+            Constantes.EstadoVerificacionRechazada -> {
+                tarjetaVerificacion.visibility = View.VISIBLE
+                findViewById<TextView>(R.id.texto_verificacion).text =
+                    "Tu patente comercial fue rechazada. Por favor, contacta al soporte o vuelve a registrar tu patente."
+            }
+            else -> {
+                tarjetaVerificacion.visibility = View.VISIBLE
+                findViewById<TextView>(R.id.texto_verificacion).text =
+                    "Tu patente comercial está en proceso de verificación. No podrás publicar productos hasta que sea aprobada."
+            }
+        }
+    }
+
+    /**
+     * Indica si el vendedor tiene la patente verificada y puede publicar productos.
+     */
+    fun estaVerificado(): Boolean {
+        return estadoVerificacion == Constantes.EstadoVerificacionAprobada
     }
 
     /**

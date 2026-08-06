@@ -357,7 +357,17 @@ class LoginActivity : AppCompatActivity() {
                 val rolSeleccionado = if (posicion == 0) Constantes.ROL_COMPRADOR else Constantes.ROL_VENDEDOR
                 lifecycleScope.launch {
                     guardarUsuario(usuarioActual, rolSeleccionado, fotoUrl)
-                    navegarSegunRol(rolSeleccionado)
+                    if (rolSeleccionado == Constantes.ROL_VENDEDOR) {
+                        val intent = Intent(this@LoginActivity, SellerRegistrationActivity::class.java)
+                        intent.putExtra("uid", usuarioActual.uid)
+                        intent.putExtra("email", usuarioActual.email.orEmpty())
+                        intent.putExtra("displayName", usuarioActual.displayName.orEmpty())
+                        intent.putExtra("fotoUrl", fotoUrl)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        navegarSegunRol(rolSeleccionado)
+                    }
                 }
             }
             .setCancelable(false)

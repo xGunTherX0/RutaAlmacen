@@ -151,6 +151,9 @@ class AdminActivity : AppCompatActivity() {
         findViewById<com.google.android.material.button.MaterialButton>(R.id.boton_promover_admin).setOnClickListener {
             startActivity(Intent(this, com.example.rutaalmacen.admin.PromoverAdminActivity::class.java))
         }
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.boton_verificar_vendedores).setOnClickListener {
+            startActivity(Intent(this, com.example.rutaalmacen.admin.AdminVerificacionActivity::class.java))
+        }
 
         lifecycleScope.launch { cargarUsuarios() }
     }

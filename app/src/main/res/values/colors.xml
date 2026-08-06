@@ -48,6 +48,8 @@
     <color name="estado_disponible">#FF10B981</color>
     <color name="estado_pendiente">#FFF59E0B</color>
 
+    <color name="estado_verificado">#FF10B981</color>
+
     <color name="stock_verde">#FF10B981</color>
     <color name="stock_naranja">#FFF59E0B</color>
     <color name="stock_rojo">#FFEF4444</color>

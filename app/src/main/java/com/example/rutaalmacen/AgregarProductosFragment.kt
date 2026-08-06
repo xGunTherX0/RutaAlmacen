@@ -142,17 +142,33 @@ class AgregarProductosFragment : Fragment(R.layout.fragment_agregar_productos) {
 
     private fun configurarCardsSmart(view: View) {
         view.findViewById<MaterialCardView>(R.id.card_dictar_voz).setOnClickListener {
+            if (!verificarVerificacion()) return@setOnClickListener
             lanzadorVoz.launch(Intent(requireContext(), VozAsistenteActivity::class.java))
         }
 
         view.findViewById<MaterialCardView>(R.id.card_escanear_boleta).setOnClickListener {
+            if (!verificarVerificacion()) return@setOnClickListener
             Toast.makeText(requireContext(), "Abriendo escáner de boleta...", Toast.LENGTH_SHORT).show()
             startActivity(Intent(requireContext(), OcrActivity::class.java))
         }
 
         view.findViewById<MaterialCardView>(R.id.card_importar_excel).setOnClickListener {
+            if (!verificarVerificacion()) return@setOnClickListener
             lanzadorArchivoMultiproposito.launch(tiposMimeArchivos)
         }
+    }
+
+    private fun verificarVerificacion(): Boolean {
+        val actividadVendedor = requireActivity() as? VendedorActivity
+        if (actividadVendedor != null && !actividadVendedor.estaVerificado()) {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Patente en verificación")
+                .setMessage("Tu patente comercial está en proceso de verificación. No podrás agregar productos hasta que sea aprobada.")
+                .setPositiveButton("Entendido", null)
+                .show()
+            return false
+        }
+        return true
     }
 
     private fun procesarProductosVoz(json: String) {
@@ -210,6 +226,16 @@ class AgregarProductosFragment : Fragment(R.layout.fragment_agregar_productos) {
     }
 
     private fun guardarProducto() {
+        val actividadVendedor = requireActivity() as? VendedorActivity
+        if (actividadVendedor != null && !actividadVendedor.estaVerificado()) {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Patente en verificación")
+                .setMessage("Tu patente comercial está en proceso de verificación. No podrás publicar productos hasta que sea aprobada.")
+                .setPositiveButton("Entendido", null)
+                .show()
+            return
+        }
+
         val nombre = campoNombre.text?.toString()?.trim().orEmpty()
         val categoria = spinnerCategoria.selectedItem?.toString().orEmpty()
         val precioTexto = campoPrecio.text?.toString()?.trim().orEmpty()
