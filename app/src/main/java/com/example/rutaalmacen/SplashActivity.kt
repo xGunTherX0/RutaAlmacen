@@ -14,8 +14,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlin.random.Random
 
 class SplashActivity : AppCompatActivity() {
@@ -371,6 +373,34 @@ class SplashActivity : AppCompatActivity() {
 
     private suspend fun navegarAlLogin() {
         delay(300)
+
+        val usuario = auth.currentUser
+        if (usuario != null) {
+            try {
+                val documento = FirebaseFirestore.getInstance()
+                    .collection(Constantes.COLECCION_USUARIOS)
+                    .document(usuario.uid)
+                    .get()
+                    .await()
+
+                val rol = documento.getString("rol")?.lowercase()
+                val destino = when (rol) {
+                    Constantes.ROL_ADMINISTRADOR -> AdminActivity::class.java
+                    Constantes.ROL_VENDEDOR -> VendedorActivity::class.java
+                    Constantes.ROL_COMPRADOR -> CompradorActivity::class.java
+                    else -> null
+                }
+
+                if (destino != null) {
+                    startActivity(Intent(this, destino))
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    finish()
+                    return
+                }
+            } catch (_: Exception) {
+                // Si falla la consulta, ir al login
+            }
+        }
 
         val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)

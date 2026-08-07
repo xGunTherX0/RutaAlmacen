@@ -8,8 +8,11 @@ import android.location.Geocoder
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.TextView
+import com.google.firebase.auth.FirebaseAuth
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -35,6 +38,7 @@ class CompradorActivity : AppCompatActivity() {
 
     private val categoriasHome = listOf(
         CategoriaHome("Caja Vecina", R.drawable.img_cat_caja_vecina, "caja_vecina"),
+        CategoriaHome("Ofertas", R.drawable.img_cat_ofertas, "ofertas"),
         CategoriaHome("Despensa", R.drawable.img_cat_abarrotes, "Despensa"),
         CategoriaHome("Lácteos y Quesos", R.drawable.img_cat_lacteos, "Lácteos y Quesos"),
         CategoriaHome("Huevos", R.drawable.img_cat_huevos, "Huevos"),
@@ -56,6 +60,7 @@ class CompradorActivity : AppCompatActivity() {
     private lateinit var textoUbicacion: TextView
     private lateinit var iconoUbicacion: ImageView
     private var animacionPulso: ObjectAnimator? = null
+    private val autenticacion: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
 
     private val solicitudPermisoUbicacion = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
@@ -120,6 +125,7 @@ class CompradorActivity : AppCompatActivity() {
         configurarCategorias()
         configurarAccesosDirectos()
         configurarBotonAlertas()
+        configurarBotonMenu()
         configurarAdView()
         detectarUbicacion()
     }
@@ -211,8 +217,13 @@ class CompradorActivity : AppCompatActivity() {
                 val intent = Intent(this, AlmacenesCercanosActivity::class.java)
                 intent.putExtra("filtro_caja_vecina", true)
                 startActivity(intent)
+            } else if (categoria.categoriaBusqueda == "ofertas") {
+                val intent = Intent(this, ProductosActivity::class.java)
+                intent.putExtra("filtro_ofertas", true)
+                startActivity(intent)
             } else {
-                val intent = Intent(this, ListaComprasActivity::class.java)
+                val intent = Intent(this, ProductosActivity::class.java)
+                intent.putExtra("categoria", categoria.categoriaBusqueda)
                 startActivity(intent)
             }
         }
@@ -297,6 +308,32 @@ class CompradorActivity : AppCompatActivity() {
         findViewById<MaterialButton>(R.id.boton_info_alertas).setOnClickListener {
             startActivity(Intent(this, InfoAlertasActivity::class.java))
         }
+    }
+
+    private fun configurarBotonMenu() {
+        val botonMenu = findViewById<ImageButton>(R.id.boton_menu_comprador)
+        botonMenu.setOnClickListener { vista ->
+            val popup = PopupMenu(this, vista)
+            popup.menuInflater.inflate(R.menu.menu_comprador_opciones, popup.menu)
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.opcion_cerrar_sesion -> {
+                        cerrarSesion()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
+        }
+    }
+
+    private fun cerrarSesion() {
+        autenticacion.signOut()
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     private fun configurarAdView() {

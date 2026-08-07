@@ -5,37 +5,41 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rutaalmacen.Constantes
 import com.example.rutaalmacen.R
+import com.google.android.material.tabs.TabLayout
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 class AdminVerificacionActivity : AppCompatActivity() {
 
     private val baseDatos: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
-    private val autenticacion: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
 
     private lateinit var recyclerVerificaciones: RecyclerView
     private lateinit var textoContador: TextView
     private lateinit var textoSinSolicitudes: TextView
+    private lateinit var tabLayout: TabLayout
 
-    private val solicitudes: MutableList<SolicitudVerificacion> = mutableListOf()
+    private val todasLasSolicitudes: MutableList<SolicitudVerificacion> = mutableListOf()
+    private val solicitudesFiltradas: MutableList<SolicitudVerificacion> = mutableListOf()
     private lateinit var adaptador: AdaptadorVerificacion
 
     private var listenerFirestore: ListenerRegistration? = null
+    private var filtroActual = Constantes.EstadoVerificacionPendiente
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,10 +60,17 @@ class AdminVerificacionActivity : AppCompatActivity() {
         recyclerVerificaciones = findViewById(R.id.recycler_verificaciones)
         textoContador = findViewById(R.id.texto_contador_pendientes)
         textoSinSolicitudes = findViewById(R.id.texto_sin_solicitudes)
+        tabLayout = findViewById(R.id.tab_layout_estados)
 
-        adaptador = AdaptadorVerificacion(solicitudes) { solicitud ->
+        findViewById<android.view.View>(R.id.boton_recargar).setOnClickListener {
+            cargarDatos()
+        }
+
+        configurarTabs()
+
+        adaptador = AdaptadorVerificacion(solicitudesFiltradas) { solicitud ->
             val fechaTexto = solicitud.fechaRegistro?.toDate()?.let { fecha ->
-                val formato = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.forLanguageTag("es-CL"))
+                val formato = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.forLanguageTag("es-CL"))
                 formato.format(fecha)
             }.orEmpty()
 
@@ -71,6 +82,7 @@ class AdminVerificacionActivity : AppCompatActivity() {
                 putExtra("address", solicitud.address)
                 putExtra("patentImageUrl", solicitud.patentImageUrl)
                 putExtra("fechaRegistro", fechaTexto)
+                putExtra("status", solicitud.status)
             }
             startActivity(intent)
         }
@@ -81,7 +93,7 @@ class AdminVerificacionActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        escucharSolicitudesPendientes()
+        cargarDatos()
     }
 
     override fun onPause() {
@@ -90,45 +102,83 @@ class AdminVerificacionActivity : AppCompatActivity() {
         listenerFirestore = null
     }
 
-    private fun escucharSolicitudesPendientes() {
-        listenerFirestore?.remove()
+    private fun configurarTabs() {
+        tabLayout.addTab(tabLayout.newTab().setText("Pendientes"))
+        tabLayout.addTab(tabLayout.newTab().setText("Aprobados"))
+        tabLayout.addTab(tabLayout.newTab().setText("Rechazados"))
 
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                filtroActual = when (tab?.position) {
+                    0 -> Constantes.EstadoVerificacionPendiente
+                    1 -> Constantes.EstadoVerificacionAprobada
+                    2 -> Constantes.EstadoVerificacionRechazada
+                    else -> Constantes.EstadoVerificacionPendiente
+                }
+                aplicarFiltro()
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
+    }
+
+    private fun cargarDatos() {
+        lifecycleScope.launch {
+            try {
+                val snapshots = baseDatos.collection(Constantes.COLECCION_USUARIOS)
+                    .whereEqualTo("rol", Constantes.ROL_VENDEDOR)
+                    .get()
+                    .await()
+
+                todasLasSolicitudes.clear()
+
+                snapshots.documents.forEach { documento ->
+                    val sellerProfile = documento.get("sellerProfile") as? Map<*, *> ?: return@forEach
+                    val status = sellerProfile["verificationStatus"] as? String ?: return@forEach
+
+                    val solicitud = SolicitudVerificacion(
+                        uid = documento.id,
+                        storeName = sellerProfile["storeName"] as? String ?: "",
+                        displayName = documento.getString("displayName") ?: "",
+                        rut = sellerProfile["rut"] as? String ?: "",
+                        address = sellerProfile["address"] as? String ?: "",
+                        patentImageUrl = sellerProfile["patentImageUrl"] as? String ?: "",
+                        fechaRegistro = sellerProfile["createdAt"] as? Timestamp,
+                        status = status,
+                        rejectionReason = sellerProfile["rejectionReason"] as? String
+                    )
+                    todasLasSolicitudes.add(solicitud)
+                }
+
+                aplicarFiltro()
+                escucharCambios()
+            } catch (e: Exception) {
+                // Silenciar
+            }
+        }
+    }
+
+    private fun escucharCambios() {
+        listenerFirestore?.remove()
         listenerFirestore = baseDatos.collection(Constantes.COLECCION_USUARIOS)
             .whereEqualTo("rol", Constantes.ROL_VENDEDOR)
-            .addSnapshotListener { snapshots, error ->
-                if (error != null) {
-                    return@addSnapshotListener
-                }
-
-                val todasLasSolicitudes = mutableListOf<SolicitudVerificacion>()
-
-                snapshots?.documents?.forEach { documento ->
-                    val sellerProfile = documento.get("sellerProfile") as? Map<*, *> ?: return@forEach
-                    val status = sellerProfile["verificationStatus"] as? String
-
-                    if (status == Constantes.EstadoVerificacionPendiente) {
-                        val solicitud = SolicitudVerificacion(
-                            uid = documento.id,
-                            storeName = sellerProfile["storeName"] as? String ?: "",
-                            displayName = documento.getString("displayName") ?: "",
-                            rut = sellerProfile["rut"] as? String ?: "",
-                            address = sellerProfile["address"] as? String ?: "",
-                            patentImageUrl = sellerProfile["patentImageUrl"] as? String ?: "",
-                            fechaRegistro = sellerProfile["createdAt"] as? Timestamp
-                        )
-                        todasLasSolicitudes.add(solicitud)
-                    }
-                }
-
-                solicitudes.clear()
-                solicitudes.addAll(todasLasSolicitudes.sortedByDescending { it.fechaRegistro })
-
-                runOnUiThread {
-                    adaptador.notifyDataSetChanged()
-                    textoContador.text = "${solicitudes.size} pendiente(s)"
-                    textoSinSolicitudes.visibility = if (solicitudes.isEmpty()) View.VISIBLE else View.GONE
-                }
+            .addSnapshotListener { _, _ ->
+                cargarDatos()
             }
+    }
+
+    private fun aplicarFiltro() {
+        val filtradas = todasLasSolicitudes
+            .filter { it.status == filtroActual }
+            .sortedByDescending { it.fechaRegistro }
+
+        solicitudesFiltradas.clear()
+        solicitudesFiltradas.addAll(filtradas)
+        adaptador.notifyDataSetChanged()
+
+        val totalPendientes = todasLasSolicitudes.count { it.status == Constantes.EstadoVerificacionPendiente }
+        textoContador.text = "$totalPendientes pendiente(s)"
+        textoSinSolicitudes.visibility = if (solicitudesFiltradas.isEmpty()) View.VISIBLE else View.GONE
     }
 
     data class SolicitudVerificacion(
@@ -138,7 +188,9 @@ class AdminVerificacionActivity : AppCompatActivity() {
         val rut: String,
         val address: String,
         val patentImageUrl: String,
-        val fechaRegistro: Timestamp?
+        val fechaRegistro: Timestamp?,
+        val status: String,
+        val rejectionReason: String? = null
     )
 
     class AdaptadorVerificacion(
@@ -153,6 +205,7 @@ class AdminVerificacionActivity : AppCompatActivity() {
             val textoRut: TextView = itemView.findViewById(R.id.texto_rut)
             val textoDireccion: TextView = itemView.findViewById(R.id.texto_direccion)
             val textoFechaRegistro: TextView = itemView.findViewById(R.id.texto_fecha_registro)
+            val textoEstadoBadge: TextView = itemView.findViewById(R.id.texto_estado_badge)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VistaSolicitud {
@@ -177,9 +230,25 @@ class AdminVerificacionActivity : AppCompatActivity() {
                 "Registrado: sin fecha"
             }
 
-            holder.tarjeta.setOnClickListener { 
-                onSolicitudClick(solicitud) 
+            when (solicitud.status) {
+                Constantes.EstadoVerificacionAprobada -> {
+                    holder.textoEstadoBadge.text = "APROBADO"
+                    holder.textoEstadoBadge.setBackgroundResource(R.drawable.bg_estado_verificado)
+                    holder.textoEstadoBadge.setTextColor(holder.itemView.context.getColor(R.color.texto_inverso))
+                }
+                Constantes.EstadoVerificacionRechazada -> {
+                    holder.textoEstadoBadge.text = "RECHAZADO"
+                    holder.textoEstadoBadge.setBackgroundResource(R.drawable.bg_estado_rechazado)
+                    holder.textoEstadoBadge.setTextColor(holder.itemView.context.getColor(R.color.texto_inverso))
+                }
+                else -> {
+                    holder.textoEstadoBadge.text = "PENDIENTE"
+                    holder.textoEstadoBadge.setBackgroundResource(R.drawable.bg_estado_pendiente)
+                    holder.textoEstadoBadge.setTextColor(holder.itemView.context.getColor(R.color.colorSecondaryDark))
+                }
             }
+
+            holder.tarjeta.setOnClickListener { onSolicitudClick(solicitud) }
         }
 
         override fun getItemCount(): Int = solicitudes.size

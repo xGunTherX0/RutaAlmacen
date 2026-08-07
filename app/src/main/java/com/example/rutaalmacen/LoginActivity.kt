@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.rutaalmacen.seguridad.ConfiguracionAdmin
 import com.example.rutaalmacen.seguridad.ConsentimientoPrivacidad
+import com.example.rutaalmacen.seguridad.TerminosCondiciones
 import com.example.rutaalmacen.seguridad.DetectorDepuracion
 import com.example.rutaalmacen.seguridad.VerificadorIntegridad
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -42,7 +44,11 @@ class LoginActivity : AppCompatActivity() {
     private val baseDatos by lazy { Firebase.firestore }
     private lateinit var clienteGoogle: GoogleSignInClient
     private lateinit var lanzadorInicioSesionGoogle: ActivityResultLauncher<Intent>
+    private lateinit var lanzadorTerminos: ActivityResultLauncher<Intent>
     private var flujoActual = FlujoInicioSesion.ACCESO_DIRECTO
+    private var loginInicializado = false
+    private var usuarioPendienteTerminos: FirebaseUser? = null
+    private var fotoPendienteTerminos: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,23 +58,69 @@ class LoginActivity : AppCompatActivity() {
 
         verificarSeguridadDispositivo()
 
-        if (!ConsentimientoPrivacidad.fueAceptado(this)) {
-            mostrarDialogoConsentimiento()
-        } else {
-            inicializarLogin()
+        lanzadorInicioSesionGoogle =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { resultado ->
+                procesarResultadoGoogle(resultado.resultCode, resultado.data)
+            }
+
+        lanzadorTerminos = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { resultado ->
+            if (resultado.resultCode == RESULT_OK) {
+                TerminosCondiciones.aceptar(this)
+                ConsentimientoPrivacidad.aceptar(this)
+                lifecycleScope.launch {
+                    guardarAceptacionTerminosFirestore()
+                }
+            }
+        }
+
+        when {
+            !ConsentimientoPrivacidad.fueAceptado(this) -> mostrarDialogoConsentimiento()
+            !TerminosCondiciones.fueAceptado(this) -> abrirTerminos()
+            else -> inicializarLogin()
         }
     }
 
+    private fun guardarAceptacionTerminosFirestore() {
+        val usuario = usuarioPendienteTerminos ?: run {
+            inicializarLogin()
+            return
+        }
+        lifecycleScope.launch {
+            try {
+                baseDatos.collection(Constantes.COLECCION_USUARIOS)
+                    .document(usuario.uid)
+                    .set(mapOf("terminosAceptados" to true), SetOptions.merge())
+                    .await()
+                Log.d("LoginActivity", "Terminos guardados en Firestore para ${usuario.uid}")
+                usuarioPendienteTerminos = null
+                val datos = verificarUsuario(usuario.uid)
+                if (datos != null && !datos.bloqueado) {
+                    actualizarUltimoLogin(usuario.uid)
+                    navegarSegunRol(datos.rol)
+                } else if (datos == null) {
+                    mostrarSelectorDeRol(usuario, fotoPendienteTerminos)
+                }
+            } catch (e: Exception) {
+                Log.e("LoginActivity", "Error guardando terminos: ${e.message}")
+                inicializarLogin()
+            }
+        }
+    }
+
+    private fun abrirTerminos() {
+        val intent = Intent(this, TerminosCondicionesActivity::class.java)
+        lanzadorTerminos.launch(intent)
+    }
+
     private fun inicializarLogin() {
+        if (loginInicializado) return
+        loginInicializado = true
+
         lifecycleScope.launch {
             correoAdministrador = ConfiguracionAdmin.obtenerCorreoAdmin()
         }
 
         clienteGoogle = crearClienteGoogle()
-        lanzadorInicioSesionGoogle =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { resultado ->
-                procesarResultadoGoogle(resultado.resultCode, resultado.data)
-            }
 
         findViewById<Button>(R.id.boton_google).setOnClickListener {
             iniciarSesionGoogle(FlujoInicioSesion.ACCESO_DIRECTO)
@@ -76,6 +128,11 @@ class LoginActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.boton_registrar).setOnClickListener {
             iniciarSesionGoogle(FlujoInicioSesion.REGISTRO)
+        }
+
+        findViewById<TextView>(R.id.texto_terminos_login).setOnClickListener {
+            val intent = Intent(this, TerminosCondicionesActivity::class.java)
+            lanzadorTerminos.launch(intent)
         }
     }
 
@@ -100,7 +157,11 @@ class LoginActivity : AppCompatActivity() {
             .setCancelable(false)
             .setPositiveButton("Aceptar") { _, _ ->
                 ConsentimientoPrivacidad.aceptar(this)
-                inicializarLogin()
+                if (!TerminosCondiciones.fueAceptado(this)) {
+                    abrirTerminos()
+                } else {
+                    inicializarLogin()
+                }
             }
             .setNegativeButton("Rechazar") { _, _ ->
                 finish()
@@ -277,6 +338,15 @@ class LoginActivity : AppCompatActivity() {
                     return@launch
                 }
 
+                if (!usuarioAceptoTerminos(usuarioActual.uid)) {
+                    Log.d("LoginActivity", "Usuario no aceptó términos, abriendo pantalla...")
+                    usuarioPendienteTerminos = usuarioActual
+                    fotoPendienteTerminos = fotoUrl
+                    mostrarMensaje("Debes aceptar los Términos y Condiciones")
+                    abrirTerminos()
+                    return@launch
+                }
+
                 when (flujoActual) {
                     FlujoInicioSesion.ACCESO_DIRECTO -> {
                         Log.d("LoginActivity", "Flujo ACCESO_DIRECTO, verificando usuario...")
@@ -381,6 +451,16 @@ class LoginActivity : AppCompatActivity() {
      * @property bloqueado Indica si la cuenta del usuario ha sido bloqueada por un administrador.
      */
     private data class DatosUsuario(val rol: String, val bloqueado: Boolean)
+
+    private suspend fun usuarioAceptoTerminos(uid: String): Boolean {
+        return try {
+            val doc = baseDatos.collection(Constantes.COLECCION_USUARIOS).document(uid).get().await()
+            doc.getBoolean("terminosAceptados") ?: false
+        } catch (e: Exception) {
+            Log.e("LoginActivity", "Error verificando términos: ${e.message}")
+            false
+        }
+    }
 
     /**
      * Consulta Firestore para verificar si un usuario existe y obtener su rol

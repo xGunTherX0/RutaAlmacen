@@ -394,6 +394,48 @@
                         android:src="@drawable/ic_chevron_right"
                         app:tint="@color/texto_terciario" />
                 </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="@dimen/espacio_lg"
+                    android:background="@color/divisor" />
+
+                <!-- 10. Cerrar sesión -->
+                <LinearLayout
+                    android:id="@+id/drawer_cerrar_sesion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/espacio_lg">
+
+                    <ImageView
+                        android:layout_width="@dimen/ancho_icono"
+                        android:layout_height="@dimen/ancho_icono"
+                        android:layout_marginEnd="@dimen/espacio_md"
+                        android:contentDescription="@null"
+                        android:src="@android:drawable/ic_lock_lock"
+                        app:tint="#E53935" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Cerrar sesión"
+                        android:textAppearance="@style/TextAppearance.RutaAlmacen.Vendedor.BodyMedium"
+                        android:textColor="#E53935" />
+
+                    <ImageView
+                        android:layout_width="@dimen/ancho_icono"
+                        android:layout_height="@dimen/ancho_icono"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/texto_terciario" />
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

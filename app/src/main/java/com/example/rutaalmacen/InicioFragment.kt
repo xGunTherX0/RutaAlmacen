@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.rutaalmacen.notas.NotasActivity
+import com.example.rutaalmacen.ProductosActivity
 import com.example.rutaalmacen.pagos.CodigoPlan
 import com.example.rutaalmacen.pagos.EstadoSuscripcion
 import com.example.rutaalmacen.pagos.PlanManager
@@ -61,7 +62,6 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
     private lateinit var textoFecha: TextView
     private lateinit var textoSaludo: TextView
     private lateinit var textoNombreUsuario: TextView
-    private lateinit var iconoNotificaciones: ImageView
     private lateinit var tarjetaEstadoAlmacen: MaterialCardView
     private lateinit var iconoPlan: ImageView
     private lateinit var textoTituloPlan: TextView
@@ -73,6 +73,8 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
     private lateinit var adView: AdView
     private lateinit var tarjetaNuevaVenta: MaterialCardView
     private lateinit var tarjetaBlocNotas: MaterialCardView
+    private lateinit var tarjetaMisProductos: MaterialCardView
+    private lateinit var tarjetaAlertasIA: MaterialCardView
     private lateinit var textoActualizarPlan: TextView
     private lateinit var barraCargaFoto: ProgressBar
 
@@ -127,7 +129,6 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
         textoFecha = view.findViewById(R.id.texto_fecha)
         textoSaludo = view.findViewById(R.id.texto_saludo)
         textoNombreUsuario = view.findViewById(R.id.texto_nombre_usuario)
-        iconoNotificaciones = view.findViewById(R.id.icono_notificaciones)
         tarjetaEstadoAlmacen = view.findViewById(R.id.tarjeta_estado_almacen)
         iconoPlan = view.findViewById(R.id.icono_plan)
         textoTituloPlan = view.findViewById(R.id.texto_titulo_plan)
@@ -139,13 +140,15 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
         adView = view.findViewById(R.id.ad_view_inicio)
         tarjetaNuevaVenta = view.findViewById(R.id.tarjeta_nueva_venta)
         tarjetaBlocNotas = view.findViewById(R.id.tarjeta_bloc_notas)
+        tarjetaMisProductos = view.findViewById(R.id.tarjeta_mis_productos)
+        tarjetaAlertasIA = view.findViewById(R.id.tarjeta_alertas_ia)
         textoActualizarPlan = view.findViewById(R.id.texto_actualizar_plan)
         barraCargaFoto = view.findViewById(R.id.barra_carga_foto)
 
         Log.d(TAG, "onViewCreated: vistas inicializadas")
 
         // Valores por defecto visibles inmediatamente
-        textoSaludo.text = "¡Hola,"
+        textoSaludo.text = obtenerSaludoPorHora()
         textoNombreUsuario.text = "Cargando..."
         imagenPerfil.setImageResource(android.R.drawable.sym_def_app_icon)
 
@@ -167,6 +170,7 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
         super.onResume()
         adView.resume()
         actualizarFecha()
+        textoSaludo.text = obtenerSaludoPorHora()
     }
 
     /**
@@ -320,9 +324,56 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
         tarjetaBlocNotas.setOnClickListener {
             startActivity(Intent(requireContext(), NotasActivity::class.java))
         }
+        tarjetaMisProductos.setOnClickListener {
+            (activity as? VendedorActivity)?.seleccionarTab(R.id.nav_lista)
+        }
+        tarjetaAlertasIA.setOnClickListener {
+            (activity as? VendedorActivity)?.seleccionarTab(R.id.nav_alertas)
+        }
         textoActualizarPlan.setOnClickListener {
             startActivity(Intent(requireContext(), com.example.rutaalmacen.pagos.PlanSuscripcionActivity::class.java))
         }
+    }
+
+    /**
+     * Retorna un saludo personalizado según la hora actual del día.
+     *
+     * Cada hora tiene una frase única y variada para hacer el saludo más dinámico
+     * y amigable durante todo el día.
+     *
+     * @return String con el saludo correspondiente a la hora actual.
+     */
+    private fun obtenerSaludoPorHora(): String {
+        val hora = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+
+        val saludos = mapOf(
+            0 to "Buenas noches,",
+            1 to "Buenas noches,",
+            2 to "Buenas noches,",
+            3 to "Buenas noches,",
+            4 to "Buenos días,",
+            5 to "Buenos días,",
+            6 to "¡Buenos días!",
+            7 to "¡Buenos días! ☀️",
+            8 to "¡Buenos días!",
+            9 to "¡Hola! Buenos días",
+            10 to "¡Buenos días! A por el mediodía",
+            11 to "¡Buenas! Ya casi es mediodía",
+            12 to "¡Buenas tardes!",
+            13 to "Buenas tardes,",
+            14 to "¡Hola! Buenas tardes",
+            15 to "Buenas tardes, ¡sigue así! 💪",
+            16 to "¡Hola! ¿Qué tal la tarde?",
+            17 to "¡Buenas tardes! Ya casi es hora de salir",
+            18 to "¡Buenas tardes! 🌆",
+            19 to "¡Buenas noches!",
+            20 to "Buenas noches,",
+            21 to "¡Hola! Buenas noches",
+            22 to "Buenas noches, descansa bien 🌙",
+            23 to "Buenas noches, ¿todavía despierto?"
+        )
+
+        return saludos[hora] ?: "¡Hola,"
     }
 
     /**
@@ -362,7 +413,7 @@ class InicioFragment : Fragment(R.layout.fragment_inicio) {
                 val nombre = documento.getString("nombre").orEmpty().ifBlank {
                     documento.getString("correo").orEmpty().substringBefore("@")
                 }
-                textoSaludo.text = "¡Hola,"
+                textoSaludo.text = obtenerSaludoPorHora()
                 textoNombreUsuario.text = "$nombre!"
 
                 Log.d(TAG, "Nombre cargado: $nombre")

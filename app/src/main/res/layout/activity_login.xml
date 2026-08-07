@@ -144,6 +144,26 @@
     </com.google.android.material.card.MaterialCardView>
 
     <TextView
+        android:id="@+id/texto_terminos_login"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:autoSizeTextType="uniform"
+        android:autoSizeMinTextSize="11sp"
+        android:autoSizeMaxTextSize="15sp"
+        android:autoSizeStepGranularity="1sp"
+        android:gravity="center"
+        android:maxLines="1"
+        android:text="Terminos y Condiciones"
+        android:textColor="@color/boton_principal"
+        android:textStyle="bold"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/texto_derechos_login" />
+
+    <TextView
         android:id="@+id/texto_derechos_login"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

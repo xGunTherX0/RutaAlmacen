@@ -32,13 +32,51 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp">
 
+            <!-- Contenedor de foto de perfil con etiqueta -->
             <LinearLayout
+                android:id="@+id/contenedor_perfil"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="foto de almacén"
+                    android:textColor="#6B7280"
+                    android:textSize="10sp" />
+
+                <!-- Avatar circular con foto de perfil -->
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/imagen_perfil"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:scaleType="centerCrop"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay_RutaAlmacen_Circle"
+                    tools:src="@android:drawable/sym_def_app_icon" />
+
+                <ProgressBar
+                    android:id="@+id/barra_carga_foto"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginTop="4dp"
+                    android:visibility="gone"
+                    android:indeterminateTint="#00B589" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:layout_toStartOf="@id/imagen_perfil">
+                android:layout_toStartOf="@id/contenedor_perfil"
+                android:layout_marginEnd="12dp">
 
                 <TextView
                     android:id="@+id/texto_saludo"
@@ -55,44 +93,10 @@
                     android:text="Usuario"
                     android:textColor="#0F172A"
                     android:textSize="28sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:ellipsize="end"
+                    android:maxLines="1" />
             </LinearLayout>
-
-            <!-- Avatar circular con foto de perfil -->
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/imagen_perfil"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:scaleType="centerCrop"
-                android:clickable="true"
-                android:focusable="true"
-                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay_RutaAlmacen_Circle"
-                tools:src="@android:drawable/sym_def_app_icon" />
-
-            <ProgressBar
-                android:id="@+id/barra_carga_foto"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="12dp"
-                android:visibility="gone"
-                android:indeterminateTint="#00B589" />
-
-            <!-- Icono de notificaciones -->
-            <ImageView
-                android:id="@+id/icono_notificaciones"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_toStartOf="@id/imagen_perfil"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="12dp"
-                android:contentDescription="Notificaciones"
-                android:padding="8dp"
-                android:src="@drawable/ic_notifications_none"
-                app:tint="#6B7280" />
         </RelativeLayout>
 
         <!-- Tarjeta Estado Almacén (Plan) -->
@@ -219,17 +223,17 @@
             android:layout_marginTop="12dp"
             android:weightSum="2">
 
-            <!-- Tarjeta Nueva Venta -->
+            <!-- Tarjeta Agregar Producto (destacada) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/tarjeta_nueva_venta"
                 android:layout_width="0dp"
-                android:layout_height="120dp"
+                android:layout_height="140dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
+                app:cardElevation="6dp"
                 app:strokeWidth="0dp"
-                app:cardBackgroundColor="#E6F7F0">
+                app:cardBackgroundColor="#00B589">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -239,20 +243,22 @@
                     android:padding="16dp">
 
                     <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
                         android:src="@android:drawable/ic_menu_add"
-                        app:tint="#00B589" />
+                        app:tint="#FFFFFF" />
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:text="Nueva\nVenta"
-                        android:textColor="#0F172A"
+                        android:text="Agregar Producto"
+                        android:textColor="#FFFFFF"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        android:lineSpacingExtra="1dp"/>
+                        android:gravity="start"
+                        android:ellipsize="end"
+                        android:maxLines="2"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -260,11 +266,11 @@
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/tarjeta_bloc_notas"
                 android:layout_width="0dp"
-                android:layout_height="120dp"
+                android:layout_height="100dp"
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
+                app:cardElevation="2dp"
                 app:strokeWidth="0dp"
                 app:cardBackgroundColor="#FFFEF3C7">
 
@@ -282,14 +288,103 @@
                         app:tint="#FFB8860B" />
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:text="Bloc de\nNotas"
+                        android:text="Bloc de Notas"
                         android:textColor="#0F172A"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        android:lineSpacingExtra="1dp"/>
+                        android:gravity="start"
+                        android:ellipsize="end"
+                        android:maxLines="2"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- Segunda fila de Acciones Rápidas -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:weightSum="2">
+
+            <!-- Tarjeta Mis Productos -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/tarjeta_mis_productos"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="#E8F4FD">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@android:drawable/ic_menu_sort_by_size"
+                        app:tint="#3B82F6" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Mis Productos"
+                        android:textColor="#0F172A"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:gravity="start"
+                        android:ellipsize="end"
+                        android:maxLines="2"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Tarjeta Alertas IA -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/tarjeta_alertas_ia"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="#FEF3E8">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@android:drawable/ic_dialog_alert"
+                        app:tint="#F59E0B" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Alertas IA"
+                        android:textColor="#0F172A"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:gravity="start"
+                        android:ellipsize="end"
+                        android:maxLines="2"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>

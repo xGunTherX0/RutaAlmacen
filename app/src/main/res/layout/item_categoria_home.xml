@@ -23,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="110dp"
             android:contentDescription="Categoría"
-            android:scaleType="centerCrop" />
+            android:scaleType="fitCenter" />
 
         <TextView
             android:id="@+id/texto_categoria"

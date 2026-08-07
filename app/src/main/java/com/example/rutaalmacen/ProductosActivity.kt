@@ -140,7 +140,8 @@ class ProductosActivity : AppCompatActivity() {
 
         if (!categoriaIntent.isNullOrBlank()) {
             categoriaSeleccionada = categoriaIntent
-            campoBusqueda.setText(categoriaIntent)
+            campoBusqueda.setText("")
+            campoBusqueda.hint = "Buscar en $categoriaIntent"
             lifecycleScope.launch { buscarProductosPorCategoria(categoriaIntent) }
         } else if (!consultaIntent.isNullOrBlank()) {
             campoBusqueda.setText(consultaIntent)
@@ -164,9 +165,13 @@ class ProductosActivity : AppCompatActivity() {
         campoBusqueda.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
                 val texto = campoBusqueda.text?.toString().orEmpty().trim()
+                ocultarTeclado()
                 if (texto.isNotBlank()) {
-                    ocultarTeclado()
                     lifecycleScope.launch { buscarProductos(texto) }
+                } else if (categoriaSeleccionada != "Todas") {
+                    lifecycleScope.launch { buscarProductosPorCategoria(categoriaSeleccionada) }
+                } else {
+                    lifecycleScope.launch { cargarProductosIniciales() }
                 }
                 true
             } else {
@@ -208,14 +213,27 @@ class ProductosActivity : AppCompatActivity() {
             val consultaNormalizada = FiltroContenido.normalizar(consulta)
             val documentos = linkedMapOf<String, DocumentSnapshot>()
 
+            val categoriaActiva = categoriaSeleccionada
+            val filtrarPorCategoria = categoriaActiva != "Todas"
+
             val documentosLocal = buscarInventarioLocalPublico(consultaNormalizada)
-            documentosLocal.forEach { documento ->
+            val documentosFiltrados = if (filtrarPorCategoria) {
+                documentosLocal.filter { it.getString("categoria") == categoriaActiva }
+            } else {
+                documentosLocal
+            }
+            documentosFiltrados.forEach { documento ->
                 documentos[documento.reference.path] = documento
             }
 
             if (documentos.isEmpty()) {
                 val documentosPrivados = buscarInventarioLocalPrivado(consultaNormalizada)
-                documentosPrivados.forEach { documento ->
+                val privadosFiltrados = if (filtrarPorCategoria) {
+                    documentosPrivados.filter { it.getString("categoria") == categoriaActiva }
+                } else {
+                    documentosPrivados
+                }
+                privadosFiltrados.forEach { documento ->
                     documentos[documento.reference.path] = documento
                 }
             }

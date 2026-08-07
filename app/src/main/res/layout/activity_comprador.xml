@@ -149,6 +149,19 @@
                     android:textStyle="bold"
                     app:backgroundTint="@null"
                     app:rippleColor="#40FFFFFF" />
+
+                <ImageButton
+                    android:id="@+id/boton_menu_comprador"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="@dimen/espacio_sm"
+                    android:background="@drawable/bg_boton_alerta_header"
+                    android:contentDescription="Menú"
+                    android:padding="0dp"
+                    android:src="@drawable/ic_more_vert_white"
+                    android:scaleType="center"
+                    app:backgroundTint="@null"
+                    app:rippleColor="#40FFFFFF" />
             </LinearLayout>
         </LinearLayout>
     </FrameLayout>

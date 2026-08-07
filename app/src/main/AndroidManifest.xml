@@ -126,6 +126,9 @@
             android:name=".LoginActivity"
             android:exported="false" />
         <activity
+            android:name=".TerminosCondicionesActivity"
+            android:exported="false" />
+        <activity
             android:name=".SellerRegistrationActivity"
             android:exported="false" />
         <activity

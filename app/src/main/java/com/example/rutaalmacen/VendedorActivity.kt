@@ -206,6 +206,15 @@ class VendedorActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        drawerView.findViewById<View>(R.id.drawer_cerrar_sesion).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            autenticacion.signOut()
+            val intent = Intent(this, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+        }
+
         val switchEstado = drawerView.findViewById<MaterialSwitch>(R.id.drawer_switch_estado_almacen)
         drawerView.findViewById<View>(R.id.drawer_estado_almacen).setOnClickListener {
             switchEstado.isChecked = !switchEstado.isChecked

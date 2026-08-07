@@ -44,6 +44,7 @@ class DetalleVerificacionActivity : AppCompatActivity() {
     private var uidUsuario: String = ""
     private var patentImageUrl: String = ""
     private var rutVendedor: String = ""
+    private var statusActual: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,12 +78,30 @@ class DetalleVerificacionActivity : AppCompatActivity() {
         val address = intent.getStringExtra("address").orEmpty()
         patentImageUrl = intent.getStringExtra("patentImageUrl").orEmpty()
         val fechaRegistro = intent.getStringExtra("fechaRegistro").orEmpty()
+        statusActual = intent.getStringExtra("status").orEmpty()
 
         textoNombreAlmacen.text = storeName.ifBlank { "Sin nombre" }
         textoSolicitante.text = "Solicitante: ${displayName.ifBlank { "Sin nombre" }}"
         textoRut.text = "RUT: ${rutVendedor.ifBlank { "No registrado" }}"
         textoDireccion.text = "Dirección: ${address.ifBlank { "No registrada" }}"
         textoFecha.text = "Fecha: ${fechaRegistro.ifBlank { "Sin fecha" }}"
+
+        when (statusActual) {
+            Constantes.EstadoVerificacionAprobada -> {
+                botonAprobar.visibility = View.GONE
+                botonRechazar.visibility = View.GONE
+                textoFecha.text = "${textoFecha.text} - APROBADO"
+            }
+            Constantes.EstadoVerificacionRechazada -> {
+                botonAprobar.visibility = View.GONE
+                botonRechazar.visibility = View.GONE
+                textoFecha.text = "${textoFecha.text} - RECHAZADO"
+            }
+            else -> {
+                botonAprobar.visibility = View.VISIBLE
+                botonRechazar.visibility = View.VISIBLE
+            }
+        }
 
         if (patentImageUrl.isNotBlank()) {
             barraCarga.visibility = View.VISIBLE
@@ -184,16 +203,22 @@ class DetalleVerificacionActivity : AppCompatActivity() {
     private fun cambiarEstadoVerificacion(nuevoEstado: String, motivo: String? = null) {
         lifecycleScope.launch {
             try {
-                val datos = mutableMapOf<String, Any>(
-                    "sellerProfile.verificationStatus" to nuevoEstado
-                )
+                val documento = baseDatos.collection(Constantes.COLECCION_USUARIOS)
+                    .document(uidUsuario)
+                    .get()
+                    .await()
+
+                val sellerProfileActual = (documento.get("sellerProfile") as? Map<String, Any>)?.toMutableMap()
+                    ?: mutableMapOf()
+
+                sellerProfileActual["verificationStatus"] = nuevoEstado
                 if (motivo != null) {
-                    datos["sellerProfile.rejectionReason"] = motivo
+                    sellerProfileActual["rejectionReason"] = motivo
                 }
 
                 baseDatos.collection(Constantes.COLECCION_USUARIOS)
                     .document(uidUsuario)
-                    .set(datos, SetOptions.merge())
+                    .update("sellerProfile", sellerProfileActual)
                     .await()
 
                 val mensaje = if (nuevoEstado == Constantes.EstadoVerificacionAprobada) {
@@ -202,6 +227,7 @@ class DetalleVerificacionActivity : AppCompatActivity() {
                     "Vendedor rechazado"
                 }
                 Toast.makeText(this@DetalleVerificacionActivity, mensaje, Toast.LENGTH_SHORT).show()
+                setResult(RESULT_OK)
                 finish()
             } catch (e: Exception) {
                 Toast.makeText(this@DetalleVerificacionActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
